@@ -1,0 +1,48 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build Web App
+      run: npm run build
+
+    - name: Install Capacitor
+      run: npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/ios@6
+
+    - name: Sync iOS Project
+      run: npx cap sync ios
+
+    - name: Build iOS App
+      run: |
+        cd ios/App
+        xcodebuild -project App.xcodeproj -scheme App -configuration Debug -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO
+
+    - name: Package IPA
+      run: |
+        mkdir -p Payload
+        mv ios/App/build/Build/Products/Debug-iphoneos/App.app Payload/
+        zip -r FishermansJourney.ipa Payload
+
+    - name: Upload iOS IPA Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-app-sideload
+        path: FishermansJourney.ipa

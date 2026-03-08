@@ -1,0 +1,139 @@
+import { motion } from "framer-motion";
+import { RefreshCcw, Trophy, Home } from "lucide-react";
+import { Link } from "wouter";
+import { useState } from "react";
+import { useSubmitScore } from "@/hooks/use-high-scores";
+
+import { type RunScoreBreakdown } from "@/game/storage";
+
+interface GameOverModalProps {
+  score: number;
+  island: number;
+  reason?: string;
+  onRetry: () => void;
+  scoreBreakdown?: RunScoreBreakdown;
+}
+
+export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }: GameOverModalProps) {
+  const [name, setName] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const submitScore = useSubmitScore();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    
+    await submitScore.mutateAsync({
+      playerName: name,
+      score: score,
+      maxIslandReached: island
+    });
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-4 border-destructive/20"
+      >
+        <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-4xl">⚓️</span>
+        </div>
+        
+        <h2 className="text-3xl font-display font-bold text-destructive mb-2">Oyun Bitti</h2>
+        <p className="text-muted-foreground mb-3">
+          Ulaştığın ada: <span className="font-bold text-foreground">{island}</span>
+        </p>
+        {reason && (
+          <p className="text-sm text-slate-600 mb-4 font-medium">{reason}</p>
+        )}
+
+        <div className="bg-muted/50 rounded-xl p-4 mb-6">
+          <div className="text-sm text-muted-foreground uppercase tracking-wider font-bold mb-1">Skor</div>
+          <div className="text-4xl font-mono font-bold text-primary">{score}</div>
+          
+          {scoreBreakdown && (
+            <div className="mt-3 space-y-1 border-t border-slate-200 pt-2 text-xs">
+              <div className="flex justify-between text-slate-600">
+                <span>Base:</span>
+                <span>{scoreBreakdown.baseScore}</span>
+              </div>
+              <div className="flex justify-between text-blue-600 font-medium">
+                <span>Depth Bonus:</span>
+                <span>+{scoreBreakdown.depthBonus}</span>
+              </div>
+              {scoreBreakdown.kingBonus > 0 && (
+                <div className="flex justify-between text-yellow-600 font-bold">
+                  <span>King Bonus:</span>
+                  <span>+{scoreBreakdown.kingBonus}</span>
+                </div>
+              )}
+              {scoreBreakdown.isNewRecord && (
+                <div className="text-center text-green-600 font-bold mt-2 animate-bounce">
+                  🏆 NEW RECORD! 🏆
+                </div>
+              )}
+              
+              <div className="mt-3 pt-2 border-t border-slate-200">
+                <div className="flex justify-between items-center text-purple-700 font-bold bg-purple-50 p-2 rounded-lg">
+                  <span>To Permanent Vault:</span>
+                  <span className="text-lg flex items-center gap-1">+{scoreBreakdown.finalScore} <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain inline" /></span>
+                </div>
+                <div className="text-[10px] text-center text-slate-400 mt-1">
+                  (100% of Total Score as Gold Doubloons)
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {!submitted ? (
+          <form onSubmit={handleSubmit} className="mb-6">
+            <label className="block text-left text-sm font-bold text-gray-700 mb-2">Yüksek Skoru Kaydet</label>
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="İsim"
+                className="flex-1 px-4 py-2 rounded-xl border-2 border-border focus:border-primary focus:outline-none"
+                maxLength={10}
+              />
+              <button 
+                type="submit"
+                disabled={submitScore.isPending || !name}
+                className="bg-accent text-white px-4 py-2 rounded-xl font-bold hover:bg-accent/90 disabled:opacity-50"
+              >
+                Kaydet
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="bg-green-100 text-green-700 p-3 rounded-xl mb-6 font-bold flex items-center justify-center gap-2">
+            <Trophy className="w-5 h-5" /> Skor kaydedildi!
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <button 
+            onClick={onRetry}
+            className="flex items-center justify-center gap-2 bg-primary text-white py-3 px-4 rounded-xl font-bold hover:bg-primary/90 transition-colors"
+          >
+            <RefreshCcw className="w-5 h-5" />
+            Tekrar Dene
+          </button>
+          
+          <Link 
+            href="/" 
+            className="flex items-center justify-center gap-2 bg-muted text-foreground py-3 px-4 rounded-xl font-bold hover:bg-muted/80 transition-colors"
+          >
+            <Home className="w-5 h-5" />
+            Ana Menü
+          </Link>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
