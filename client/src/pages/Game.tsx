@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { ArrowLeft, Clock, Fuel, Anchor, Pause, RotateCcw, Home as HomeIcon, Play, Bomb, X } from "lucide-react";
 import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y, LEVEL_CONFIG } from "@/game/GameEngine";
 import { VEHICLES, getEffectiveStats } from "@/game/vehicles";
-import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown } from "@/game/storage";
+import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown, getSelectedStartLevel } from "@/game/storage";
 import { type GameState, type Entity, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
 import { GameOverModal } from "@/components/GameOverModal";
 import { InfoCard } from "@/components/InfoCard";
@@ -20,13 +20,14 @@ export default function Game() {
   const whirlpoolImgRef = useRef<HTMLImageElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const [gameState, setGameState] = useState<"playing" | "gameover" | "shop" | "win">("playing");
+  const initialLevel = getSelectedStartLevel();
 
   const [score, setScore] = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState<RunScoreBreakdown | null>(null);
-  const runStats = useRef({ totalCoins: 0, kingFishCount: 0, maxLevel: 1 });
+  const runStats = useRef({ totalCoins: 0, kingFishCount: 0, maxLevel: initialLevel });
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [anchorEffectTimer, setAnchorEffectTimer] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(1);
+  const [currentLevel, setCurrentLevel] = useState(initialLevel);
   const [fuelCost, setFuelCost] = useState<number>(50);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [currentStorage, setCurrentStorage] = useState(0);
@@ -304,9 +305,9 @@ export default function Game() {
   };
 
   const handleSellAll = () => {
-    const isTersMarket = activeCurse === 'ters_market' || activeCurse === 'final_3';
+    const isReverseMarket = activeCurse === 'reverse_market' || activeCurse === 'final_3';
     const totalValue = inventory.reduce((sum, item) => {
-      const value = isTersMarket ? Math.round(item.value * 0.5) : item.value;
+      const value = isReverseMarket ? Math.round(item.value * 0.5) : item.value;
       return sum + value;
     }, 0);
 
@@ -345,7 +346,7 @@ export default function Game() {
 
   const repairHook = (amount: number) => {
     if (hookAttempts >= maxHookAttempts) return;
-    if (score < REPAIR_COST) return; // Yetersiz bakiye kontrolü
+    if (score < REPAIR_COST) return; // Insufficient balance check
 
     const newAttempts = Math.min(maxHookAttempts, hookAttempts + amount);
     setScore(prev => prev - REPAIR_COST);
@@ -387,13 +388,13 @@ export default function Game() {
   };
 
   const baseWeight = currentStorage || 0;
-  const isTersAgirlik = activeCurse === 'ters_agirlik' || activeCurse === 'final_3';
+  const isReverseWeight = activeCurse === 'reverse_weight' || activeCurse === 'final_3';
   const kingDisplayOffset = activeVehicleId === 't7' && inventory.some(item => item.type === 'king') ? -5 : 0;
   const displayWeight = Math.max(0, baseWeight + weightDisplayOffset + kingDisplayOffset);
 
   // 'ters_agirlik' curse: gauge turns reverse (%0=full, %100=empty)
   const rawStorageRatio = (displayWeight / upgrades.storageCapacity) || 0;
-  const storageRatio = isTersAgirlik ? (1 - rawStorageRatio) : rawStorageRatio;
+  const storageRatio = isReverseWeight ? (1 - rawStorageRatio) : rawStorageRatio;
   const storagePercent = Math.min(100, storageRatio * 100);
 
   const storageColor = rawStorageRatio >= 0.96 ? 'bg-red-500' :

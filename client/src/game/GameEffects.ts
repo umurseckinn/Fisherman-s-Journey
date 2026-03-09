@@ -1,49 +1,49 @@
 /**
- * GameEffects.ts — Tüm animasyon ve feedback sistemleri
- * mechanical.md talimatlarına göre yazıldı.
+ * GameEffects.ts — All animation and feedback systems
+ * Written according to mechanical.md instructions.
  *
- * Kullanım:
+ * Usage:
  *   const effects = new GameEffects();
- *   // Her frame:
+ *   // Every frame:
  *   effects.update(deltaTime, timestamp);
- *   effects.draw(ctx);          // flash overlay + ring efektleri (en üstte)
- *   effects.drawUnder(ctx);     // su trail'leri (balıkların altında)
+ *   effects.draw(ctx);          // flash overlay + ring effects (on top)
+ *   effects.drawUnder(ctx);     // water trails (under fishes)
  */
 
-// ─── Easing fonksiyonları ────────────────────────────────────────────────────
+// ─── Easing functions ────────────────────────────────────────────────────────
 export const Easing = {
-    /** Yay/overshoot hissi */
+    /** Spring/overshoot feel */
     easeOutBack: (t: number): number => {
         const c1 = 1.70158;
         const c3 = c1 + 1;
         return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
     },
-    /** Hızlı sönümleme */
+    /** Fast damping */
     easeOutExpo: (t: number): number =>
         t === 1 ? 1 : 1 - Math.pow(2, -10 * t),
-    /** Elastik titreme */
+    /** Elastic jitter */
     easeOutElastic: (t: number): number => {
         const c4 = (2 * Math.PI) / 3;
         return t === 0 ? 0 : t === 1 ? 1
             : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
     },
-    /** Düz */
+    /** Linear */
     linear: (t: number): number => t,
 };
 
-// ─── Tür tanımlamaları ───────────────────────────────────────────────────────
+// ─── Type definitions ────────────────────────────────────────────────────────
 export type ParticleType = 'circle' | 'star' | 'ring' | 'trail' | 'drop' | 'line';
 
 export interface Particle {
     x: number; y: number;
     vx: number; vy: number;
-    life: number;     // 0→1 (1=tam, 0=ölü)
+    life: number;     // 0→1 (1=full, 0=dead)
     duration: number; // ms
     elapsed: number;  // ms
     size: number;
     color: string;
     type: ParticleType;
-    ringRadius?: number;     // 'ring' tipi için
+    ringRadius?: number;     // for 'ring' type
     ringMaxRadius?: number;
     opacity?: number;
     rotation?: number;
@@ -61,9 +61,9 @@ export interface Tween {
     done: boolean;
 }
 
-// ─── Ana sınıf ───────────────────────────────────────────────────────────────
+// ─── Main class ───────────────────────────────────────────────────────────────
 export class GameEffects {
-    /** Lava çarpması */
+    /** Lava hit */
     spawnLavaHit(x: number, y: number): void {
         this.shakeScreen(6, 4);
         this.flashOverlay('#FF4500', 0.35, 200);
@@ -79,13 +79,13 @@ export class GameEffects {
 
     // Hit-stop
     private hitStopMs = 0;
-    /** Dışarıdan okunur: mantık güncellenmeli mi? */
+    /** Read from outside: should logic update? */
     public isHitStopped = false;
 
     // Flash overlay
     private flashColor = 'rgba(255,255,255,0)';
     private flashOpacity = 0;
-    private flashDecayRate = 0.12; // frame başına düşüş
+    private flashDecayRate = 0.12; // decay per frame
 
     // Zoom pulse
     private zoomScale = 1;
@@ -95,7 +95,7 @@ export class GameEffects {
     private boatBobOffset = 0;
     private boatBobTween: Tween | null = null;
 
-    // Olta ucu mikro titreme (ambient)
+    // Rod tip micro jitter (ambient)
     private readonly rodTipMicroX = 0;
     private readonly rodTipMicroY = 0;
     public rodTipTweakX = 0;
@@ -135,6 +135,15 @@ export class GameEffects {
     constructor(canvasW = 450, canvasH = 800) {
         this.canvasW = canvasW;
         this.canvasH = canvasH;
+    }
+
+    applySlowMotionEffect(ctx: CanvasRenderingContext2D, intensity: number): void {
+        const t = Math.max(0, Math.min(1, intensity));
+        ctx.globalAlpha *= 1 - t * 0.15;
+        const blur = (0.6 * t).toFixed(2);
+        const saturation = (1 - t * 0.2).toFixed(2);
+        const brightness = (1 - t * 0.08).toFixed(2);
+        ctx.filter = `blur(${blur}px) saturate(${saturation}) brightness(${brightness})`;
     }
 
     // ─── Tween yönetimi ───────────────────────────────────────────────────────

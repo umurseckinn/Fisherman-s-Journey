@@ -7,6 +7,7 @@ const K = {
   maxLevelReached: 'fj_maxLevelReached',
   personalBest: 'fj_personalBest',
   activeVehicle: 'fj_activeVehicle',
+  selectedStartLevel: 'fj_selectedStartLevel',
   vehicleOwned: (id: string) => `fj_vehicle_${id}_owned`,
   vehicleSto:   (id: string, n: 1|2|3|4|5) => `fj_vehicle_${id}_sto_${n}`,
   vehicleRod:   (id: string, n: 1|2|3|4|5) => `fj_vehicle_${id}_rod_${n}`,
@@ -82,6 +83,18 @@ export function setActiveVehicleId(id: string) {
   localStorage.setItem(K.activeVehicle, id);
 }
 
+// ── Selected Start Level ──────────────────────────────────────────────────────
+
+export function getSelectedStartLevel(): number {
+  const raw = getNum(K.selectedStartLevel, 1);
+  return Math.min(100, Math.max(1, raw));
+}
+
+export function setSelectedStartLevel(level: number) {
+  const clamped = Math.min(100, Math.max(1, Math.floor(level)));
+  setNum(K.selectedStartLevel, clamped);
+}
+
 // ── Vehicle Ownership ─────────────────────────────────────────────────────────
 
 export function isVehicleOwned(id: string): boolean {
@@ -127,6 +140,7 @@ export function resetProfile(vehicleIds: string[]) {
   localStorage.removeItem(K.maxLevelReached);
   localStorage.removeItem(K.personalBest);
   localStorage.removeItem(K.activeVehicle);
+  localStorage.removeItem(K.selectedStartLevel);
   vehicleIds.forEach(id => {
     localStorage.removeItem(K.vehicleOwned(id));
     [1,2,3,4,5].forEach(n => {

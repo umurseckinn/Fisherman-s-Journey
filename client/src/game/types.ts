@@ -1,39 +1,32 @@
 export type FishClass = 'bubble' | 'sakura' | 'zap' | 'candy' | 'moon' | 'lava' | 'crystal' | 'leaf' | 'tide' | 'mushroom' | 'king' | 'galaxy' | 'coral' | 'sea_kelp' | 'sea_kelp_horizontal' | 'sea_rock' | 'sea_rock_large' | 'gold_doubloon' | 'whirlpool' | 'sunken_boat' | 'shark_skeleton' | 'env_bubbles' | 'anchor' | 'shell';
 
-// Lanet Sistemi: Her 10 seviyede bir özel kural aktive olur
+// Curse System: Special rules activated every 10 levels
 export type CurseType =
-  | 'none'              // Lanet yok (normal level / nefes)
-  | 'agir_sular'        // Tüm balık ağırlıkları x1.5
-  | 'hizli_akintiRR'   // Tüm balık hızları x1.5
-  | 'kor_nokta'         // Su yüzeyi görünmez (top 40% of water = dark overlay)
-  | 'tersine_akintiR'  // %30 balık sağa gider
-  | 'cift_hasar'       // Coral çarpmada -2 hak
-  | 'ekonomi_krizi'    // Tüm balık değerleri %70 (30% düşük)
-  | 'none'              // No curse
-  | 'agir_sular'        // All fish weights x1.5
-  | 'hizli_akintiRR'    // All fish speeds x1.5
-  | 'kor_nokta'         // Surface invisible (top 40% of water = dark overlay)
-  | 'tersine_akintiR'   // 30% fish go right
-  | 'cift_hasar'        // Coral hits -2 hearts
-  | 'ekonomi_krizi'     // All fish values 70% (30% lower)
-  | 'geri_sayim'        // Capacity melts -5 every 10s
-  | 'skeleton_ordusu'   // Skeleton spawn chance 80%
-  | 'balik_kacisi'      // 30% chance fish escapes when caught
-  | 'saat_bombasi'      // Random inventory item cleared every 8s
-  | 'karanlik_madde'    // Obstacles invisible
-  | 'zincirleme'        // Caught fish pulls nearby fish
-  | 'gorunmez_baliklar' // Fish invisible
-  | 'ters_market'       // Market prices reversed (Sell 50% lower, Buy 50% higher)
-  | 'rastgele_dongu'    // Hook swing speed changes constantly
-  | 'ters_agirlik'      // Weight indicator reversed
-  | 'rastgele_lanet'    // Curse changes every 15s
-  | 'kombine_1'         // Heavy Waters + Fast Current
-  | 'kombine_2'         // Economic Crisis + Double Damage
-  | 'kombine_3'         // Heavy Waters + Fast Current + Economic Crisis
+  | 'none'              // No curse (normal level)
+  | 'heavy_waters'      // All fish weights x1.5
+  | 'fast_current'      // All fish speeds x1.5
+  | 'blind_spot'        // Surface invisible (top 40% of water = dark overlay)
+  | 'reverse_current'   // 30% fish go right
+  | 'double_damage'     // Coral hits -2 hearts
+  | 'economic_crisis'   // All fish values 70% (30% lower)
+  | 'countdown'         // Capacity melts -5 every 10s
+  | 'skeleton_army'     // Skeleton spawn chance 80%
+  | 'fish_escape'       // 30% chance fish escapes when caught
+  | 'time_bomb'         // Random inventory item cleared every 8s
+  | 'dark_matter'       // Obstacles invisible
+  | 'chain_reaction'    // Caught fish pulls nearby fish
+  | 'invisible_fish'    // Fish invisible
+  | 'reverse_market'    // Market prices reversed (Sell 50% lower, Buy 50% higher)
+  | 'random_loop'       // Hook swing speed changes constantly
+  | 'reverse_weight'    // Weight indicator reversed
+  | 'random_curse'      // Curse changes every 15s
+  | 'combo_1'           // Heavy Waters + Fast Current
+  | 'combo_2'           // Economic Crisis + Double Damage
+  | 'combo_3'           // Heavy Waters + Fast Current + Economic Crisis
   | 'final_1'           // Invisible Fish + Skeleton 80% + Double Damage
   | 'final_2'           // Countdown + Chaining + Fast Current
   | 'final_3'           // Reverse Market + Fish Escape
-  | 'tek_sans';         // Single cast luck (L99)
+  | 'one_chance';       // Single cast luck (L99)
 
 export interface InventoryItem {
   id: string;

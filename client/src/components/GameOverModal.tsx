@@ -42,16 +42,16 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
           <span className="text-4xl">⚓️</span>
         </div>
         
-        <h2 className="text-3xl font-display font-bold text-destructive mb-2">Oyun Bitti</h2>
+        <h2 className="text-3xl font-display font-bold text-destructive mb-2">Game Over</h2>
         <p className="text-muted-foreground mb-3">
-          Ulaştığın ada: <span className="font-bold text-foreground">{island}</span>
+          Island reached: <span className="font-bold text-foreground">{island}</span>
         </p>
         {reason && (
           <p className="text-sm text-slate-600 mb-4 font-medium">{reason}</p>
         )}
 
         <div className="bg-muted/50 rounded-xl p-4 mb-6">
-          <div className="text-sm text-muted-foreground uppercase tracking-wider font-bold mb-1">Skor</div>
+          <div className="text-sm text-muted-foreground uppercase tracking-wider font-bold mb-1">Score</div>
           <div className="text-4xl font-mono font-bold text-primary">{score}</div>
           
           {scoreBreakdown && (
@@ -91,13 +91,13 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
 
         {!submitted ? (
           <form onSubmit={handleSubmit} className="mb-6">
-            <label className="block text-left text-sm font-bold text-gray-700 mb-2">Yüksek Skoru Kaydet</label>
+            <label className="block text-left text-sm font-bold text-gray-700 mb-2">Save High Score</label>
             <div className="flex gap-2">
               <input 
                 type="text" 
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="İsim"
+                placeholder="Name"
                 className="flex-1 px-4 py-2 rounded-xl border-2 border-border focus:border-primary focus:outline-none"
                 maxLength={10}
               />
@@ -106,13 +106,13 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
                 disabled={submitScore.isPending || !name}
                 className="bg-accent text-white px-4 py-2 rounded-xl font-bold hover:bg-accent/90 disabled:opacity-50"
               >
-                Kaydet
+                Save
               </button>
             </div>
           </form>
         ) : (
           <div className="bg-green-100 text-green-700 p-3 rounded-xl mb-6 font-bold flex items-center justify-center gap-2">
-            <Trophy className="w-5 h-5" /> Skor kaydedildi!
+            <Trophy className="w-5 h-5" /> Score saved!
           </div>
         )}
 
@@ -122,7 +122,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
             className="flex items-center justify-center gap-2 bg-primary text-white py-3 px-4 rounded-xl font-bold hover:bg-primary/90 transition-colors"
           >
             <RefreshCcw className="w-5 h-5" />
-            Tekrar Dene
+            Try Again
           </button>
           
           <Link 
@@ -130,7 +130,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
             className="flex items-center justify-center gap-2 bg-muted text-foreground py-3 px-4 rounded-xl font-bold hover:bg-muted/80 transition-colors"
           >
             <Home className="w-5 h-5" />
-            Ana Menü
+            Main Menu
           </Link>
         </div>
       </motion.div>

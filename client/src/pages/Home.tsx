@@ -1,10 +1,10 @@
-import { Play, Trophy, Anchor, Store, RotateCcw } from "lucide-react";
+import { Play, Anchor, RotateCcw, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { InfoCard } from "../components/InfoCard";
 import { FishClass } from "../game/types";
 import { Link } from "wouter";
 import { BoosterPurchaseModal, BoosterType, PurchasePackage } from "../components/BoosterPurchaseModal";
-import { resetProfile } from "../game/storage";
+import { resetProfile, getSelectedStartLevel, setSelectedStartLevel } from "../game/storage";
 import { VEHICLES } from "../game/vehicles";
 
 export default function Home() {
@@ -24,6 +24,8 @@ export default function Home() {
     }
     return { speed: false, value: false, lucky: false, harpoon: 0, net: 0, tnt: 0, anchor: 0 };
   });
+  const [showLevelPicker, setShowLevelPicker] = useState(false);
+  const [selectedStartLevel, setSelectedStartLevelState] = useState(() => getSelectedStartLevel());
 
   useEffect(() => {
     const handleStorage = () => {
@@ -395,16 +397,27 @@ export default function Home() {
               </div>
             </button>
           </Link>
-          <button
-            onClick={() => {
-              resetProfile(VEHICLES.map(v => v.id));
-              window.location.reload();
-            }}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
-            PROFİLİ SIFIRLA
-          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setShowLevelPicker(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors"
+            >
+              <Anchor className="w-4 h-4" />
+              LEVELS L{selectedStartLevel}
+            </button>
+            <button
+              onClick={() => {
+                resetProfile(VEHICLES.map(v => v.id));
+                setSelectedStartLevel(1);
+                setSelectedStartLevelState(1);
+                window.location.reload();
+              }}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              RESET PROFILE
+            </button>
+          </div>
         </div>
       </div>
 
@@ -422,6 +435,41 @@ export default function Home() {
           boosterType={purchaseBoosterType}
           onPurchase={handleBoosterPurchase}
         />
+      )}
+
+      {showLevelPicker && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white rounded-[28px] shadow-2xl border-4 border-slate-100 p-6 relative">
+            <button
+              onClick={() => setShowLevelPicker(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="text-center mb-4">
+              <div className="text-xl font-bold text-slate-800">LEVELS</div>
+              <div className="text-xs text-slate-500 mt-1">Select Start Level</div>
+            </div>
+            <div className="grid grid-cols-5 gap-2 max-h-[420px] overflow-y-auto pr-1">
+              {Array.from({ length: 100 }, (_, i) => i + 1).map(level => (
+                <button
+                  key={level}
+                  onClick={() => {
+                    setSelectedStartLevel(level);
+                    setSelectedStartLevelState(level);
+                    setShowLevelPicker(false);
+                  }}
+                  className={`rounded-xl py-2 text-sm font-bold transition-all ${level === selectedStartLevel
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

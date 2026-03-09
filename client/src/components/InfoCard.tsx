@@ -42,11 +42,11 @@ const ENTITY_DETAILS: Record<string, { description: string; effect?: string }> =
     },
     crystal: {
         description: "Heavy crystal fish with unpredictable value.",
-        effect: "Randomly changes value upon catch (+50, 0, or -30 coins)."
+        effect: "Randomly changes value upon catch (+50, 0, or -30 Gold Doubloons)."
     },
     galaxy: {
         description: "Warp-capable fish that teleports briefly.",
-        effect: "Grants a random bonus: +100 coins or +10% fuel."
+        effect: "Grants a random bonus: +100 Gold Doubloons or +10% fuel."
     },
     mushroom: {
         description: "Fungal deep sea fish with magic spores.",
@@ -69,7 +69,7 @@ const ENTITY_DETAILS: Record<string, { description: string; effect?: string }> =
         effect: "Causes hook to bounce back instantly."
     },
     gold_doubloon: {
-        description: "A shiny sunken coin. Floats randomly.",
+        description: "A shiny sunken Gold Doubloon. Floats randomly.",
         effect: "Adds +10 kg weight but grants high level-scaled gold. Can sink the boat!"
     },
     whirlpool: {
@@ -82,15 +82,15 @@ const ENTITY_DETAILS: Record<string, { description: string; effect?: string }> =
     },
     shark_skeleton: {
         description: "Bony remains of a deep sea predator.",
-        effect: "Worthless and adds unwanted weight (4 units). Penalty: -10 coins."
+        effect: "Worthless and adds unwanted weight (4 units). Penalty: -10 Gold Doubloons."
     },
     anchor: {
         description: "Heavy rusty anchor found on the seabed.",
-        effect: "High market value (200 coins) but very heavy (10 units)."
+        effect: "High market value (200 Gold Doubloons) but very heavy (10 units)."
     },
     shell: {
         description: "Pretty sea shell with surprises inside.",
-        effect: "Gives +20 coins. Size similar to Sakura Fish."
+        effect: "Gives +20 Gold Doubloons. Size similar to Sakura Fish."
     }
 };
 
@@ -123,8 +123,8 @@ export const InfoCard: React.FC<InfoCardProps> = ({ entityKey, onClose }) => {
 
                 <div className="flex gap-4 mb-6">
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-bold text-sm">
-                        <Coins size={14} />
-                        {config.value} 🪙
+                        <img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain" />
+                        {config.value}
                     </div>
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-bold text-sm">
                         <Weight size={14} />

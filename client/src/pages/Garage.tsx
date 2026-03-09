@@ -240,7 +240,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
               <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain inline" />
               Gold Doubloons
             </p>
-            <p>Every coin you earn in a run is automatically saved as Gold Doubloons — even mid-run. They survive death, app close, everything. Spend them here in the Garage on vehicles and upgrades.</p>
+            <p>Every Gold Doubloon you earn in a run is automatically saved — even mid-run. They survive death, app close, everything. Spend them here in the Garage on vehicles and upgrades.</p>
           </div>
         )}
 

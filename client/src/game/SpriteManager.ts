@@ -69,6 +69,7 @@ export const ASSETS = {
   'fish_env_bubbles': '/assets/environment/bubbles.png',
   'fish_anchor': '/assets/environment/anchor.png',
   'fish_shell': '/assets/environment/shell.png',
+  'booster_anchor': '/assets/boosters/the_anchor.png',
 
   // Environment
   'boat': '/assets/environment/boat.svg',

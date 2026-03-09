@@ -31,9 +31,9 @@ export function InsufficientFuelModal({
                     </div>
 
                     <div>
-                        <h2 className="text-2xl font-display font-bold text-slate-800">Yetersiz Bakiye!</h2>
+                        <h2 className="text-2xl font-display font-bold text-slate-800">Insufficient Balance!</h2>
                         <p className="text-slate-500 text-sm mt-2 font-medium">
-                            Yakıt almak için <span className="text-red-500 font-bold">{fuelCost} 🪙</span> gerekiyor. Devam etmek için bir seçenek belirleyin.
+                            You need <span className="text-red-500 font-bold">{fuelCost} 🪙</span> to buy fuel. Please choose an option to continue.
                         </p>
                     </div>
                 </div>
