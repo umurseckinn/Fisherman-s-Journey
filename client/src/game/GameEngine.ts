@@ -3,11 +3,41 @@ import { SpriteManager, ASSETS } from "./SpriteManager";
 import { GameEffects } from "./GameEffects";
 import { VEHICLES, getRodTipOnCanvas, getEffectiveStats, type VehicleData } from "./vehicles";
 import { addSessionEarning, updateMaxLevelReached, getStoFlags, getRodFlags, getActiveVehicleId, type RunScoreBreakdown, submitPersonalBest } from "./storage";
+import { LEVEL_NAMES } from "./levelNames";
 
 export const CANVAS_WIDTH = 450;
 export const CANVAS_HEIGHT = 800;
 export const SEA_LEVEL_Y = CANVAS_HEIGHT * 0.25;
 export const FISH_ZONE_TOP = SEA_LEVEL_Y + 60; // Hull avoidance (User request 1)
+
+const DEFAULT_FLEE = { radius: 0, power: 0 };
+
+const FLEE_CONFIG: Record<FishClass, { radius: number; power: number }> = {
+  bubble: { radius: 0, power: 0 },
+  sakura: { radius: 40, power: 0.4 },
+  zap: { radius: 0, power: 0 },
+  candy: { radius: 55, power: 0.6 },
+  moon: { radius: 70, power: 0.8 },
+  lava: { radius: 65, power: 1.0 },
+  tide: { radius: 0, power: 0 },
+  leaf: { radius: 80, power: 0.7 },
+  crystal: { radius: 90, power: 1.2 },
+  galaxy: { radius: 100, power: 0 },
+  mushroom: { radius: 85, power: 1.1 },
+  king: { radius: 110, power: 0 },
+  coral: { radius: 0, power: 0 },
+  sea_kelp: { radius: 0, power: 0 },
+  sea_kelp_horizontal: { radius: 0, power: 0 },
+  sea_rock: { radius: 0, power: 0 },
+  sea_rock_large: { radius: 0, power: 0 },
+  gold_doubloon: { radius: 0, power: 0 },
+  whirlpool: { radius: 0, power: 0 },
+  sunken_boat: { radius: 0, power: 0 },
+  shark_skeleton: { radius: 0, power: 0 },
+  env_bubbles: { radius: 0, power: 0 },
+  anchor: { radius: 0, power: 0 },
+  shell: { radius: 0, power: 0 },
+};
 
 export const LEVEL_CONFIG: Record<number, {
   duration: number;
@@ -31,7 +61,7 @@ export const LEVEL_CONFIG: Record<number, {
   4: { duration: 49, region: 1, fuelCost: 36, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell'] },
   5: { duration: 49, region: 1, fuelCost: 42, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
   6: { duration: 47, region: 1, fuelCost: 48, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 0.6, cloudy: 0.4 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell'] },
-  7: { duration: 52, region: 1, fuelCost: 44, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
+  7: { duration: 52, region: 1, fuelCost: 44, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#abd8eaff', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
   8: { duration: 48, region: 1, fuelCost: 55, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#81D4FA', weatherWeights: { sunny: 0.5, cloudy: 0.5 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
   9: { duration: 46, region: 1, fuelCost: 62, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#81D4FA', weatherWeights: { sunny: 0.5, cloudy: 0.5 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 2, coral: 0, anchor: 0 }, dynamic: ['shell'] },
   10: { duration: 52, region: 1, fuelCost: 58, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] }, // BOSS — golden x1.5
@@ -57,14 +87,14 @@ export const LEVEL_CONFIG: Record<number, {
   26: { duration: 47, region: 2, fuelCost: 173, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#CFD8DC', weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'shark_skeleton'] },
   27: { duration: 47, region: 2, fuelCost: 176, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#B0BEC5', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool'] },
   28: { duration: 46, region: 2, fuelCost: 179, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#FFF9C4', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 3, anchor: 1 }, dynamic: ['shell', 'sunken_boat'] },
-  29: { duration: 54, region: 2, fuelCost: 160, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#FFF9C4', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
+  29: { duration: 54, region: 2, fuelCost: 160, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#e4db86ff', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
   30: { duration: 58, region: 2, fuelCost: 200, storageCapacity: 10, seaColor: '#0277BD', skyColor: '#546E7A', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
 
   // ═══════════════════════════════════════════════
   // REGION 3: Deep Blue (L31–L50)
   // ═══════════════════════════════════════════════
   31: { duration: 48, region: 3, fuelCost: 210, storageCapacity: 10, seaColor: '#01579B', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  32: { duration: 47, region: 3, fuelCost: 214, storageCapacity: 10, seaColor: '#01579B', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon'] },
+  32: { duration: 47, region: 3, fuelCost: 214, storageCapacity: 10, seaColor: '#0a5995ff', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon'] },
   33: { duration: 44, region: 3, fuelCost: 217, storageCapacity: 10, seaColor: '#01579B', skyColor: '#37474F', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   34: { duration: 54, region: 3, fuelCost: 198, storageCapacity: 10, seaColor: '#01579B', skyColor: '#78909C', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
   35: { duration: 48, region: 3, fuelCost: 220, storageCapacity: 10, seaColor: '#01579B', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
@@ -77,7 +107,7 @@ export const LEVEL_CONFIG: Record<number, {
   // ═══════════════════════════════════════════════
   // REGION 4: Storm Pass (L41–L50)
   // ═══════════════════════════════════════════════
-  41: { duration: 48, region: 4, fuelCost: 270, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  41: { duration: 48, region: 4, fuelCost: 270, storageCapacity: 10, seaColor: '#112942ff', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   42: { duration: 47, region: 4, fuelCost: 273, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   43: { duration: 46, region: 4, fuelCost: 276, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 3, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
   44: { duration: 54, region: 4, fuelCost: 255, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#263238', weatherWeights: { sunny: 0.2, cloudy: 0.8 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
@@ -95,7 +125,7 @@ export const LEVEL_CONFIG: Record<number, {
   52: { duration: 48, region: 5, fuelCost: 333, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   53: { duration: 55, region: 5, fuelCost: 315, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
   54: { duration: 48, region: 5, fuelCost: 336, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  55: { duration: 47, region: 5, fuelCost: 339, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 5, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  55: { duration: 47, region: 5, fuelCost: 339, seaColor: '#241157ff', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 5, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   56: { duration: 47, region: 5, fuelCost: 342, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
   57: { duration: 46, region: 5, fuelCost: 345, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 3, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   58: { duration: 46, region: 5, fuelCost: 348, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
@@ -107,7 +137,7 @@ export const LEVEL_CONFIG: Record<number, {
   // ═══════════════════════════════════════════════
   61: { duration: 50, region: 6, fuelCost: 390, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   62: { duration: 48, region: 6, fuelCost: 393, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'heavy_waters' },
-  63: { duration: 48, region: 6, fuelCost: 396, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'fast_current' },
+  63: { duration: 48, region: 6, fuelCost: 396, seaColor: '#4a081fff', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'fast_current' },
   64: { duration: 55, region: 6, fuelCost: 375, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
   65: { duration: 48, region: 6, fuelCost: 400, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'blind_spot' },
   66: { duration: 48, region: 6, fuelCost: 403, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'reverse_current' },
@@ -119,7 +149,7 @@ export const LEVEL_CONFIG: Record<number, {
   // ═══════════════════════════════════════════════
   // REGION 7: Neon Night / Chaos Dimension (L71–L80)
   // ═══════════════════════════════════════════════
-  71: { duration: 50, region: 7, fuelCost: 440, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
+  71: { duration: 50, region: 7, fuelCost: 440, seaColor: '#475656ff', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
   72: { duration: 48, region: 7, fuelCost: 443, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'chain_reaction' },
   73: { duration: 48, region: 7, fuelCost: 446, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'invisible_fish' },
   74: { duration: 55, region: 7, fuelCost: 420, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
@@ -133,7 +163,7 @@ export const LEVEL_CONFIG: Record<number, {
   // ═══════════════════════════════════════════════
   // REGION 8: Golden Night / Legend Run (L81–L100)
   // ═══════════════════════════════════════════════
-  81: { duration: 50, region: 8, fuelCost: 490, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  81: { duration: 50, region: 8, fuelCost: 490, seaColor: '#67551cff', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
   82: { duration: 48, region: 8, fuelCost: 493, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'combo_1' },
   83: { duration: 47, region: 8, fuelCost: 496, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'combo_2' },
   84: { duration: 55, region: 8, fuelCost: 470, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
@@ -204,6 +234,27 @@ export class GameEngine {
   private anchorDriftSpeed: number = 0;
   // Background layer optimizasyonu
   private backgroundDirty: boolean = true;
+  private levelSpawnWeights: Record<number, Partial<Record<FishClass, number>>> | null = null;
+  private levelObjectWeights: Record<number, Partial<Record<FishClass, number>>> | null = null;
+  private activeWhirlpool: Entity | null = null;
+  private perfEnabled: boolean = false;
+  private perfStats = {
+    enabled: false,
+    fps: 0,
+    avgFrameMs: 0,
+    avgUpdateMs: 0,
+    avgDrawMs: 0,
+    fishCount: 0,
+    level: 0
+  };
+  private perfAccumFrame = 0;
+  private perfAccumUpdate = 0;
+  private perfAccumDraw = 0;
+  private perfFrames = 0;
+  private perfLastReport = 0;
+  private staticSpawnQueue: Array<{ type: FishClass; remaining: number; intervalMs: number; nextMs: number }> = [];
+  private staticSpawnElapsedMs: number = 0;
+  private levelElapsedMs: number = 0;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -236,6 +287,10 @@ export class GameEngine {
     });
     this.spriteManager.loadImages(ASSETS);
     this.effects = new GameEffects(CANVAS_WIDTH, CANVAS_HEIGHT);
+    if (typeof window !== 'undefined') {
+      this.perfEnabled = new URLSearchParams(window.location.search).has('perf');
+      this.perfStats.enabled = this.perfEnabled;
+    }
   }
 
   /** Mark background as needing redraw (call on level change, weather change, etc.) */
@@ -320,7 +375,7 @@ export class GameEngine {
     this.hookLaunchMs = 0;
     this.wasSubmerged = false;
     this.backgroundDirty = true; // Force background redraw at start
-
+    this.levelElapsedMs = 0;
     this.seedStaticObstacles();
     this.lastFrameTime = performance.now();
     requestAnimationFrame(this.loop);
@@ -341,6 +396,37 @@ export class GameEngine {
 
   public getState() {
     return this.state;
+  }
+
+  public isPerfEnabled() {
+    return this.perfEnabled;
+  }
+
+  public getPerfStats() {
+    return this.perfStats;
+  }
+
+  private recordPerf(frameMs: number, updateMs: number, drawMs: number, timestamp: number) {
+    if (!this.perfEnabled) return;
+    this.perfAccumFrame += frameMs;
+    this.perfAccumUpdate += updateMs;
+    this.perfAccumDraw += drawMs;
+    this.perfFrames += 1;
+    const elapsed = timestamp - this.perfLastReport;
+    if (elapsed >= 1000) {
+      const denom = this.perfFrames || 1;
+      this.perfStats.fps = Math.round((this.perfFrames * 1000) / elapsed);
+      this.perfStats.avgFrameMs = Number((this.perfAccumFrame / denom).toFixed(2));
+      this.perfStats.avgUpdateMs = Number((this.perfAccumUpdate / denom).toFixed(2));
+      this.perfStats.avgDrawMs = Number((this.perfAccumDraw / denom).toFixed(2));
+      this.perfStats.fishCount = this.state.fishes.length;
+      this.perfStats.level = this.state.level;
+      this.perfAccumFrame = 0;
+      this.perfAccumUpdate = 0;
+      this.perfAccumDraw = 0;
+      this.perfFrames = 0;
+      this.perfLastReport = timestamp;
+    }
   }
 
   /** Unified input handler for clicks/taps (kept for backwards compatibility on fast taps) */
@@ -466,10 +552,25 @@ export class GameEngine {
 
     // Hit-stop: skip logic update, continue drawing
     this.effects.update(deltaTime, timestamp);
+    let updateMs = 0;
+    let drawMs = 0;
     if (!this.effects.isHitStopped) {
-      this.update(deltaTime);
+      if (this.perfEnabled) {
+        const updateStart = performance.now();
+        this.update(deltaTime);
+        updateMs = performance.now() - updateStart;
+      } else {
+        this.update(deltaTime);
+      }
     }
-    this.draw(timestamp);
+    if (this.perfEnabled) {
+      const drawStart = performance.now();
+      this.draw(timestamp);
+      drawMs = performance.now() - drawStart;
+      this.recordPerf(updateMs + drawMs, updateMs, drawMs, timestamp);
+    } else {
+      this.draw(timestamp);
+    }
 
     requestAnimationFrame(this.loop);
   };
@@ -487,6 +588,7 @@ export class GameEngine {
 
   public update(deltaTime: number) {
     if (!this.state.isPlaying || this.state.isPaused) return;
+    this.levelElapsedMs += deltaTime;
 
     if (this.isSinking) {
       this.sinkProgress += deltaTime / 2000;
@@ -501,6 +603,7 @@ export class GameEngine {
 
     this.updateTimers(deltaTime);
     this.updateAnchorVisual(deltaTime);
+    this.processStaticSpawns(deltaTime);
 
     if (this.isArriving) {
       this.arrivalProgress += deltaTime / 2000;
@@ -625,53 +728,71 @@ export class GameEngine {
   private seedStaticObstacles() {
     const config = LEVEL_CONFIG[this.state.level];
     if (!config) return;
-    const spawnStatic = (type: FishClass, count: number) => {
-      for (let i = 0; i < count; i++) {
-        const configEntry = OBJECT_MATRIX[type];
-        // All bottom elements (kelp, rock, coral, anchor, chest, shell, boat) MUST be at the exact same depth
-        const isBottom = ['sea_rock_large', 'sea_kelp', 'anchor', 'coral', 'gold_doubloon', 'shell', 'sunken_boat'].includes(type);
-        let y = isBottom ? CANVAS_HEIGHT - 20 : CANVAS_HEIGHT - 60 + Math.random() * 20;
-        let x = 40 + Math.random() * (CANVAS_WIDTH - 80);
-
-        // Special placement for specific types
-        if (type === 'sea_rock' && !isBottom) {
-          // Keep some small rocks floating (user request)
-          y = SEA_LEVEL_Y + 150 + Math.random() * (CANVAS_HEIGHT - SEA_LEVEL_Y - 250);
-        } else if (type === 'sea_kelp_horizontal') {
-          // Mid-to-upper water kelp (user request: rotated variant)
-          y = SEA_LEVEL_Y + 100 + Math.random() * 150;
-        }
-
-        this.state.fishes.push({
-          id: Math.random(),
-          type,
-          name: configEntry.names[0],
-          x,
-          y,
-          startY: y,
-          animationOffset: Math.random() * 1000,
-          speed: configEntry.speedMultiplier,
-          value: configEntry.value,
-          weight: configEntry.weightMultiplier,
-          color: configEntry.colors[0],
-          radius: configEntry.radius,
-          direction: -1
-        });
-      }
+    const durationMs = (config.duration ?? 60) * 1000;
+    const spawnWindowMs = Math.max(8000, durationMs * 0.75);
+    const initialDelayMs = Math.min(2500, spawnWindowMs * 0.2);
+    const queue: Array<{ type: FishClass; remaining: number; intervalMs: number; nextMs: number }> = [];
+    const enqueue = (type: FishClass, count: number) => {
+      if (count <= 0) return;
+      const interval = Math.max(900, spawnWindowMs / count);
+      const jitter = interval * 0.4;
+      queue.push({ type, remaining: count, intervalMs: interval, nextMs: initialDelayMs + Math.random() * jitter });
     };
-    spawnStatic('sea_kelp', config.obstacles.sea_kelp);
-    spawnStatic('sea_kelp_horizontal', Math.ceil(config.obstacles.sea_kelp * 0.4)); // Add some floating ones
-    spawnStatic('sea_rock_large', config.obstacles.sea_rock);
-    spawnStatic('sea_rock', Math.ceil(config.obstacles.sea_rock * 0.6)); // Smaller floating ones
-    spawnStatic('coral', config.obstacles.coral);
-    spawnStatic('anchor', config.obstacles.anchor);
-
-    // Also handle bottom dynamic objects here to ensure they are on the seabed
+    enqueue('sea_kelp', config.obstacles.sea_kelp);
+    enqueue('sea_kelp_horizontal', Math.ceil(config.obstacles.sea_kelp * 1.2));
+    enqueue('sea_rock_large', config.obstacles.sea_rock);
+    enqueue('sea_rock', Math.ceil(config.obstacles.sea_rock * 0.6));
+    enqueue('coral', config.obstacles.coral);
+    enqueue('anchor', config.obstacles.anchor);
     config.dynamic?.forEach(type => {
       if (['gold_doubloon', 'shell', 'sunken_boat'].includes(type)) {
-        spawnStatic(type, type === 'shell' ? 2 : 1);
+        enqueue(type, type === 'shell' ? 2 : 1);
       }
     });
+    this.staticSpawnQueue = queue;
+    this.staticSpawnElapsedMs = 0;
+  }
+
+  private spawnStaticEntity(type: FishClass) {
+    const configEntry = OBJECT_MATRIX[type];
+    const isBottom = ['sea_rock_large', 'sea_kelp', 'anchor', 'coral', 'gold_doubloon', 'shell', 'sunken_boat'].includes(type);
+    let y = isBottom ? CANVAS_HEIGHT - 20 : CANVAS_HEIGHT - 60 + Math.random() * 20;
+    let x = 40 + Math.random() * (CANVAS_WIDTH - 80);
+
+    if (type === 'sea_rock' && !isBottom) {
+      y = SEA_LEVEL_Y + 150 + Math.random() * (CANVAS_HEIGHT - SEA_LEVEL_Y - 250);
+    } else if (type === 'sea_kelp_horizontal') {
+      y = SEA_LEVEL_Y + 100 + Math.random() * 150;
+    }
+
+    this.state.fishes.push({
+      id: Math.random(),
+      type,
+      name: configEntry.names[0],
+      x,
+      y,
+      startY: y,
+      animationOffset: Math.random() * 1000,
+      speed: configEntry.speedMultiplier,
+      value: configEntry.value,
+      weight: configEntry.weightMultiplier,
+      color: configEntry.colors[0],
+      radius: configEntry.radius,
+      direction: -1
+    });
+  }
+
+  private processStaticSpawns(deltaTime: number) {
+    if (this.staticSpawnQueue.length === 0) return;
+    this.staticSpawnElapsedMs += deltaTime;
+    for (const entry of this.staticSpawnQueue) {
+      while (entry.remaining > 0 && this.staticSpawnElapsedMs >= entry.nextMs) {
+        this.spawnStaticEntity(entry.type);
+        entry.remaining -= 1;
+        entry.nextMs += entry.intervalMs;
+      }
+    }
+    this.staticSpawnQueue = this.staticSpawnQueue.filter(entry => entry.remaining > 0);
   }
 
   public earnCoins(amount: number) {
@@ -811,6 +932,7 @@ export class GameEngine {
 
           if (hook.caughtEntity) {
             const caught = hook.caughtEntity;
+            const storeCatch = this.state.anchorEffectTimerMs <= 0;
 
             // Zap shock: 50% chance caught fish escapes if shock is active
             if (this.state.zapShockMs > 0 && caught.type !== 'sunken_boat' && caught.type !== 'gold_doubloon' && caught.type !== 'shell') {
@@ -822,13 +944,13 @@ export class GameEngine {
             }
 
             if (caught.type === 'sunken_boat') {
-              this.handleSunkenBoat(caught);
+              this.handleSunkenBoat(caught, storeCatch);
               this.effects.spawnRareCatch(pivotX, pivotY, '#8B4513');
             } else if (caught.type === 'shell') {
-              this.handleShell(caught);
+              this.handleShell(caught, storeCatch);
               this.effects.spawnSmallCatch(pivotX, pivotY, '#FFEFD5');
             } else {
-              this.handleStandardCatch(caught);
+              this.handleStandardCatch(caught, false, storeCatch);
             }
             // Tekne bob animasyonu (mechanical.md)
             this.effects.triggerBoatBob();
@@ -933,14 +1055,14 @@ export class GameEngine {
             continue;
           }
           if (fish.type === 'sunken_boat') {
-            this.handleSunkenBoat(fish);
+            this.handleSunkenBoat(fish, false);
             this.effects.spawnRareCatch(fish.x, fish.y, '#8B4513');
             this.state.fishes.splice(i, 1);
             i -= 1;
             continue;
           }
           if (fish.type === 'shell') {
-            this.handleShell(fish);
+            this.handleShell(fish, false);
             this.effects.spawnSmallCatch(fish.x, fish.y, '#FFEFD5');
             this.state.fishes.splice(i, 1);
             i -= 1;
@@ -960,7 +1082,7 @@ export class GameEngine {
             continue;
           }
 
-          this.handleStandardCatch(fish);
+          this.handleStandardCatch(fish, false, false);
           this.state.fishes.splice(i, 1);
           i -= 1;
           continue;
@@ -1082,13 +1204,15 @@ export class GameEngine {
   }
 
   private updateFishes(deltaTime: number) {
+    this.activeWhirlpool = null;
     const isAnchorActive = this.state.anchorEffectTimerMs > 0;
     const levelSpeedBonus = (this.state.level - 1) * 0.1;
     const travelSpeed = isAnchorActive ? 0.2 : (2 + levelSpeedBonus); // Slow random-ish movement during anchor
     const panicMultiplier = this.state.fishPanicMs > 0 ? 2 : 1;
     const moonSlowMultiplier = this.state.moonSlowMs > 0 ? 0.6 : 1;
-    const time = performance.now() * 0.002;
-    const timeMs = performance.now();
+    const timeMs = this.lastFrameTime;
+    const time = timeMs * 0.002;
+    const dtFactor = deltaTime / 16;
     const weatherSpeedBonus = this.state.weather === 'stormy' ? 0.5 : 0;
     const weatherSpeedMultiplier = this.state.weather === 'rainy' ? 1.2 : 1;
     const holdSlowFactor = this.getHoldSlowFactor();
@@ -1097,30 +1221,23 @@ export class GameEngine {
       return (f.speed + travelSpeed + weatherSpeedBonus) * weatherSpeedMultiplier * moonSlowMultiplier * (isAnchorActive ? 0.2 : 1) * holdSlowFactor * kingBoost;
     };
 
-    const isHookActive = this.state.hook.y > SEA_LEVEL_Y &&
+    const hookX = this.state.hook.x;
+    const hookY = this.state.hook.y;
+    const isHookActive = hookY > SEA_LEVEL_Y &&
       this.state.hook.state !== 'idle' &&
       this.state.hook.state !== 'retracting' &&
       this.state.hook.state !== 'snagged' &&
       this.state.hook.state !== 'whirlpool';
 
-    const FLEE_CONFIG: Record<string, { radius: number, power: number }> = {
-      bubble: { radius: 0, power: 0 },
-      sakura: { radius: 40, power: 0.4 },
-      zap: { radius: 0, power: 0 },
-      candy: { radius: 55, power: 0.6 },
-      moon: { radius: 70, power: 0.8 },
-      lava: { radius: 65, power: 1.0 },
-      tide: { radius: 0, power: 0 },
-      leaf: { radius: 80, power: 0.7 },
-      crystal: { radius: 90, power: 1.2 },
-      galaxy: { radius: 100, power: 0 },
-      mushroom: { radius: 85, power: 1.1 },
-      king: { radius: 110, power: 0 },
-    };
-
     for (let i = this.state.fishes.length - 1; i >= 0; i--) {
       const fish = this.state.fishes[i];
       const prevX = fish.x;
+      if (!this.state.hook.caughtEntity || this.state.hook.caughtEntity.id !== fish.id) {
+        if (fish.x < -120 || fish.x > CANVAS_WIDTH + 120) {
+          this.state.fishes.splice(i, 1);
+          continue;
+        }
+      }
 
       if (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) {
         fish.kingSpeedBoostMs -= deltaTime;
@@ -1137,8 +1254,8 @@ export class GameEngine {
         fish.fleeVelocityX = 0;
         fish.fleeVelocityY = 0;
       } else {
-        const config = FLEE_CONFIG[fish.type] || { radius: 0, power: 0 };
-        const distToHook = Math.hypot(this.state.hook.x - fish.x, this.state.hook.y - fish.y);
+        const config = FLEE_CONFIG[fish.type] || DEFAULT_FLEE;
+        const distToHook = Math.hypot(hookX - fish.x, hookY - fish.y);
 
         if (distToHook < config.radius) {
           if (fish.type === 'galaxy') {
@@ -1159,8 +1276,8 @@ export class GameEngine {
 
           if (config.power > 0) {
             const strength = (1 - distToHook / config.radius) * config.power;
-            const dirX = (fish.x - this.state.hook.x) / distToHook; // away from hook
-            const dirY = (fish.y - this.state.hook.y) / distToHook;
+            const dirX = (fish.x - hookX) / distToHook;
+            const dirY = (fish.y - hookY) / distToHook;
             fish.fleeVelocityX += dirX * strength;
             fish.fleeVelocityY += dirY * strength;
           }
@@ -1192,7 +1309,7 @@ export class GameEngine {
       }
 
       if (fish.type === 'env_bubbles') {
-        fish.y -= (fish.speed + 1) * (deltaTime / 16) * holdSlowFactor;
+        fish.y -= (fish.speed + 1) * dtFactor * holdSlowFactor;
         fish.x += Math.sin(time + (fish.animationOffset || 0)) * 0.3 * holdSlowFactor;
         if (fish.y < SEA_LEVEL_Y - 20) {
           fish.y = CANVAS_HEIGHT - 20;
@@ -1205,7 +1322,7 @@ export class GameEngine {
         const pausePhase = (timeMs + (fish.animationOffset || 0) * 500) % pauseCycle;
         const isPaused = pausePhase > (pauseCycle - 500); // last 0.5s of cycle = pause
         if (!isPaused) {
-          fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+          fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         }
         const waveY = Math.sin(fish.x * 0.04) * 20;
         fish.y = (fish.startY || fish.y) + waveY;
@@ -1215,7 +1332,7 @@ export class GameEngine {
         const zigzagPhase = (timeMs + (fish.animationOffset || 0) * 1000) % zigzagCycle;
         const zigzagSeed = Math.floor((timeMs + (fish.animationOffset || 0) * 1000) / zigzagCycle);
         const zigzagDir = Math.sin(zigzagSeed * 7.13 + (fish.animationOffset || 0)) < 0 ? -1 : 1;
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         // Oscillate around startY — no drift
         const zigzagOffset = zigzagPhase < 150
           ? zigzagDir * 30 * (zigzagPhase / 150)
@@ -1226,7 +1343,7 @@ export class GameEngine {
         const moonPeriod = 6;
         const sineProgress = Math.sin(time / (moonPeriod / 2) + (fish.animationOffset || 0));
         const effectiveSine = Math.abs(sineProgress) > 0.95 ? Math.sign(sineProgress) : sineProgress;
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + effectiveSine * 40;
       } else if (fish.type === 'lava') {
         // Lava: diagonal bounce ±60px around startY
@@ -1234,28 +1351,28 @@ export class GameEngine {
         const bouncePhase = (timeMs + (fish.animationOffset || 0) * 1000) % bouncePeriod;
         const bounceProgress = bouncePhase / bouncePeriod;
         const triangleWave = bounceProgress < 0.5 ? bounceProgress * 2 - 0.5 : 1.5 - bounceProgress * 2;
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + triangleWave * 60;
       } else if (fish.type === 'tide') {
         // Tide: wide sine ±45px, 2.5s period, very fast
         const tideWave = Math.sin(time * (Math.PI * 2 / 2.5) + (fish.animationOffset || 0)) * 45;
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + tideWave;
       } else if (fish.type === 'candy') {
         const spiral = time * 1.4 + (fish.animationOffset || 0);
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.x += Math.cos(spiral) * 1.5;
         fish.y = (fish.startY || fish.y) + Math.sin(spiral) * 20;
       } else if (fish.type === 'sakura') {
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         const deviation = Math.sin(time + (fish.animationOffset || 0)) * 15;
         fish.y = (fish.startY || fish.y) + deviation;
       } else if (fish.type === 'leaf') {
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         const drift = Math.sin(time + (fish.animationOffset || 0)) * 18;
         fish.y = (fish.startY || fish.y) + drift;
       } else if (fish.type === 'crystal') {
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         const slalom = Math.sin(time * 2 + (fish.animationOffset || 0)) * 35;
         fish.y = (fish.startY || fish.y) + slalom;
       } else if (fish.type === 'galaxy') {
@@ -1264,7 +1381,7 @@ export class GameEngine {
         const jumpSeed = Math.floor((timeMs + (fish.animationOffset || 0) * 1000) / cycle);
         const jumpDir = Math.sin(jumpSeed * 12.9898 + (fish.animationOffset || 0)) < 0 ? -1 : 1;
         const jumpOffset = (0.3 + Math.sin(jumpSeed * 9.1 + (fish.animationOffset || 0)) * 0.3) * 50;
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + jumpDir * jumpOffset;
         if (phase < 100) {
           fish.y = fish.startY || fish.y;
@@ -1274,7 +1391,7 @@ export class GameEngine {
         const phase = (timeMs + (fish.animationOffset || 0) * 1000) % cycle;
         const jumpSeed = Math.floor((timeMs + (fish.animationOffset || 0) * 1000) / cycle);
         const jumpDir = Math.sin(jumpSeed * 8.37 + (fish.animationOffset || 0)) < 0 ? -1 : 1;
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         if (phase < 800) {
           fish.y = (fish.startY || fish.y);
         } else {
@@ -1283,33 +1400,34 @@ export class GameEngine {
         }
       } else if (fish.type === 'king') {
         const spiral = time * 0.8 + (fish.animationOffset || 0);
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.x += Math.cos(spiral) * 2;
         fish.y = (fish.startY || fish.y) + Math.sin(spiral) * 30;
         if (fish.x < CANVAS_WIDTH && fish.x > 0 && this.state.fishPanicMs < 500) {
           this.state.fishPanicMs = 3000;
         }
       } else if (fish.type === 'gold_doubloon') {
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + Math.sin(time * 0.06 + (fish.animationOffset || 0)) * 0.8;
       } else if (fish.type === 'shark_skeleton') {
-        fish.x -= (baseSpeed(fish) * 0.4) * (deltaTime / 16);
+        fish.x -= (baseSpeed(fish) * 0.4) * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 8;
       } else if (fish.type === 'whirlpool') {
-        fish.x -= (baseSpeed(fish) * 0.4) * (deltaTime / 16);
+        fish.x -= (baseSpeed(fish) * 0.4) * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 10;
+        this.activeWhirlpool = fish;
       } else if (fish.type === 'anchor') {
         // Anchor: pendulum sway ±15px, 4s period
         const pendulum = Math.sin(time * (Math.PI * 2 / 4) + (fish.animationOffset || 0)) * 15;
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.x = (fish.startY !== undefined ? fish.x : fish.x) + pendulum * (deltaTime / 500) * holdSlowFactor;
       } else if (fish.type === 'sea_kelp') {
-        fish.x -= baseSpeed(fish) * (deltaTime / 16);
+        fish.x -= baseSpeed(fish) * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 3;
       } else if (fish.type === 'coral') {
-        fish.x -= baseSpeed(fish) * (deltaTime / 16);
+        fish.x -= baseSpeed(fish) * dtFactor;
       } else {
-        fish.x -= baseSpeed(fish) * (deltaTime / 16) * panicMultiplier;
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
       }
 
       // Global Y-clamp: keep all fish within water bounds (never above sea level or below sand)
@@ -1370,7 +1488,7 @@ export class GameEngine {
       const fish = this.state.fishes[i];
       const dist = Math.hypot(fish.x - tx, fish.y - ty);
       if (dist < explosionRadius && !OBJECT_MATRIX[fish.type].isObstacle) {
-        this.handleStandardCatch(fish);
+        this.handleStandardCatch(fish, false, false);
         this.state.fishes.splice(i, 1);
       }
     }
@@ -1379,10 +1497,11 @@ export class GameEngine {
   private handleNetCollection() {
     this.effects.shakeScreen(5, 5);
     // Collect ALL fish on screen
+    const storeCatch = this.state.anchorEffectTimerMs <= 0;
     for (let i = this.state.fishes.length - 1; i >= 0; i--) {
       const fish = this.state.fishes[i];
       if (!OBJECT_MATRIX[fish.type].isObstacle) {
-        this.handleStandardCatch(fish, true); // Net catch ignores weight
+        this.handleStandardCatch(fish, true, storeCatch);
         this.state.fishes.splice(i, 1);
       }
     }
@@ -1391,17 +1510,22 @@ export class GameEngine {
   private spawnFishes(deltaTime: number) {
     // Stop spawning if arriving
     if (this.isArriving) return;
+    if (this.levelElapsedMs < 1500) return;
 
     const levelConfig = LEVEL_CONFIG[this.state.level];
     if (!levelConfig) return;
+    const maxEntities = Math.min(120, 30 + this.state.level * 1.2);
+    if (this.state.fishes.length >= maxEntities) return;
     const weatherSpawnMultiplier = this.state.weather === 'cloudy' ? 1.1 : this.state.weather === 'magic' ? 1.25 : 1;
     // Base spawn chance increases with levels
-    const spawnChance = (0.012 + this.state.level * 0.003) * weatherSpawnMultiplier;
+    const densityRatio = this.state.fishes.length / maxEntities;
+    const spawnChance = (0.012 + this.state.level * 0.003) * weatherSpawnMultiplier * Math.max(0.35, 1 - densityRatio);
 
     if (Math.random() < spawnChance) {
       const pool: Array<{ type: FishClass; weight: number }> = [];
 
-      const LEVEL_SPAWN_WEIGHTS: Record<number, Partial<Record<FishClass, number>>> = {
+      if (!this.levelSpawnWeights) {
+        this.levelSpawnWeights = {
   1: { bubble: 95, sakura: 70 },
   2: { bubble: 88, sakura: 72, zap: 18 },
   3: { bubble: 85, sakura: 70, zap: 25 },
@@ -1502,9 +1626,12 @@ export class GameEngine {
   98: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 26 },
   99: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 27 },
   100: { bubble: 10, sakura: 9, zap: 38, candy: 19, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 18, galaxy: 19, mushroom: 17, king: 28 }
-};
+        };
+      }
+      const LEVEL_SPAWN_WEIGHTS = this.levelSpawnWeights!;
 
-      const LEVEL_OBJECT_WEIGHTS: Record<number, Partial<Record<FishClass, number>>> = {
+      if (!this.levelObjectWeights) {
+        this.levelObjectWeights = {
   1: { shell: 100 },
   2: { shell: 85 },
   3: { shell: 88 },
@@ -1605,7 +1732,9 @@ export class GameEngine {
   98: { shell: 25, gold_doubloon: 36, sunken_boat: 30 },
   99: { shell: 25, gold_doubloon: 38, sunken_boat: 32 },
   100: { shell: 55, gold_doubloon: 70, sunken_boat: 60 }
-};
+        };
+      }
+      const LEVEL_OBJECT_WEIGHTS = this.levelObjectWeights!;
 
       const LEVEL_HAZARD_WEIGHTS: Record<number, Partial<Record<FishClass, number>>> = {
   17: { shark_skeleton: 25 },
@@ -1920,7 +2049,7 @@ export class GameEngine {
     this.recalculateStorage();
   }
 
-  private handleStandardCatch(caught: Entity, ignoreWeight: boolean = false) {
+  private handleStandardCatch(caught: Entity, ignoreWeight: boolean = false, storeCatch: boolean = true) {
     let value = caught.value;
     if (caught.type === 'crystal') {
       const roll = Math.random();
@@ -1936,17 +2065,19 @@ export class GameEngine {
       return; // Fish escaped, do not add to inventory
     }
 
-    const adjustedValue = Math.round(value * this.state.valueMultiplier);
-    this.addInventoryItem({
-      id: Math.random().toString(),
-      type: caught.type,
-      name: caught.name,
-      value: adjustedValue,
-      weight: caught.weight
-    }, ignoreWeight);
+    if (storeCatch) {
+      const adjustedValue = Math.round(value * this.state.valueMultiplier);
+      this.addInventoryItem({
+        id: Math.random().toString(),
+        type: caught.type,
+        name: caught.name,
+        value: adjustedValue,
+        weight: caught.weight
+      }, ignoreWeight);
+    }
 
     // 'chain_reaction' veya 'final_2' curse: Pull nearby fishes as well
-    if (this.state.activeCurse === 'chain_reaction' || this.state.activeCurse === 'final_2') {
+    if (storeCatch && (this.state.activeCurse === 'chain_reaction' || this.state.activeCurse === 'final_2')) {
       const CHAIN_RADIUS = 80;
       const nearby = this.state.fishes.filter(f => {
         if (f.id === caught.id) return false;
@@ -1988,12 +2119,12 @@ export class GameEngine {
       this.onFishCaught(caught);
     }
 
-    if (caught.type === 'leaf' && this.state.leafBonusStacks < 3) {
+    if (storeCatch && caught.type === 'leaf' && this.state.leafBonusStacks < 3) {
       this.state.leafBonusStacks += 1;
       this.applyValueMultiplier(1.1);
     }
 
-    if (caught.type === 'candy' && this.state.candyBonusStacks < 3) {
+    if (storeCatch && caught.type === 'candy' && this.state.candyBonusStacks < 3) {
       this.state.candyBonusStacks += 1;
       this.state.inventory = this.state.inventory.map(item => ({
         ...item,
@@ -2002,7 +2133,7 @@ export class GameEngine {
       this.recalculateStorage();
     }
 
-    if (caught.type === 'king') {
+    if (storeCatch && caught.type === 'king') {
       this.applyValueMultiplier(1.2);
     }
 
@@ -2012,7 +2143,7 @@ export class GameEngine {
       else if (roll < 0.6) this.state.fuelCost = Math.max(10, Math.floor(this.state.fuelCost * 0.9));
     }
 
-    if (caught.type === 'mushroom' && this.state.inventory.length > 0) {
+    if (storeCatch && caught.type === 'mushroom' && this.state.inventory.length > 0) {
       const idx = Math.floor(Math.random() * this.state.inventory.length);
       const item = this.state.inventory[idx];
       this.state.inventory[idx] = { ...item, value: item.value * 2 };
@@ -2039,7 +2170,7 @@ export class GameEngine {
     if (caught.type === 'tide') {
       this.state.weightDisplayOffset = 5;
       this.state.weightDisplayOffsetMs = 2000;
-      if (this.state.inventory.length > 1 && Math.random() < 0.2) {
+      if (storeCatch && this.state.inventory.length > 1 && Math.random() < 0.2) {
         // Drop a random fish from inventory (not the tide fish we just added)
         const candidates = this.state.inventory.filter(item => item.type !== 'tide');
         if (candidates.length > 0) {
@@ -2053,18 +2184,20 @@ export class GameEngine {
     }
   }
 
-  private handleTreasureChest(caught: Entity) {
-    this.addInventoryItem({
-      id: Math.random().toString(),
-      type: 'gold_doubloon',
-      name: caught.name,
-      value: 0,
-      weight: 8
-    });
+  private handleTreasureChest(caught: Entity, storeCatch: boolean = true) {
+    if (storeCatch) {
+      this.addInventoryItem({
+        id: Math.random().toString(),
+        type: 'gold_doubloon',
+        name: caught.name,
+        value: 0,
+        weight: 8
+      });
+    }
 
     this.earnCoins(80 + Math.floor(Math.random() * 121));
 
-    if (Math.random() < 0.6) {
+    if (storeCatch && Math.random() < 0.6) {
       const bonusType: FishClass = Math.random() < 0.5 ? 'crystal' : 'galaxy';
       const config = OBJECT_MATRIX[bonusType];
       let value = config.value;
@@ -2073,13 +2206,15 @@ export class GameEngine {
         if (roll < 0.4) value += 50;
         else if (roll < 0.6) value -= 30;
       }
-      this.addInventoryItem({
-        id: Math.random().toString(),
-        type: bonusType,
-        name: config.names[0],
-        value: Math.round(value * this.state.valueMultiplier),
-        weight: config.weightMultiplier
-      });
+      if (storeCatch) {
+        this.addInventoryItem({
+          id: Math.random().toString(),
+          type: bonusType,
+          name: config.names[0],
+          value: Math.round(value * this.state.valueMultiplier),
+          weight: config.weightMultiplier
+        });
+      }
     }
 
     if (Math.random() < 0.2) {
@@ -2091,14 +2226,16 @@ export class GameEngine {
     }
   }
 
-  private handleSunkenBoat(caught: Entity) {
-    this.addInventoryItem({
-      id: Math.random().toString(),
-      type: 'sunken_boat',
-      name: caught.name,
-      value: 0,
-      weight: 5
-    });
+  private handleSunkenBoat(caught: Entity, storeCatch: boolean = true) {
+    if (storeCatch) {
+      this.addInventoryItem({
+        id: Math.random().toString(),
+        type: 'sunken_boat',
+        name: caught.name,
+        value: 0,
+        weight: 5
+      });
+    }
 
     let roll = Math.random();
     if (this.activeVehicleId === 't9' && roll >= 0.95) {
@@ -2106,9 +2243,24 @@ export class GameEngine {
     }
     if (roll < 0.35) {
       const fishCount = 1 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < fishCount; i++) {
-        const type: FishClass = Math.random() < 0.5 ? 'bubble' : 'sakura';
-        const config = OBJECT_MATRIX[type];
+      if (storeCatch) {
+        for (let i = 0; i < fishCount; i++) {
+          const type: FishClass = Math.random() < 0.5 ? 'bubble' : 'sakura';
+          const config = OBJECT_MATRIX[type];
+          this.addInventoryItem({
+            id: Math.random().toString(),
+            type,
+            name: config.names[0],
+            value: Math.round(config.value * this.state.valueMultiplier),
+            weight: config.weightMultiplier
+          });
+        }
+      }
+    } else if (roll < 0.6) {
+      this.earnCoins(50 + Math.floor(Math.random() * 71));
+      const type: FishClass = Math.random() < 0.5 ? 'tide' : 'candy';
+      const config = OBJECT_MATRIX[type];
+      if (storeCatch) {
         this.addInventoryItem({
           id: Math.random().toString(),
           type,
@@ -2117,28 +2269,19 @@ export class GameEngine {
           weight: config.weightMultiplier
         });
       }
-    } else if (roll < 0.6) {
-      this.earnCoins(50 + Math.floor(Math.random() * 71));
-      const type: FishClass = Math.random() < 0.5 ? 'tide' : 'candy';
-      const config = OBJECT_MATRIX[type];
-      this.addInventoryItem({
-        id: Math.random().toString(),
-        type,
-        name: config.names[0],
-        value: Math.round(config.value * this.state.valueMultiplier),
-        weight: config.weightMultiplier
-      });
     } else if (roll < 0.8) {
     } else if (roll < 0.95) {
       const type: FishClass = Math.random() < 0.5 ? 'moon' : 'lava';
       const config = OBJECT_MATRIX[type];
-      this.addInventoryItem({
-        id: Math.random().toString(),
-        type,
-        name: config.names[0],
-        value: Math.round(config.value * this.state.valueMultiplier),
-        weight: config.weightMultiplier
-      });
+      if (storeCatch) {
+        this.addInventoryItem({
+          id: Math.random().toString(),
+          type,
+          name: config.names[0],
+          value: Math.round(config.value * this.state.valueMultiplier),
+          weight: config.weightMultiplier
+        });
+      }
     } else {
       this.earnCoins(-10);
     }
@@ -2148,11 +2291,11 @@ export class GameEngine {
     }
   }
 
-  private handleShell(caught: Entity) {
+  private handleShell(caught: Entity, storeCatch: boolean = true) {
     // Shell game_design Bölüm 3.4: Direk 20 coin verir, inventory'ye girmez
     this.earnCoins(20);
 
-    if (Math.random() < 0.25) {
+    if (storeCatch && Math.random() < 0.25) {
       const type: FishClass = Math.random() < 0.5 ? 'bubble' : 'sakura';
       const config = OBJECT_MATRIX[type];
       this.addInventoryItem({
@@ -2308,7 +2451,8 @@ export class GameEngine {
       bx.textAlign = 'center';
       bx.shadowBlur = 15;
       bx.shadowColor = 'black';
-      bx.fillText(`${this.state.level}. LEVEL`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+      const levelName = LEVEL_NAMES[this.state.level] ?? `Level ${this.state.level}`;
+      bx.fillText(levelName, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
       bx.shadowBlur = 0;
       bx.globalAlpha = 1;
     }
@@ -2326,12 +2470,10 @@ export class GameEngine {
 
     // ── Whirlpool DOM element (GPU CSS transform) ─────────────────────────────
     if (this.whirlpoolEl) {
-      // Find active whirlpool fish
-      const wp = this.state.fishes.find(f => f.type === 'whirlpool');
+      const wp = this.activeWhirlpool;
       if (wp) {
-        const spin = performance.now() * 0.004;
+        const spin = timestamp * 0.004;
         const scaleY = 0.55 + Math.sin(spin) * 0.35;
-        const sprite = this.spriteManager.getImage('fish_whirlpool');
         // Compute canvas-relative pixel position for the DOM overlay
         const canvasEl = this.ctx.canvas;
         const scaleX = canvasEl.offsetWidth / CANVAS_WIDTH;
@@ -2542,6 +2684,7 @@ export class GameEngine {
     for (const fish of this.state.fishes) {
       if (this.state.hook.caughtEntity && this.state.hook.caughtEntity.id === fish.id) continue;
       if (fish.type === 'whirlpool') continue;
+      if (fish.x < -120 || fish.x > CANVAS_WIDTH + 120 || fish.y < SEA_LEVEL_Y - 120 || fish.y > CANVAS_HEIGHT + 120) continue;
 
       const curse = this.state.activeCurse;
       const isObstacle = OBJECT_MATRIX[fish.type].isObstacle;
@@ -2875,8 +3018,9 @@ export class GameEngine {
     // Try to draw sprite if available
     const spriteKey = `fish_${type}`;
     const sprite = this.spriteManager.getImage(spriteKey);
+    const hasSprite = Boolean(sprite && sprite.complete && sprite.naturalWidth > 0);
 
-    if (sprite) {
+    if (hasSprite && sprite) {
       // Draw sprite
       // Increase size multiplier for better visibility
       let width = safeRadius * 4.5;

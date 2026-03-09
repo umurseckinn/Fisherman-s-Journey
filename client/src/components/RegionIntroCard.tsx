@@ -1,0 +1,86 @@
+import React from "react";
+import { X, Map, Waves } from "lucide-react";
+
+const REGION_INTROS: Record<number, { title: string; range: string; story: string }> = {
+  1: {
+    title: "Dawnbreak Cove",
+    range: "L1-L20",
+    story: "This is where every sailor takes their first breath, where saltwater first mixes with their blood. Beneath its calm exterior lie treacherous currents and ancient shipwrecks waiting for novices. As the first light of dawn hits the shallow waters, those who dream of becoming legends set their sails here for the very first time. Yet, only those who learn the rhythm of the waves can depart this safe haven in one piece. The wind is calling you; the adventure where you will write the ocean's destiny begins exactly here."
+  },
+  21: {
+    title: "The Whispering Atolls",
+    range: "L21-L40",
+    story: "Mesmerizing with their dazzling colors, these waters are actually one of nature's most ruthless battlegrounds. The massive coral labyrinths beneath the surface hide both unparalleled treasures and bloodthirsty sea creatures. At night, the phosphorescent glow emitted by the corals shines like the souls of lost sailors. Many galleons, deceived by the beauty and thrown off course, lie buried in the razor-sharp rocks of these reefs. Only those with sharp instincts can press on without heeding the whispers of these isles."
+  },
+  31: {
+    title: "The Abyssal Blue",
+    range: "L31-L50",
+    story: "This is the boundary where light slowly fades, descending into the dark heart of the ocean. The water is so deep and ink-black that looking down feels like staring into a massive abyss. The familiar waves of the surface give way to silent, deadly whirlpools created by colossal sea monsters. Old sailors believe that a forgotten god slumbers in the depths of these waters. Only those brave enough to face the darkness can unearth the secrets of this blue hell."
+  },
+  41: {
+    title: "Tempest Strait",
+    range: "L41-L60",
+    story: "It is a cursed passage where the sky is forever black and the sea is eternally wrathful. As lightning batters the waters, colossal waves wait to crush even the sturdiest ships like nutshells. The winds here sound less like a storm and more like the shrieks of furious sea spirits. Makeshift havens built from shipwrecks serve as the abode for only the most maddened captains. Surviving this strait is not a matter of luck, but an absolute victory won against the fury of nature."
+  },
+  61: {
+    title: "The Infinite Maelstrom",
+    range: "L61-L80",
+    story: "This is a mystical realm where time and direction sink to the bottom of the ocean, and reality itself warps. Massive, never-ending currents drag ships into an endless spiral. In these waters where compasses go mad, an island you saw yesterday might completely vanish tomorrow. Ghost ships trapped here have been sailing the exact same route for centuries. To break this cycle, you must conquer not the sea, but your own mind."
+  },
+  81: {
+    title: "The Paragon's Run",
+    range: "L81-L100",
+    story: "Situated at the edge of the world, this is the final trial accessible only to those who will write their names in history with letters of gold. These waters are patrolled not by ordinary beasts, but by the legendary guardians of the ocean incarnate. As the waves whisper the victory songs of mythical heroes, the sea challenges you with all its might. Every single mile is an epic battle for survival where your will and strength are tested to the last drop. Those who complete this run are no longer mere sailors, but living legends of the ocean."
+  }
+};
+
+interface RegionIntroCardProps {
+  startLevel: number;
+  onClose: () => void;
+}
+
+export const RegionIntroCard: React.FC<RegionIntroCardProps> = ({ startLevel, onClose }) => {
+  const details = REGION_INTROS[startLevel];
+  if (!details) return null;
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md bg-white rounded-[36px] shadow-2xl p-8 border-4 border-white overflow-y-auto max-h-[85vh]">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+        >
+          <X size={24} />
+        </button>
+
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+            <Map className="w-6 h-6 text-blue-600" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-blue-500 uppercase tracking-wider">New Region</div>
+            <h2 className="text-2xl font-bold text-slate-900">{details.title}</h2>
+            <div className="text-sm font-semibold text-slate-500">{details.range}</div>
+          </div>
+        </div>
+
+        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
+          <div className="flex items-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-wider mb-2">
+            <Waves size={14} />
+            Story
+          </div>
+          <p className="text-slate-600 font-medium leading-relaxed">
+            {details.story}
+          </p>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          Start Region
+        </button>
+      </div>
+    </div>
+  );
+};

@@ -2,14 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Clock, Fuel, Anchor, Pause, RotateCcw, Home as HomeIcon, Play, Bomb, X } from "lucide-react";
 import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y, LEVEL_CONFIG } from "@/game/GameEngine";
+import { LEVEL_NAMES } from "@/game/levelNames";
 import { VEHICLES, getEffectiveStats } from "@/game/vehicles";
 import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown, getSelectedStartLevel } from "@/game/storage";
 import { type GameState, type Entity, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
 import { GameOverModal } from "@/components/GameOverModal";
 import { InfoCard } from "@/components/InfoCard";
+import { CursedLevelCard } from "@/components/CursedLevelCard";
 import { BoosterPurchaseModal, type BoosterType } from "@/components/BoosterPurchaseModal";
 import { InsufficientFuelModal } from "@/components/InsufficientFuelModal";
 import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
+import { RegionIntroCard } from "@/components/RegionIntroCard";
 import { getPermanentCoins, setPermanentCoins } from "@/game/storage";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
@@ -47,12 +50,23 @@ export default function Game() {
   const [curseTimerMs, setCurseTimerMs] = useState(0);
   const [caughtFish, setCaughtFish] = useState<Entity | null>(null);
   const [selectedEntityForInfo, setSelectedEntityForInfo] = useState<FishClass | null>(null);
+  const [curseCard, setCurseCard] = useState<CurseType | null>(null);
+  const [regionCardStartLevel, setRegionCardStartLevel] = useState<number | null>(null);
   const [gameOverReason, setGameOverReason] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
   const [purchaseBoosterType, setPurchaseBoosterType] = useState<BoosterType | null>(null);
   const [showFuelModal, setShowFuelModal] = useState(false);
   const [showDoubloonShop, setShowDoubloonShop] = useState(false);
+  const [perfStats, setPerfStats] = useState<{
+    enabled: boolean;
+    fps: number;
+    avgFrameMs: number;
+    avgUpdateMs: number;
+    avgDrawMs: number;
+    fishCount: number;
+    level: number;
+  } | null>(null);
 
   const [upgrades, setUpgrades] = useState({
     rodLevel: derivedRodLevel,
@@ -90,10 +104,29 @@ export default function Game() {
     };
   });
   const [selectedBooster, setSelectedBooster] = useState<'harpoon' | 'net' | 'tnt' | 'anchor' | null>(null);
+  const seenEntitiesRef = useRef<Set<FishClass>>(new Set());
+  const shownCurseLevelsRef = useRef<Set<number>>(new Set());
+  const shownRegionLevelsRef = useRef<Set<number>>(new Set());
+  const selectedEntityRef = useRef<FishClass | null>(null);
+  const curseCardRef = useRef<CurseType | null>(null);
+  const regionCardRef = useRef<number | null>(null);
+  const pendingCurseRef = useRef<CurseType | null>(null);
 
   useEffect(() => {
     localStorage.setItem('global_boosters', JSON.stringify(activeBoosters));
   }, [activeBoosters]);
+
+  useEffect(() => {
+    selectedEntityRef.current = selectedEntityForInfo;
+  }, [selectedEntityForInfo]);
+
+  useEffect(() => {
+    curseCardRef.current = curseCard;
+  }, [curseCard]);
+
+  useEffect(() => {
+    regionCardRef.current = regionCardStartLevel;
+  }, [regionCardStartLevel]);
 
   useEffect(() => {
     if (!canvasRef.current || !bgCanvasRef.current || gameState !== "playing") return;
@@ -103,6 +136,10 @@ export default function Game() {
     if (!ctx || !bgCtx) return;
 
     const levelConfig = LEVEL_CONFIG[currentLevel as keyof typeof LEVEL_CONFIG];
+    const levelCurse = levelConfig?.curse ?? 'none';
+    const regionStartLevels = new Set([1, 21, 31, 41, 61, 81]);
+    const shouldShowRegion = regionStartLevels.has(currentLevel) && !shownRegionLevelsRef.current.has(currentLevel);
+    const shouldShowCurse = levelCurse !== 'none' && !shownCurseLevelsRef.current.has(currentLevel);
     const initialState: GameState = {
       score,
       level: currentLevel,
@@ -140,12 +177,12 @@ export default function Game() {
       zapShockMs: 0,
       moonSlowMs: 0,
       lavaBurnMs: 0,
-      activeCurse: 'none',
+      activeCurse: levelCurse,
       curseTimerMs: 0,
       boosters: activeBoosters,
       activeBooster: selectedBooster,
       anchorEffectTimerMs: 0,
-      isPaused: false
+      isPaused: shouldShowRegion || shouldShowCurse
     };
 
     const engine = new GameEngine(ctx, bgCtx, whirlpoolImgRef.current, initialState, {
@@ -222,6 +259,16 @@ export default function Game() {
         if (fish.type === 'king') {
           runStats.current.kingFishCount++;
         }
+        if (!seenEntitiesRef.current.has(fish.type)) {
+          seenEntitiesRef.current.add(fish.type);
+          if (!selectedEntityRef.current && !curseCardRef.current && !regionCardRef.current) {
+            if (engineRef.current) {
+              engineRef.current.pause();
+              setIsPaused(true);
+            }
+            setSelectedEntityForInfo(fish.type);
+          }
+        }
       },
       onBoosterUsed: (type: 'harpoon' | 'net' | 'tnt' | 'anchor') => {
         setActiveBoosters((prev: Record<string, any>) => ({
@@ -234,6 +281,19 @@ export default function Game() {
 
     engine.start();
     engineRef.current = engine;
+
+    pendingCurseRef.current = shouldShowCurse ? levelCurse : null;
+    if (shouldShowRegion) {
+      shownRegionLevelsRef.current.add(currentLevel);
+      engine.pause();
+      setIsPaused(true);
+      setRegionCardStartLevel(currentLevel);
+    } else if (shouldShowCurse) {
+      shownCurseLevelsRef.current.add(currentLevel);
+      engine.pause();
+      setIsPaused(true);
+      setCurseCard(levelCurse);
+    }
 
     const uiSync = setInterval(() => {
       const state = engineRef.current?.getState();
@@ -250,6 +310,11 @@ export default function Game() {
         setActiveCurse(state.activeCurse || 'none');
         setCurseTimerMs(state.curseTimerMs || 0);
         setIsPaused(state.isPaused || false);
+
+        const perf = engineRef.current?.getPerfStats();
+        if (perf?.enabled) {
+          setPerfStats({ ...perf });
+        }
 
         if (state.upgrades) {
           setUpgrades(prev => ({
@@ -555,6 +620,16 @@ export default function Game() {
                 zIndex: 2,
               }}
             />
+            {perfStats?.enabled && (
+              <div className="absolute left-3 bottom-3 z-50 bg-black/60 text-white text-[10px] rounded-md px-2 py-1 font-mono">
+                <div>fps: {perfStats.fps}</div>
+                <div>frame: {perfStats.avgFrameMs}ms</div>
+                <div>update: {perfStats.avgUpdateMs}ms</div>
+                <div>draw: {perfStats.avgDrawMs}ms</div>
+                <div>fish: {perfStats.fishCount}</div>
+                <div>level: {perfStats.level}</div>
+              </div>
+            )}
 
             {caughtFish && (
               <div className="absolute left-4 z-50 pointer-events-auto" style={{ top: SEA_LEVEL_Y - 140 }}>
@@ -636,7 +711,7 @@ export default function Game() {
                   <HomeIcon className="w-5 h-5" />
                 </button>
               </Link>
-              <h2 className="text-xl font-display font-bold text-blue-600">Level {currentLevel - 1} Complete!</h2>
+              <h2 className="text-xl font-display font-bold text-blue-600">{LEVEL_NAMES[currentLevel - 1] ?? `Level ${currentLevel - 1}`} Complete!</h2>
               <div className="text-lg font-bold text-green-600 flex items-center justify-center gap-1">
                 <img src="/assets/environment/gold_doubloon.png" alt="" className="w-5 h-5 object-contain" />
                 {score}
@@ -751,7 +826,7 @@ export default function Game() {
               disabled={!upgrades.hasFuel}
               className={`w-full py-4 text-base font-display font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 ${upgrades.hasFuel ? 'animate-pulse ring-4 ring-blue-300' : ''}`}
             >
-              {upgrades.hasFuel ? `Set Sail for Level ${currentLevel + 1}!` : "Buy Fuel to Continue"}
+              {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? `Level ${currentLevel + 1}`}!` : "Buy Fuel to Continue"}
             </Button>
           </div>
         )}
@@ -774,7 +849,7 @@ export default function Game() {
         )}
 
         {/* Pause Menu Overlay */}
-        {isPaused && !selectedEntityForInfo && (
+        {isPaused && !selectedEntityForInfo && !curseCard && !regionCardStartLevel && (
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center animate-in fade-in duration-300 px-8">
             <div className="bg-white rounded-[32px] w-full max-w-xs p-8 shadow-2xl flex flex-col gap-4 border-4 border-white">
               <h2 className="text-3xl font-display font-bold text-slate-800 text-center mb-4">PAUSED</h2>
@@ -814,9 +889,48 @@ export default function Game() {
           <div className="z-[110]">
             <InfoCard
               entityKey={selectedEntityForInfo}
-              onClose={() => setSelectedEntityForInfo(null)}
+              onClose={() => {
+                setSelectedEntityForInfo(null);
+                if (engineRef.current) {
+                  engineRef.current.resume();
+                  setIsPaused(false);
+                }
+              }}
             />
           </div>
+        )}
+
+        {curseCard && (
+          <CursedLevelCard
+            curse={curseCard}
+            onClose={() => {
+              setCurseCard(null);
+              if (engineRef.current) {
+                engineRef.current.resume();
+                setIsPaused(false);
+              }
+            }}
+          />
+        )}
+
+        {regionCardStartLevel && (
+          <RegionIntroCard
+            startLevel={regionCardStartLevel}
+            onClose={() => {
+              setRegionCardStartLevel(null);
+              const pendingCurse = pendingCurseRef.current;
+              pendingCurseRef.current = null;
+              if (pendingCurse && !shownCurseLevelsRef.current.has(currentLevel)) {
+                shownCurseLevelsRef.current.add(currentLevel);
+                setCurseCard(pendingCurse);
+                return;
+              }
+              if (engineRef.current) {
+                engineRef.current.resume();
+                setIsPaused(false);
+              }
+            }}
+          />
         )}
 
         {purchaseBoosterType && (
