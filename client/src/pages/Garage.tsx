@@ -326,7 +326,11 @@ export default function Garage({ onStartFishing }: GarageProps) {
             vehicle={vehicle}
             owned={owned}
             flash={upgradeFlash === 'vehicle'}
-            onBuy={() => attemptPurchase(vehicle.unlockCost, handleBuyVehicle, vehicle.name)}
+            onBuy={() => {
+              attemptPurchase(vehicle.unlockCost, () => {
+                handleBuyVehicle();
+              }, vehicle.name);
+            }}
             costLabel={`${formatCoins(vehicle.unlockCost)}`}
             showDoubloonIcon={true}
           />
@@ -356,14 +360,10 @@ export default function Garage({ onStartFishing }: GarageProps) {
           setPermanentCoins(current + doubloons);
           setPCoins(current + doubloons);
           setShowIap(false);
-          // Run pending purchase if any
-          if (pendingPurchaseRef.current) {
-            setTimeout(() => {
-              if (pendingPurchaseRef.current) pendingPurchaseRef.current();
-            }, 300);
-          }
+          pendingPurchaseRef.current = null;
         }}
       />
+
 
       <style>{`
         @keyframes startGlow {

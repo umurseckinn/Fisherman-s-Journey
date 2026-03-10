@@ -42,44 +42,51 @@ interface RegionIntroCardProps {
 export const RegionIntroCard: React.FC<RegionIntroCardProps> = ({ startLevel, onClose }) => {
   const details = REGION_INTROS[startLevel];
   if (!details) return null;
+  const backgroundUrl = `/assets/episodes/${encodeURIComponent(details.title)}.png`;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-white rounded-[36px] shadow-2xl p-8 border-4 border-white overflow-y-auto max-h-[85vh]">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px] animate-in fade-in duration-200">
+      <div
+        className="relative w-full max-w-md rounded-[36px] shadow-2xl border-4 border-white overflow-hidden max-h-[85vh]"
+        style={{ backgroundImage: `url("${backgroundUrl}")`, backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="relative z-10 p-8 overflow-y-auto max-h-[85vh]">
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+          className="absolute top-6 right-6 p-2 rounded-full bg-white/90 text-slate-700 hover:bg-white transition-colors"
         >
           <X size={24} />
         </button>
 
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
-            <Map className="w-6 h-6 text-blue-600" />
+          <div className="w-12 h-12 rounded-2xl bg-white/85 flex items-center justify-center">
+            <Map className="w-6 h-6 text-slate-800" />
           </div>
           <div>
-            <div className="text-xs font-bold text-blue-500 uppercase tracking-wider">New Region</div>
-            <h2 className="text-2xl font-bold text-slate-900">{details.title}</h2>
-            <div className="text-sm font-semibold text-slate-500">{details.range}</div>
+            <div className="text-xs font-bold text-amber-200 uppercase tracking-wider">New Region</div>
+            <h2 className="text-2xl font-bold text-white drop-shadow">{details.title}</h2>
+            <div className="text-sm font-semibold text-white/80">{details.range}</div>
           </div>
         </div>
 
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-          <div className="flex items-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-wider mb-2">
+        <div className="p-4 bg-black/35 rounded-2xl border border-white/25 mb-6">
+          <div className="flex items-center gap-2 text-white/90 font-bold text-xs uppercase tracking-wider mb-2">
             <Waves size={14} />
             Story
           </div>
-          <p className="text-slate-600 font-medium leading-relaxed">
+          <p className="text-white font-medium leading-relaxed">
             {details.story}
           </p>
         </div>
 
         <button
           onClick={onClose}
-          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+          className="w-full bg-amber-400 text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           Start Region
         </button>
+        </div>
       </div>
     </div>
   );

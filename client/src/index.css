@@ -54,6 +54,15 @@
     @apply bg-slate-900 text-foreground antialiased overflow-hidden font-sans;
     font-family: var(--font-body);
   }
+  img {
+    user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+  }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);

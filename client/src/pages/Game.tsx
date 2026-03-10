@@ -4,13 +4,13 @@ import { ArrowLeft, Clock, Fuel, Anchor, Pause, RotateCcw, Home as HomeIcon, Pla
 import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y, LEVEL_CONFIG } from "@/game/GameEngine";
 import { LEVEL_NAMES } from "@/game/levelNames";
 import { VEHICLES, getEffectiveStats } from "@/game/vehicles";
-import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown, getSelectedStartLevel } from "@/game/storage";
-import { type GameState, type Entity, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
+import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown, getStartLevelForMode, getAdminMode, updateUserUnlockedLevel } from "@/game/storage";
+import { type GameState, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
 import { GameOverModal } from "@/components/GameOverModal";
-import { InfoCard } from "@/components/InfoCard";
 import { CursedLevelCard } from "@/components/CursedLevelCard";
 import { BoosterPurchaseModal, type BoosterType } from "@/components/BoosterPurchaseModal";
 import { InsufficientFuelModal } from "@/components/InsufficientFuelModal";
+import { InsufficientRepairModal } from "@/components/InsufficientRepairModal";
 import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
 import { RegionIntroCard } from "@/components/RegionIntroCard";
 import { getPermanentCoins, setPermanentCoins } from "@/game/storage";
@@ -23,7 +23,7 @@ export default function Game() {
   const whirlpoolImgRef = useRef<HTMLImageElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const [gameState, setGameState] = useState<"playing" | "gameover" | "shop" | "win">("playing");
-  const initialLevel = getSelectedStartLevel();
+  const initialLevel = getStartLevelForMode();
 
   const [score, setScore] = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState<RunScoreBreakdown | null>(null);
@@ -48,8 +48,6 @@ export default function Game() {
   const [maxHookAttempts, setMaxHookAttempts] = useState(effectiveStats.castAttempts);
   const [activeCurse, setActiveCurse] = useState<CurseType>('none');
   const [curseTimerMs, setCurseTimerMs] = useState(0);
-  const [caughtFish, setCaughtFish] = useState<Entity | null>(null);
-  const [selectedEntityForInfo, setSelectedEntityForInfo] = useState<FishClass | null>(null);
   const [curseCard, setCurseCard] = useState<CurseType | null>(null);
   const [regionCardStartLevel, setRegionCardStartLevel] = useState<number | null>(null);
   const [gameOverReason, setGameOverReason] = useState<string | null>(null);
@@ -57,6 +55,7 @@ export default function Game() {
   const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
   const [purchaseBoosterType, setPurchaseBoosterType] = useState<BoosterType | null>(null);
   const [showFuelModal, setShowFuelModal] = useState(false);
+  const [showRepairModal, setShowRepairModal] = useState(false);
   const [showDoubloonShop, setShowDoubloonShop] = useState(false);
   const [perfStats, setPerfStats] = useState<{
     enabled: boolean;
@@ -81,7 +80,16 @@ export default function Game() {
     coralProtection: effectiveStats.coralProtection,
     kelpDuration: effectiveStats.kelpDuration,
   });
-  const [activeBoosters, setActiveBoosters] = useState(() => {
+  type BoosterState = {
+    speed: boolean;
+    value: boolean;
+    lucky: boolean;
+    harpoon: number;
+    net: number;
+    tnt: number;
+    anchor: number;
+  };
+  const [activeBoosters, setActiveBoosters] = useState<BoosterState>(() => {
     const saved = localStorage.getItem('global_boosters');
     if (saved) {
       const boosters = JSON.parse(saved);
@@ -104,10 +112,8 @@ export default function Game() {
     };
   });
   const [selectedBooster, setSelectedBooster] = useState<'harpoon' | 'net' | 'tnt' | 'anchor' | null>(null);
-  const seenEntitiesRef = useRef<Set<FishClass>>(new Set());
   const shownCurseLevelsRef = useRef<Set<number>>(new Set());
   const shownRegionLevelsRef = useRef<Set<number>>(new Set());
-  const selectedEntityRef = useRef<FishClass | null>(null);
   const curseCardRef = useRef<CurseType | null>(null);
   const regionCardRef = useRef<number | null>(null);
   const pendingCurseRef = useRef<CurseType | null>(null);
@@ -115,10 +121,6 @@ export default function Game() {
   useEffect(() => {
     localStorage.setItem('global_boosters', JSON.stringify(activeBoosters));
   }, [activeBoosters]);
-
-  useEffect(() => {
-    selectedEntityRef.current = selectedEntityForInfo;
-  }, [selectedEntityForInfo]);
 
   useEffect(() => {
     curseCardRef.current = curseCard;
@@ -211,6 +213,9 @@ export default function Game() {
       },
       onLevelComplete: (level) => {
         runStats.current.maxLevel = Math.max(runStats.current.maxLevel, level);
+        if (!getAdminMode()) {
+          updateUserUnlockedLevel(level + 1);
+        }
         const state = engineRef.current?.getState();
         if (state) {
           setTimeLeft(Math.ceil(state.timeRemaining));
@@ -254,24 +259,12 @@ export default function Game() {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       },
       onFishCaught: (fish) => {
-        setCaughtFish(fish);
-        setTimeout(() => setCaughtFish(null), 2000);
         if (fish.type === 'king') {
           runStats.current.kingFishCount++;
         }
-        if (!seenEntitiesRef.current.has(fish.type)) {
-          seenEntitiesRef.current.add(fish.type);
-          if (!selectedEntityRef.current && !curseCardRef.current && !regionCardRef.current) {
-            if (engineRef.current) {
-              engineRef.current.pause();
-              setIsPaused(true);
-            }
-            setSelectedEntityForInfo(fish.type);
-          }
-        }
       },
       onBoosterUsed: (type: 'harpoon' | 'net' | 'tnt' | 'anchor') => {
-        setActiveBoosters((prev: Record<string, any>) => ({
+        setActiveBoosters((prev: BoosterState) => ({
           ...prev,
           [type]: Math.max(0, Math.floor(prev[type] - 1))
         }));
@@ -407,27 +400,40 @@ export default function Game() {
     }
   };
 
-  const REPAIR_COST = 60;
+  const getSawtoothFactor = (level: number) => {
+    const blockIndex = Math.floor((level - 1) / 5);
+    const blockStart = blockIndex * 5 + 1;
+    const progress = (level - blockStart) / 4;
+    const regionIndex = Math.floor((level - 1) / 20);
+    const saw = 0.85 + progress * 0.3;
+    const region = 1 + regionIndex * 0.12;
+    const block = 1 + blockIndex * 0.02;
+    return saw * region * block;
+  };
+  const repairCost = Math.max(1, Math.round(60 * getSawtoothFactor(currentLevel)));
+  const AD_REWARD = 50;
 
   const repairHook = (amount: number) => {
     if (hookAttempts >= maxHookAttempts) return;
-    if (score < REPAIR_COST) return; // Insufficient balance check
+    if (score < repairCost) {
+      setShowRepairModal(true);
+      return;
+    }
 
     const newAttempts = Math.min(maxHookAttempts, hookAttempts + amount);
-    setScore(prev => prev - REPAIR_COST);
+    setScore(prev => prev - repairCost);
     setHookAttempts(newAttempts);
 
     if (engineRef.current) {
-      engineRef.current.getState().score -= REPAIR_COST;
+      engineRef.current.getState().score -= repairCost;
       engineRef.current.getState().hookAttempts = newAttempts;
     }
   };
 
-  const handleWatchAdForFuel = () => {
-    if (upgrades.hasFuel) return;
-    setUpgrades(prev => ({ ...prev, hasFuel: true }));
+  const handleWatchAdReward = () => {
+    setScore(prev => prev + AD_REWARD);
     if (engineRef.current) {
-      engineRef.current.getState().upgrades.hasFuel = true;
+      engineRef.current.getState().score += AD_REWARD;
     }
   };
 
@@ -504,14 +510,6 @@ export default function Game() {
       }
       setIsPaused(!isPaused);
     }
-  };
-
-  const handleEntityInfoOpen = (type: FishClass) => {
-    if (engineRef.current) {
-      engineRef.current.pause();
-      setIsPaused(true);
-    }
-    setSelectedEntityForInfo(type);
   };
 
   return (
@@ -628,27 +626,6 @@ export default function Game() {
                 <div>draw: {perfStats.avgDrawMs}ms</div>
                 <div>fish: {perfStats.fishCount}</div>
                 <div>level: {perfStats.level}</div>
-              </div>
-            )}
-
-            {caughtFish && (
-              <div className="absolute left-4 z-50 pointer-events-auto" style={{ top: SEA_LEVEL_Y - 140 }}>
-                <button
-                  onClick={() => handleEntityInfoOpen(caughtFish.type as FishClass)}
-                  className="bg-white/50 backdrop-blur-md p-2 rounded-2xl shadow-[0_12px_24px_rgba(0,0,0,0.08)] border-2 border-white/50 flex flex-col items-center text-center animate-in zoom-in-50 duration-300 w-[100px] group hover:scale-105 active:scale-95 transition-all"
-                >
-                  <div className="w-20 h-14 mb-1 flex items-center justify-center relative">
-                    <div className="absolute inset-0 bg-blue-100 rounded-full opacity-25 blur-lg scale-110 group-hover:scale-125 transition-transform animate-pulse"></div>
-                    <img
-                      src={['coral', 'gold_doubloon', 'whirlpool', 'sunken_boat', 'shark_skeleton', 'env_bubbles', 'anchor', 'shell', 'sea_kelp', 'sea_rock', 'sea_rock_large', 'sea_kelp_horizontal'].includes(caughtFish.type) ? `/assets/environment/${caughtFish.type === 'env_bubbles' ? 'bubbles' : caughtFish.type}.png` : `/assets/fish/${caughtFish.type}_fish.png`}
-                      alt={caughtFish.name}
-                      className="w-full h-full object-contain drop-shadow-md relative z-10 scale-125"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  </div>
-                  <h2 className="text-[11px] font-display font-bold text-slate-800 leading-tight mb-1">{caughtFish.name}</h2>
-                  <div className="bg-primary/20 text-primary text-[8px] px-2 py-0.5 rounded-full font-bold">INFO</div>
-                </button>
               </div>
             )}
 
@@ -849,7 +826,7 @@ export default function Game() {
         )}
 
         {/* Pause Menu Overlay */}
-        {isPaused && !selectedEntityForInfo && !curseCard && !regionCardStartLevel && (
+        {isPaused && !curseCard && !regionCardStartLevel && (
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center animate-in fade-in duration-300 px-8">
             <div className="bg-white rounded-[32px] w-full max-w-xs p-8 shadow-2xl flex flex-col gap-4 border-4 border-white">
               <h2 className="text-3xl font-display font-bold text-slate-800 text-center mb-4">PAUSED</h2>
@@ -881,22 +858,6 @@ export default function Game() {
                 </Button>
               </Link>
             </div>
-          </div>
-        )}
-
-        {/* Info Card Overlay */}
-        {selectedEntityForInfo && (
-          <div className="z-[110]">
-            <InfoCard
-              entityKey={selectedEntityForInfo}
-              onClose={() => {
-                setSelectedEntityForInfo(null);
-                if (engineRef.current) {
-                  engineRef.current.resume();
-                  setIsPaused(false);
-                }
-              }}
-            />
           </div>
         )}
 
@@ -949,18 +910,33 @@ export default function Game() {
           />
         )}
 
+
         <InsufficientFuelModal
           isOpen={showFuelModal}
           onClose={() => setShowFuelModal(false)}
           onWatchAd={() => {
-            handleWatchAdForFuel();
+            handleWatchAdReward();
             setShowFuelModal(false);
           }}
-          onEndGame={() => {
-            setGameState("gameover");
+          onGetDoubloons={() => {
             setShowFuelModal(false);
+            setShowDoubloonShop(true);
           }}
           fuelCost={fuelCost}
+        />
+
+        <InsufficientRepairModal
+          isOpen={showRepairModal}
+          onClose={() => setShowRepairModal(false)}
+          onWatchAd={() => {
+            handleWatchAdReward();
+            setShowRepairModal(false);
+          }}
+          onGetDoubloons={() => {
+            setShowRepairModal(false);
+            setShowDoubloonShop(true);
+          }}
+          repairCost={repairCost}
         />
 
         <GoldDoubloonShopModal

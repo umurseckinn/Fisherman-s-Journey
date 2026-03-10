@@ -185,8 +185,17 @@ export const LEVEL_CONFIG: Record<number, {
   100: { duration: 75, region: 8, fuelCost: 600, seaColor: '#252000', skyColor: '#1A1800', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 10, sea_rock: 7, coral: 7, anchor: 5 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // FINAL BOSS x2.5
 };
 
-Object.values(LEVEL_CONFIG).forEach(config => {
-  config.fuelCost = Math.max(1, Math.round(config.fuelCost * 3));
+Object.entries(LEVEL_CONFIG).forEach(([levelKey, config]) => {
+  const level = Number(levelKey);
+  const blockIndex = Math.floor((level - 1) / 5);
+  const blockStart = blockIndex * 5 + 1;
+  const progress = (level - blockStart) / 4;
+  const regionIndex = Math.floor((level - 1) / 20);
+  const saw = 0.85 + progress * 0.3;
+  const region = 1 + regionIndex * 0.12;
+  const block = 1 + blockIndex * 0.02;
+  const multiplier = saw * region * block;
+  config.fuelCost = Math.max(1, Math.round(config.fuelCost * 1.6 * multiplier));
 });
 
 export class GameEngine {
@@ -252,9 +261,6 @@ export class GameEngine {
   private perfAccumDraw = 0;
   private perfFrames = 0;
   private perfLastReport = 0;
-  private staticSpawnQueue: Array<{ type: FishClass; remaining: number; intervalMs: number; nextMs: number }> = [];
-  private staticSpawnElapsedMs: number = 0;
-  private levelElapsedMs: number = 0;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -375,7 +381,6 @@ export class GameEngine {
     this.hookLaunchMs = 0;
     this.wasSubmerged = false;
     this.backgroundDirty = true; // Force background redraw at start
-    this.levelElapsedMs = 0;
     this.seedStaticObstacles();
     this.lastFrameTime = performance.now();
     requestAnimationFrame(this.loop);
@@ -588,7 +593,6 @@ export class GameEngine {
 
   public update(deltaTime: number) {
     if (!this.state.isPlaying || this.state.isPaused) return;
-    this.levelElapsedMs += deltaTime;
 
     if (this.isSinking) {
       this.sinkProgress += deltaTime / 2000;
@@ -603,7 +607,6 @@ export class GameEngine {
 
     this.updateTimers(deltaTime);
     this.updateAnchorVisual(deltaTime);
-    this.processStaticSpawns(deltaTime);
 
     if (this.isArriving) {
       this.arrivalProgress += deltaTime / 2000;
@@ -728,71 +731,48 @@ export class GameEngine {
   private seedStaticObstacles() {
     const config = LEVEL_CONFIG[this.state.level];
     if (!config) return;
-    const durationMs = (config.duration ?? 60) * 1000;
-    const spawnWindowMs = Math.max(8000, durationMs * 0.75);
-    const initialDelayMs = Math.min(2500, spawnWindowMs * 0.2);
-    const queue: Array<{ type: FishClass; remaining: number; intervalMs: number; nextMs: number }> = [];
-    const enqueue = (type: FishClass, count: number) => {
-      if (count <= 0) return;
-      const interval = Math.max(900, spawnWindowMs / count);
-      const jitter = interval * 0.4;
-      queue.push({ type, remaining: count, intervalMs: interval, nextMs: initialDelayMs + Math.random() * jitter });
+    const spawnStatic = (type: FishClass, count: number) => {
+      for (let i = 0; i < count; i++) {
+        const configEntry = OBJECT_MATRIX[type];
+        const isBottom = ['sea_rock_large', 'sea_kelp', 'anchor', 'coral', 'gold_doubloon', 'shell', 'sunken_boat'].includes(type);
+        let y = isBottom ? CANVAS_HEIGHT - 20 : CANVAS_HEIGHT - 60 + Math.random() * 20;
+        let x = 40 + Math.random() * (CANVAS_WIDTH - 80);
+
+        if (type === 'sea_rock' && !isBottom) {
+          y = SEA_LEVEL_Y + 150 + Math.random() * (CANVAS_HEIGHT - SEA_LEVEL_Y - 250);
+        } else if (type === 'sea_kelp_horizontal') {
+          y = SEA_LEVEL_Y + 100 + Math.random() * 150;
+        }
+
+        this.state.fishes.push({
+          id: Math.random(),
+          type,
+          name: configEntry.names[0],
+          x,
+          y,
+          startY: y,
+          animationOffset: Math.random() * 1000,
+          speed: configEntry.speedMultiplier,
+          value: configEntry.value,
+          weight: configEntry.weightMultiplier,
+          color: configEntry.colors[0],
+          radius: configEntry.radius,
+          direction: -1
+        });
+      }
     };
-    enqueue('sea_kelp', config.obstacles.sea_kelp);
-    enqueue('sea_kelp_horizontal', Math.ceil(config.obstacles.sea_kelp * 1.2));
-    enqueue('sea_rock_large', config.obstacles.sea_rock);
-    enqueue('sea_rock', Math.ceil(config.obstacles.sea_rock * 0.6));
-    enqueue('coral', config.obstacles.coral);
-    enqueue('anchor', config.obstacles.anchor);
+    spawnStatic('sea_kelp', config.obstacles.sea_kelp);
+    spawnStatic('sea_kelp_horizontal', Math.ceil(config.obstacles.sea_kelp * 1.2));
+    spawnStatic('sea_rock_large', config.obstacles.sea_rock);
+    spawnStatic('sea_rock', Math.ceil(config.obstacles.sea_rock * 0.6));
+    spawnStatic('coral', config.obstacles.coral);
+    spawnStatic('anchor', config.obstacles.anchor);
+
     config.dynamic?.forEach(type => {
       if (['gold_doubloon', 'shell', 'sunken_boat'].includes(type)) {
-        enqueue(type, type === 'shell' ? 2 : 1);
+        spawnStatic(type, type === 'shell' ? 2 : 1);
       }
     });
-    this.staticSpawnQueue = queue;
-    this.staticSpawnElapsedMs = 0;
-  }
-
-  private spawnStaticEntity(type: FishClass) {
-    const configEntry = OBJECT_MATRIX[type];
-    const isBottom = ['sea_rock_large', 'sea_kelp', 'anchor', 'coral', 'gold_doubloon', 'shell', 'sunken_boat'].includes(type);
-    let y = isBottom ? CANVAS_HEIGHT - 20 : CANVAS_HEIGHT - 60 + Math.random() * 20;
-    let x = 40 + Math.random() * (CANVAS_WIDTH - 80);
-
-    if (type === 'sea_rock' && !isBottom) {
-      y = SEA_LEVEL_Y + 150 + Math.random() * (CANVAS_HEIGHT - SEA_LEVEL_Y - 250);
-    } else if (type === 'sea_kelp_horizontal') {
-      y = SEA_LEVEL_Y + 100 + Math.random() * 150;
-    }
-
-    this.state.fishes.push({
-      id: Math.random(),
-      type,
-      name: configEntry.names[0],
-      x,
-      y,
-      startY: y,
-      animationOffset: Math.random() * 1000,
-      speed: configEntry.speedMultiplier,
-      value: configEntry.value,
-      weight: configEntry.weightMultiplier,
-      color: configEntry.colors[0],
-      radius: configEntry.radius,
-      direction: -1
-    });
-  }
-
-  private processStaticSpawns(deltaTime: number) {
-    if (this.staticSpawnQueue.length === 0) return;
-    this.staticSpawnElapsedMs += deltaTime;
-    for (const entry of this.staticSpawnQueue) {
-      while (entry.remaining > 0 && this.staticSpawnElapsedMs >= entry.nextMs) {
-        this.spawnStaticEntity(entry.type);
-        entry.remaining -= 1;
-        entry.nextMs += entry.intervalMs;
-      }
-    }
-    this.staticSpawnQueue = this.staticSpawnQueue.filter(entry => entry.remaining > 0);
   }
 
   public earnCoins(amount: number) {
@@ -1417,21 +1397,26 @@ export class GameEngine {
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 10;
         this.activeWhirlpool = fish;
       } else if (fish.type === 'anchor') {
-        // Anchor: pendulum sway ±15px, 4s period
         const pendulum = Math.sin(time * (Math.PI * 2 / 4) + (fish.animationOffset || 0)) * 15;
         fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
         fish.x = (fish.startY !== undefined ? fish.x : fish.x) + pendulum * (deltaTime / 500) * holdSlowFactor;
       } else if (fish.type === 'sea_kelp') {
         fish.x -= baseSpeed(fish) * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 3;
+      } else if (fish.type === 'sea_kelp_horizontal') {
+        fish.x -= baseSpeed(fish) * dtFactor;
+        fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 2;
       } else if (fish.type === 'coral') {
         fish.x -= baseSpeed(fish) * dtFactor;
+      } else if (fish.type === 'sea_rock' || fish.type === 'sea_rock_large' || fish.type === 'shell' || fish.type === 'sunken_boat') {
+        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
       } else {
         fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
       }
 
       // Global Y-clamp: keep all fish within water bounds (never above sea level or below sand)
-      const isStaticElement = fish.type === 'sea_kelp' || fish.type === 'sea_rock' || fish.type === 'coral' ||
+      const isStaticElement = fish.type === 'sea_kelp' || fish.type === 'sea_kelp_horizontal' ||
+        fish.type === 'sea_rock' || fish.type === 'sea_rock_large' || fish.type === 'coral' ||
         fish.type === 'anchor' || fish.type === 'shell' || fish.type === 'gold_doubloon' || fish.type === 'sunken_boat';
 
       // Anchor direction override
@@ -1510,7 +1495,6 @@ export class GameEngine {
   private spawnFishes(deltaTime: number) {
     // Stop spawning if arriving
     if (this.isArriving) return;
-    if (this.levelElapsedMs < 1500) return;
 
     const levelConfig = LEVEL_CONFIG[this.state.level];
     if (!levelConfig) return;
@@ -2016,12 +2000,15 @@ export class GameEngine {
   }
 
   private triggerHookBreak() {
+    const breakX = this.state.hook.x;
+    const breakY = this.state.hook.y;
     this.state.hookBrokenMs = this.hookBreakDuration;
     this.state.hook.state = 'idle';
     this.state.hook.length = 0;
     const hookPivot = this.getHookPivotPosition();
     this.state.hook.x = hookPivot.x;
     this.state.hook.y = hookPivot.y;
+    this.effects.spawnHookBreak(breakX, breakY);
   }
 
   private applyBubbleEffect() {
@@ -2425,6 +2412,65 @@ export class GameEngine {
     }
   }
 
+  private drawBottomBedrock(bgCtx: CanvasRenderingContext2D) {
+    // Bottom Sand (Flat 2D line)
+    bgCtx.beginPath();
+    bgCtx.moveTo(0, CANVAS_HEIGHT - 20);
+    bgCtx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - 20);
+    bgCtx.strokeStyle = 'hsl(40, 100%, 80%)';
+    bgCtx.lineWidth = 4;
+    bgCtx.stroke();
+
+    // Bottom Bedrock Fill
+    bgCtx.fillStyle = '#3e2723';
+    bgCtx.fillRect(0, CANVAS_HEIGHT - 18, CANVAS_WIDTH, 18);
+  }
+
+  private drawBossAura(bgCtx: CanvasRenderingContext2D) {
+    // Boss Level Golden Aura (her 10. level — x1.5 çarpan görsel işareti)
+    if (this.state.level % 10 === 0) {
+      const goldGradient = bgCtx.createRadialGradient(
+        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0,
+        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_HEIGHT * 0.7
+      );
+      goldGradient.addColorStop(0, 'rgba(255, 215, 0, 0.07)');
+      goldGradient.addColorStop(0.5, 'rgba(255, 180, 0, 0.05)');
+      goldGradient.addColorStop(1, 'rgba(255, 140, 0, 0)');
+      bgCtx.fillStyle = goldGradient;
+      bgCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      // Golden frame (border glow)
+      bgCtx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
+      bgCtx.lineWidth = 6;
+      bgCtx.strokeRect(3, 3, CANVAS_WIDTH - 6, CANVAS_HEIGHT - 6);
+    }
+  }
+
+  /**
+   * Helper to draw image covering the target area (like CSS background-size: cover)
+   */
+  private drawImageCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
+    const imgRatio = img.naturalWidth / img.naturalHeight;
+    const targetRatio = w / h;
+    
+    let sourceX = 0;
+    let sourceY = 0;
+    let sourceW = img.naturalWidth;
+    let sourceH = img.naturalHeight;
+
+    if (imgRatio > targetRatio) {
+      // Image is wider than target: crop width
+      sourceW = sourceH * targetRatio;
+      sourceX = (img.naturalWidth - sourceW) / 2;
+    } else {
+      // Image is taller than target: crop height
+      sourceH = sourceW / targetRatio;
+      sourceY = (img.naturalHeight - sourceH) / 2;
+    }
+
+    ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, x, y, w, h);
+  }
+
   private draw(timestamp: number = 0) {
     const bx = this.bgCtx;
 
@@ -2442,20 +2488,7 @@ export class GameEngine {
       }
     }
 
-    // Level start text lives on bgCtx so it fades naturally
-    if (this.state.timeRemaining > 57) {
-      const progress = Math.min(1, Math.max(0, (60 - this.state.timeRemaining) / 3));
-      bx.globalAlpha = 1 - progress;
-      bx.fillStyle = 'white';
-      bx.font = 'bold 48px Fredoka';
-      bx.textAlign = 'center';
-      bx.shadowBlur = 15;
-      bx.shadowColor = 'black';
-      const levelName = LEVEL_NAMES[this.state.level] ?? `Level ${this.state.level}`;
-      bx.fillText(levelName, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-      bx.shadowBlur = 0;
-      bx.globalAlpha = 1;
-    }
+    // Level start text moved to end of draw for proper clearing
 
     // ── Game Canvas (dynamic objects) ────────────────────────────────────────
     this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -2716,6 +2749,8 @@ export class GameEngine {
       const intensity = Math.max(0, 1 - this.state.timeRemaining / 10);
       this.effects.drawVignette(this.ctx, intensity);
     }
+
+    this.drawLevelStartOverlay(this.ctx);
   }
 
   /** Draw island arrival animation onto bgCtx (replaces static background while arriving) */
@@ -2750,14 +2785,51 @@ export class GameEngine {
       bx.closePath();
       bx.fill();
 
-      bx.fillStyle = 'white';
-      bx.font = 'bold 32px Fredoka';
-      bx.textAlign = 'center';
-      bx.shadowBlur = 10;
-      bx.shadowColor = 'black';
-      bx.fillText('ISLAND AHEAD!', CANVAS_WIDTH / 2, SEA_LEVEL_Y + 150);
-      bx.shadowBlur = 0;
     }
+
+    
+  }
+
+  private drawLevelStartOverlay(bx: CanvasRenderingContext2D) {
+    const config = LEVEL_CONFIG[this.state.level];
+    const totalDuration = config?.duration ?? 60;
+    const elapsed = totalDuration - this.state.timeRemaining;
+    const displayDuration = 1.6;
+    if (elapsed > displayDuration) return;
+
+    let alpha = 1;
+    if (elapsed < 0.25) {
+      alpha = elapsed / 0.25;
+    } else if (elapsed > 1.35) {
+      alpha = 1 - (elapsed - 1.35) / 0.25;
+    }
+    if (alpha <= 0) return;
+
+    bx.save();
+    bx.globalAlpha = alpha;
+
+    const levelName = LEVEL_NAMES[this.state.level] ?? `Level ${this.state.level}`;
+    const x = CANVAS_WIDTH / 2;
+    const y = CANVAS_HEIGHT / 2;
+    const maxWidth = CANVAS_WIDTH * 0.9;
+
+    let fontSize = 52;
+    bx.font = `bold ${fontSize}px Fredoka`;
+    let width = bx.measureText(levelName).width;
+    while (width > maxWidth && fontSize > 16) {
+      fontSize -= 3;
+      bx.font = `bold ${fontSize}px Fredoka`;
+      width = bx.measureText(levelName).width;
+    }
+
+    bx.textAlign = 'center';
+    bx.textBaseline = 'middle';
+    bx.fillStyle = '#FFD700';
+    bx.shadowColor = '#FF8C00';
+    bx.shadowBlur = 20;
+    bx.fillText(levelName, x, y);
+
+    bx.restore();
   }
 
   private drawSun(bx: CanvasRenderingContext2D, x: number, y: number) {

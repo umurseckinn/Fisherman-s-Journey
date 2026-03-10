@@ -8,6 +8,9 @@ const K = {
   personalBest: 'fj_personalBest',
   activeVehicle: 'fj_activeVehicle',
   selectedStartLevel: 'fj_selectedStartLevel',
+  userSelectedStartLevel: 'fj_userSelectedStartLevel',
+  userUnlockedLevel: 'fj_userUnlockedLevel',
+  adminMode: 'fj_adminMode',
   vehicleOwned: (id: string) => `fj_vehicle_${id}_owned`,
   vehicleSto:   (id: string, n: 1|2|3|4|5) => `fj_vehicle_${id}_sto_${n}`,
   vehicleRod:   (id: string, n: 1|2|3|4|5) => `fj_vehicle_${id}_rod_${n}`,
@@ -95,6 +98,43 @@ export function setSelectedStartLevel(level: number) {
   setNum(K.selectedStartLevel, clamped);
 }
 
+export function getUserSelectedStartLevel(): number {
+  const raw = getNum(K.userSelectedStartLevel, 1);
+  return Math.min(100, Math.max(1, raw));
+}
+
+export function setUserSelectedStartLevel(level: number) {
+  const clamped = Math.min(100, Math.max(1, Math.floor(level)));
+  setNum(K.userSelectedStartLevel, clamped);
+}
+
+export function getUserUnlockedLevel(): number {
+  const raw = getNum(K.userUnlockedLevel, 1);
+  return Math.min(100, Math.max(1, raw));
+}
+
+export function updateUserUnlockedLevel(level: number) {
+  const clamped = Math.min(100, Math.max(1, Math.floor(level)));
+  setNum(K.userUnlockedLevel, Math.max(getUserUnlockedLevel(), clamped));
+}
+
+export function getAdminMode(): boolean {
+  return getBool(K.adminMode);
+}
+
+export function setAdminMode(value: boolean) {
+  setBool(K.adminMode, value);
+}
+
+export function getStartLevelForMode(): number {
+  if (getAdminMode()) {
+    return getSelectedStartLevel();
+  }
+  const unlocked = getUserUnlockedLevel();
+  const selected = getUserSelectedStartLevel();
+  return Math.min(unlocked, selected);
+}
+
 // ── Vehicle Ownership ─────────────────────────────────────────────────────────
 
 export function isVehicleOwned(id: string): boolean {
@@ -141,6 +181,9 @@ export function resetProfile(vehicleIds: string[]) {
   localStorage.removeItem(K.personalBest);
   localStorage.removeItem(K.activeVehicle);
   localStorage.removeItem(K.selectedStartLevel);
+  localStorage.removeItem(K.userSelectedStartLevel);
+  localStorage.removeItem(K.userUnlockedLevel);
+  localStorage.removeItem(K.adminMode);
   vehicleIds.forEach(id => {
     localStorage.removeItem(K.vehicleOwned(id));
     [1,2,3,4,5].forEach(n => {

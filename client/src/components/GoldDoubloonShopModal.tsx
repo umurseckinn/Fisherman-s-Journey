@@ -55,18 +55,17 @@ export function GoldDoubloonShopModal({ isOpen, onClose, onPurchase }: GoldDoubl
 
       {/* Overlay */}
       <div
-        className="absolute inset-0 z-[200] flex items-end justify-center p-0"
+        className="absolute inset-0 z-[200] flex items-center justify-center p-3"
         style={{ background: 'rgba(2, 13, 34, 0.85)', backdropFilter: 'blur(4px)' }}
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
         {/* Modal container */}
         <div
-          className="gd-shop-modal relative w-full max-w-[450px] rounded-t-[28px] overflow-hidden"
+          className="gd-shop-modal relative w-full max-w-[450px] rounded-[28px] overflow-hidden"
           style={{
             background: 'linear-gradient(160deg, #0a1628 0%, #0d1f3c 50%, #0a1628 100%)',
             border: '1.5px solid rgba(255,215,0,0.35)',
-            borderBottom: 'none',
-            maxHeight: '92vh',
+            maxHeight: 'calc(100vh - 24px)',
           }}
         >
           {/* Inner glow top edge */}
@@ -87,7 +86,7 @@ export function GoldDoubloonShopModal({ isOpen, onClose, onPurchase }: GoldDoubl
           </button>
 
           {/* Scrollable content */}
-          <div style={{ overflowY: 'auto', maxHeight: '92vh', padding: '24px 16px 32px' }}>
+          <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 24px)', padding: '24px 16px 32px', paddingBottom: 'calc(32px + env(safe-area-inset-bottom))' }}>
 
             {/* Header */}
             <div style={{ textAlign: 'center', marginBottom: '20px', paddingTop: '4px' }}>
