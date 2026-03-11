@@ -118,6 +118,9 @@ export class GameEffects {
     private legendaryOpacity = 0;
     private legendaryScale = 0;
     private legendaryMs = 0;
+    private hookBreakOpacity = 0;
+    private hookBreakScale = 0;
+    private hookBreakMs = 0;
     private canvasW = 450;
     private canvasH = 800;
 
@@ -301,6 +304,16 @@ export class GameEffects {
         this.spawnCircles(x, y, 5, '#FF7043', 6, 3, 400);
     }
 
+    /** Olta kırılması animasyonu */
+    spawnHookBreak(x: number, y: number): void {
+        this.shakeScreen(6, 6);
+        this.flashOverlay('rgba(255,120,80,0.8)', 0.18, 180);
+        this.spawnStars(x, y, 10, '#FFB36B', 7, 4.5, 550);
+        this.spawnCircles(x, y, 6, '#FF7043', 6, 3.5, 500);
+        this.spawnRing(x, y, 22, 420);
+        this.hookBreakMs = 650;
+    }
+
     // ─── Screen shake ─────────────────────────────────────────────────────────
     shakeScreen(magnitude: number, frames = 4): void {
         this.shakeMag = magnitude;
@@ -467,6 +480,12 @@ export class GameEffects {
             this.legendaryScale = Easing.easeOutBack(t) * 1.2;
             this.legendaryOpacity = Math.min(1, this.legendaryMs / 200);
         }
+        if (this.hookBreakMs > 0) {
+            this.hookBreakMs -= deltaTime;
+            const t = Math.min(1, (650 - Math.max(0, this.hookBreakMs)) / 220);
+            this.hookBreakScale = Easing.easeOutBack(t) * 1.15;
+            this.hookBreakOpacity = Math.min(1, this.hookBreakMs / 220);
+        }
 
         // Partiküller
         const dt = deltaTime;
@@ -572,6 +591,19 @@ export class GameEffects {
             ctx.fillText('LEGENDARY!', 0, 0);
             ctx.restore();
         }
+        if (this.hookBreakMs > 0 && this.hookBreakOpacity > 0) {
+            ctx.save();
+            ctx.globalAlpha = this.hookBreakOpacity;
+            ctx.translate(W / 2, H * 0.35);
+            ctx.scale(this.hookBreakScale, this.hookBreakScale);
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 48px Fredoka';
+            ctx.fillStyle = '#FF4D4D';
+            ctx.shadowColor = '#FF0000';
+            ctx.shadowBlur = 18;
+            ctx.fillText('ROD BROKEN!', 0, 0);
+            ctx.restore();
+        }
 
         // Flash overlay — EN ÜSTTE, shake transform dışında
         if (this.flashOpacity > 0.01) {
@@ -626,6 +658,7 @@ export class GameEffects {
         this.zoomScale = 1;
         this.boatBobOffset = 0;
         this.legendaryMs = 0;
+        this.hookBreakMs = 0;
         this.waterBlips = [];
         this.trailHistory = [];
     }

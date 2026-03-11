@@ -64,7 +64,28 @@ const ROD_BONUSES = [
   { swingBonus: 0.006, castBonus: 0.36, returnBonus: 0.34, depthBonus: 11, attemptsBonus: 1, coralBonus: 30, kelpReduction: 0.35 },
 ];
 
-function makeRodUpgrades(costs: number[], reqs: (number | undefined)[]): RodUpgrade[] {
+const STORAGE_COST_MULTIPLIERS = [1.0, 2.15, 3.7, 5.9, 8.8];
+const ROD_COST_MULTIPLIERS = [1.0, 2.05, 3.35, 5.4, 8.1];
+const BASE_COST_MULTIPLIER = 2.2;
+const TIER_COST_STEP = 0.12;
+
+function scaleCosts(base: number, tier: number, multipliers: number[]) {
+  const tierFactor = 1 + (tier - 1) * TIER_COST_STEP;
+  return multipliers.map(m => Math.round(base * BASE_COST_MULTIPLIER * m * tierFactor));
+}
+
+function makeStorageUpgrades(kgBonuses: number[], baseCost: number, tier: number, reqs: (number | undefined)[]): StorageUpgrade[] {
+  const costs = scaleCosts(baseCost, tier, STORAGE_COST_MULTIPLIERS);
+  return kgBonuses.map((kgBonus, i) => ({
+    level: i + 1,
+    kgBonus,
+    cost: costs[i],
+    reqLevel: reqs[i],
+  }));
+}
+
+function makeRodUpgrades(baseCost: number, tier: number, reqs: (number | undefined)[]): RodUpgrade[] {
+  const costs = scaleCosts(baseCost, tier, ROD_COST_MULTIPLIERS);
   return costs.map((cost, i) => ({
     level: i + 1,
     ...ROD_BONUSES[i],
@@ -95,17 +116,8 @@ export const VEHICLES: VehicleData[] = [
       coralProtection: 0,
       kelpDuration: 1.8,
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 8,  cost: 20 },
-      { level: 2, kgBonus: 13, cost: 45,  reqLevel: 6 },
-      { level: 3, kgBonus: 18, cost: 90, reqLevel: 16 },
-      { level: 4, kgBonus: 24, cost: 160, reqLevel: 31 },
-      { level: 5, kgBonus: 32, cost: 275, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [25, 55, 110, 200, 350],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([8, 13, 18, 24, 32], 20, 1, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(25, 1, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_dinghy.png', nativeWidth: 981,  nativeHeight: 680,  rodTipX: 571,  rodTipY: 2 },
   },
 
@@ -118,7 +130,7 @@ export const VEHICLES: VehicleData[] = [
     name: 'The Painted Skiff',
     captain: 'Daring Danny',
     file: 'the_painted_skiff.png',
-    unlockCost: 100,
+    unlockCost: 450,
     minLevel: 1,
     base: {
       storage: 32,
@@ -131,17 +143,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 1.6,
       special: 'kelpDuration baseline -0.2s',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 10, cost: 30 },
-      { level: 2, kgBonus: 16, cost: 70, reqLevel: 6 },
-      { level: 3, kgBonus: 22, cost: 140, reqLevel: 16 },
-      { level: 4, kgBonus: 28, cost: 250, reqLevel: 31 },
-      { level: 5, kgBonus: 36, cost: 425, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [38, 85, 165, 300, 525],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([10, 16, 22, 28, 36], 30, 2, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(38, 2, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_painted_skiff.png', nativeWidth: 855,  nativeHeight: 710,  rodTipX: 543,  rodTipY: 2 },
   },
 
@@ -154,7 +157,7 @@ export const VEHICLES: VehicleData[] = [
     name: 'The Fiberglass',
     captain: 'Expert Eddie',
     file: 'the_fiberglass.png',
-    unlockCost: 367,
+    unlockCost: 1200,
     minLevel: 6,
     base: {
       storage: 45,
@@ -166,17 +169,8 @@ export const VEHICLES: VehicleData[] = [
       coralProtection: 15,
       kelpDuration: 1.4,
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 13, cost: 45 },
-      { level: 2, kgBonus: 20, cost: 100,  reqLevel: 6 },
-      { level: 3, kgBonus: 27, cost: 200,  reqLevel: 16 },
-      { level: 4, kgBonus: 34, cost: 360,  reqLevel: 31 },
-      { level: 5, kgBonus: 43, cost: 625, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [55, 125, 240, 440, 775],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([13, 20, 27, 34, 43], 45, 3, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(55, 3, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_fiberglass.png', nativeWidth: 1047, nativeHeight: 726,  rodTipX: 1047 * 0.11,  rodTipY: 726 * 0.2 },
   },
 
@@ -189,7 +183,7 @@ export const VEHICLES: VehicleData[] = [
     name: 'The Motor Cruiser',
     captain: 'Captain Ken',
     file: 'the_motor_cruiser.png',
-    unlockCost: 917,
+    unlockCost: 2800,
     minLevel: 11,
     base: {
       storage: 62,
@@ -202,17 +196,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 1.2,
       special: 'returnSpeed +20% bonus on top of base',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 16, cost: 70 },
-      { level: 2, kgBonus: 24, cost: 150,  reqLevel: 6 },
-      { level: 3, kgBonus: 32, cost: 290,  reqLevel: 16 },
-      { level: 4, kgBonus: 42, cost: 525, reqLevel: 31 },
-      { level: 5, kgBonus: 54, cost: 900, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [85, 185, 350, 650, 1100],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([16, 24, 32, 42, 54], 70, 4, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(85, 4, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_motor_cruiser.png', nativeWidth: 1086, nativeHeight: 810,  rodTipX: 20,   rodTipY: 2 },
   },
 
@@ -225,7 +210,7 @@ export const VEHICLES: VehicleData[] = [
     name: 'The Speedster',
     captain: 'Turbo Trev',
     file: 'the_speedster.png',
-    unlockCost: 1667,
+    unlockCost: 4500,
     minLevel: 16,
     base: {
       storage: 78,
@@ -238,17 +223,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 1.0,
       special: 'swingSpeed +10% bonus',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 18, cost: 100 },
-      { level: 2, kgBonus: 28, cost: 210,  reqLevel: 6 },
-      { level: 3, kgBonus: 38, cost: 400,  reqLevel: 16 },
-      { level: 4, kgBonus: 50, cost: 725, reqLevel: 31 },
-      { level: 5, kgBonus: 64, cost: 1250, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [120, 260, 500, 925, 1550],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([18, 28, 38, 50, 64], 100, 5, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(120, 5, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_speedster.png', nativeWidth: 1338, nativeHeight: 718,  rodTipX: 1338 * 0.67,  rodTipY: 718 * 0.15 },
   },
 
@@ -274,17 +250,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 0.85,
       special: 'skeleton cash penalty -25%',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 22, cost: 140 },
-      { level: 2, kgBonus: 34, cost: 290,  reqLevel: 6 },
-      { level: 3, kgBonus: 46, cost: 550, reqLevel: 16 },
-      { level: 4, kgBonus: 60, cost: 975, reqLevel: 31 },
-      { level: 5, kgBonus: 78, cost: 1650, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [165, 350, 675, 1250, 2100],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([22, 34, 46, 60, 78], 140, 6, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(165, 6, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_trawler.png', nativeWidth: 1083, nativeHeight: 810,  rodTipX: 22,   rodTipY: 2 },
   },
 
@@ -310,17 +277,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 0.70,
       special: 'King Fish visual weight display shows -5 kg (UI only)',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 26, cost: 190 },
-      { level: 2, kgBonus: 40, cost: 390,  reqLevel: 6 },
-      { level: 3, kgBonus: 54, cost: 725, reqLevel: 16 },
-      { level: 4, kgBonus: 70, cost: 1300, reqLevel: 31 },
-      { level: 5, kgBonus: 92, cost: 2200, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [220, 460, 900, 1650, 2800],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([26, 40, 54, 70, 92], 190, 7, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(220, 7, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_captains_vessel.png', nativeWidth: 1128, nativeHeight: 846,  rodTipX: 1128 * 0.045,  rodTipY: 846 * 0.025 },
   },
 
@@ -346,17 +304,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 0.55,
       special: 'Radar booster duration ×2',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 30,  cost: 250 },
-      { level: 2, kgBonus: 48,  cost: 500, reqLevel: 6 },
-      { level: 3, kgBonus: 64,  cost: 950, reqLevel: 16 },
-      { level: 4, kgBonus: 84,  cost: 1700, reqLevel: 31 },
-      { level: 5, kgBonus: 110, cost: 2850, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [290, 600, 1150, 2150, 3600],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([30, 48, 64, 84, 110], 250, 8, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(290, 8, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_research_vessel.png', nativeWidth: 1248, nativeHeight: 740,  rodTipX: 1248 * 0.06,  rodTipY: 740 * 0.22 },
   },
 
@@ -382,17 +331,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 0.40,
       special: 'Sunken Boat curse scenario (5%) always gives positive outcome',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 34,  cost: 325 },
-      { level: 2, kgBonus: 54,  cost: 650, reqLevel: 6 },
-      { level: 3, kgBonus: 72,  cost: 1200, reqLevel: 16 },
-      { level: 4, kgBonus: 94,  cost: 2150, reqLevel: 31 },
-      { level: 5, kgBonus: 122, cost: 3600, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [375, 775, 1500, 2800, 4650],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([34, 54, 72, 94, 122], 325, 9, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(375, 9, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_corsair.png', nativeWidth: 1536, nativeHeight: 1024, rodTipX: 1418, rodTipY: 27 },
   },
 
@@ -418,17 +358,8 @@ export const VEHICLES: VehicleData[] = [
       kelpDuration: 0.25,
       special: 'Golden Levels fish value multiplier ×2.5 instead of ×1.5',
     },
-    storageUpgrades: [
-      { level: 1, kgBonus: 38,  cost: 425 },
-      { level: 2, kgBonus: 60,  cost: 850, reqLevel: 6 },
-      { level: 3, kgBonus: 80,  cost: 1550, reqLevel: 16 },
-      { level: 4, kgBonus: 104, cost: 2750, reqLevel: 31 },
-      { level: 5, kgBonus: 136, cost: 4600, reqLevel: 51 },
-    ],
-    rodUpgrades: makeRodUpgrades(
-      [490, 1000, 1950, 3600, 6000],
-      [undefined, 11, 21, 41, 61]
-    ),
+    storageUpgrades: makeStorageUpgrades([38, 60, 80, 104, 136], 425, 10, [undefined, 6, 16, 31, 51]),
+    rodUpgrades: makeRodUpgrades(490, 10, [undefined, 11, 21, 41, 61]),
     sprite: { file: 'the_legend.png', nativeWidth: 1536, nativeHeight: 1024, rodTipX: 1402, rodTipY: 33 },
   },
 ];

@@ -1,16 +1,34 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Clock, Fuel, Anchor, Pause, RotateCcw, Home as HomeIcon, Play, Bomb, X } from "lucide-react";
 import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y, LEVEL_CONFIG } from "@/game/GameEngine";
+import { type TutorialState } from "@/game/TutorialManager";
+import { LEVEL_NAMES } from "@/game/levelNames";
 import { VEHICLES, getEffectiveStats } from "@/game/vehicles";
-import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown, getSelectedStartLevel } from "@/game/storage";
-import { type GameState, type Entity, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
+import {
+  getActiveVehicleId,
+  getStoFlags,
+  getRodFlags,
+  submitPersonalBest,
+  type RunScoreBreakdown,
+  getStartLevelForMode,
+  getAdminMode,
+  updateUserUnlockedLevel,
+  getPermanentCoins,
+  setPermanentCoins,
+  isTutorialCompleted,
+  setTutorialCompleted
+} from "@/game/storage";
+import { type GameState, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
 import { GameOverModal } from "@/components/GameOverModal";
-import { InfoCard } from "@/components/InfoCard";
+import { CursedLevelCard } from "@/components/CursedLevelCard";
 import { BoosterPurchaseModal, type BoosterType } from "@/components/BoosterPurchaseModal";
 import { InsufficientFuelModal } from "@/components/InsufficientFuelModal";
+import { InsufficientRepairModal } from "@/components/InsufficientRepairModal";
 import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
-import { getPermanentCoins, setPermanentCoins } from "@/game/storage";
+import { RegionIntroCard } from "@/components/RegionIntroCard";
+import { WelcomeGiftModal } from "@/components/WelcomeGiftModal";
+import { MarketTutorialOverlay, MarketTutorialStep } from "@/components/MarketTutorialOverlay";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 
@@ -18,9 +36,10 @@ export default function Game() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const whirlpoolImgRef = useRef<HTMLImageElement>(null);
+  const playAreaRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const [gameState, setGameState] = useState<"playing" | "gameover" | "shop" | "win">("playing");
-  const initialLevel = getSelectedStartLevel();
+  const initialLevel = getStartLevelForMode();
 
   const [score, setScore] = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState<RunScoreBreakdown | null>(null);
@@ -45,14 +64,34 @@ export default function Game() {
   const [maxHookAttempts, setMaxHookAttempts] = useState(effectiveStats.castAttempts);
   const [activeCurse, setActiveCurse] = useState<CurseType>('none');
   const [curseTimerMs, setCurseTimerMs] = useState(0);
-  const [caughtFish, setCaughtFish] = useState<Entity | null>(null);
-  const [selectedEntityForInfo, setSelectedEntityForInfo] = useState<FishClass | null>(null);
+  const [curseCard, setCurseCard] = useState<CurseType | null>(null);
+  const [regionCardStartLevel, setRegionCardStartLevel] = useState<number | null>(null);
   const [gameOverReason, setGameOverReason] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
   const [purchaseBoosterType, setPurchaseBoosterType] = useState<BoosterType | null>(null);
   const [showFuelModal, setShowFuelModal] = useState(false);
+  const [showRepairModal, setShowRepairModal] = useState(false);
   const [showDoubloonShop, setShowDoubloonShop] = useState(false);
+  const [isFuelShopOpened, setIsFuelShopOpened] = useState(false);
+  const [showWelcomeGift, setShowWelcomeGift] = useState(false);
+  const [showMarketTutorial, setShowMarketTutorial] = useState(false);
+  const [marketTutorialStep, setMarketTutorialStep] = useState<MarketTutorialStep>('completed');
+  const [isGameOverFading, setIsGameOverFading] = useState(false);
+  const [perfStats, setPerfStats] = useState<{
+    enabled: boolean;
+    fps: number;
+    avgFrameMs: number;
+    avgUpdateMs: number;
+    avgDrawMs: number;
+    fishCount: number;
+    level: number;
+  } | null>(null);
+  const [tutorialState, setTutorialState] = useState<TutorialState | null>(null);
+  const [tntAim, setTntAim] = useState<{ x: number; y: number } | null>(null);
+  const [isPointerDown, setIsPointerDown] = useState(false);
+  const [tntDragged, setTntDragged] = useState(false);
+  const [tntDragStart, setTntDragStart] = useState<{ x: number; y: number } | null>(null);
 
   const [upgrades, setUpgrades] = useState({
     rodLevel: derivedRodLevel,
@@ -67,7 +106,16 @@ export default function Game() {
     coralProtection: effectiveStats.coralProtection,
     kelpDuration: effectiveStats.kelpDuration,
   });
-  const [activeBoosters, setActiveBoosters] = useState(() => {
+  type BoosterState = {
+    speed: boolean;
+    value: boolean;
+    lucky: boolean;
+    harpoon: number;
+    net: number;
+    tnt: number;
+    anchor: number;
+  };
+  const [activeBoosters, setActiveBoosters] = useState<BoosterState>(() => {
     const saved = localStorage.getItem('global_boosters');
     if (saved) {
       const boosters = JSON.parse(saved);
@@ -90,10 +138,70 @@ export default function Game() {
     };
   });
   const [selectedBooster, setSelectedBooster] = useState<'harpoon' | 'net' | 'tnt' | 'anchor' | null>(null);
+  const shownCurseLevelsRef = useRef<Set<number>>(new Set());
+  const shownRegionLevelsRef = useRef<Set<number>>(new Set());
+  const curseCardRef = useRef<CurseType | null>(null);
+  const regionCardRef = useRef<number | null>(null);
+  const pendingCurseRef = useRef<CurseType | null>(null);
 
   useEffect(() => {
     localStorage.setItem('global_boosters', JSON.stringify(activeBoosters));
   }, [activeBoosters]);
+
+  useEffect(() => {
+    if (currentLevel !== 1) return;
+    setActiveBoosters(prev => {
+      const next = {
+        ...prev,
+        harpoon: Math.max(1, Math.floor(prev.harpoon || 0)),
+        net: Math.max(1, Math.floor(prev.net || 0)),
+        tnt: Math.max(1, Math.floor(prev.tnt || 0)),
+        anchor: Math.max(1, Math.floor(prev.anchor || 0))
+      };
+      if (engineRef.current) {
+        engineRef.current.getState().boosters = { ...next };
+      }
+      return next;
+    });
+  }, [currentLevel]);
+
+  useEffect(() => {
+    curseCardRef.current = curseCard;
+  }, [curseCard]);
+
+  useEffect(() => {
+    regionCardRef.current = regionCardStartLevel;
+  }, [regionCardStartLevel]);
+
+  const handleTriggerGameOver = useCallback((reason: string | null) => {
+    setIsGameOverFading(true);
+    setTimeout(() => {
+      setGameState("gameover");
+      setGameOverReason(reason);
+
+      const lastEngine = engineRef.current;
+      if (lastEngine) {
+        const finalScore = score;
+        const finalLevel = currentLevel;
+
+        const baseScore = runStats.current.totalCoins;
+        const depthBonus = Math.max(runStats.current.maxLevel, finalLevel) * 50;
+        const kingBonus = runStats.current.kingFishCount * 500;
+        const totalFinalScore = baseScore + depthBonus + kingBonus;
+
+        const isNewRecord = submitPersonalBest(totalFinalScore);
+
+        setScoreBreakdown({
+          baseScore,
+          depthBonus,
+          kingBonus,
+          finalScore: totalFinalScore,
+          isNewRecord
+        });
+      }
+      setIsGameOverFading(false);
+    }, 1000);
+  }, [score, currentLevel]);
 
   useEffect(() => {
     if (!canvasRef.current || !bgCanvasRef.current || gameState !== "playing") return;
@@ -103,6 +211,10 @@ export default function Game() {
     if (!ctx || !bgCtx) return;
 
     const levelConfig = LEVEL_CONFIG[currentLevel as keyof typeof LEVEL_CONFIG];
+    const levelCurse = levelConfig?.curse ?? 'none';
+    const regionStartLevels = new Set([1, 21, 31, 41, 61, 81]);
+    const shouldShowRegion = regionStartLevels.has(currentLevel) && !shownRegionLevelsRef.current.has(currentLevel);
+    const shouldShowCurse = levelCurse !== 'none' && !shownCurseLevelsRef.current.has(currentLevel);
     const initialState: GameState = {
       score,
       level: currentLevel,
@@ -140,33 +252,18 @@ export default function Game() {
       zapShockMs: 0,
       moonSlowMs: 0,
       lavaBurnMs: 0,
-      activeCurse: 'none',
+      activeCurse: levelCurse,
       curseTimerMs: 0,
       boosters: activeBoosters,
       activeBooster: selectedBooster,
       anchorEffectTimerMs: 0,
-      isPaused: false
+      startTimerMs: 750,
+      isPaused: shouldShowRegion || shouldShowCurse
     };
 
     const engine = new GameEngine(ctx, bgCtx, whirlpoolImgRef.current, initialState, {
       onGameOver: (finalScore, finalLevel, reason) => {
-        setGameState("gameover");
-        setGameOverReason(reason ?? null);
-
-        const baseScore = runStats.current.totalCoins;
-        const depthBonus = Math.max(runStats.current.maxLevel, finalLevel) * 50;
-        const kingBonus = runStats.current.kingFishCount * 500;
-        const totalFinalScore = baseScore + depthBonus + kingBonus;
-
-        const isNewRecord = submitPersonalBest(totalFinalScore);
-
-        setScoreBreakdown({
-          baseScore,
-          depthBonus,
-          kingBonus,
-          finalScore: totalFinalScore,
-          isNewRecord
-        });
+        handleTriggerGameOver(reason ?? null);
       },
       onScoreUpdate: (newScore) => setScore(newScore),
       onEarning: (amount) => {
@@ -174,6 +271,9 @@ export default function Game() {
       },
       onLevelComplete: (level) => {
         runStats.current.maxLevel = Math.max(runStats.current.maxLevel, level);
+        if (!getAdminMode()) {
+          updateUserUnlockedLevel(level + 1);
+        }
         const state = engineRef.current?.getState();
         if (state) {
           setTimeLeft(Math.ceil(state.timeRemaining));
@@ -213,27 +313,56 @@ export default function Game() {
           confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
           return;
         }
+
+        if (level === 1) {
+          if (!isTutorialCompleted()) {
+            setTutorialCompleted(true);
+            setShowWelcomeGift(true);
+            if (engineRef.current) {
+              engineRef.current.pause();
+              setIsPaused(true);
+            }
+          }
+        }
+
         setGameState("shop");
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       },
       onFishCaught: (fish) => {
-        setCaughtFish(fish);
-        setTimeout(() => setCaughtFish(null), 2000);
         if (fish.type === 'king') {
           runStats.current.kingFishCount++;
         }
       },
       onBoosterUsed: (type: 'harpoon' | 'net' | 'tnt' | 'anchor') => {
-        setActiveBoosters((prev: Record<string, any>) => ({
+        setActiveBoosters((prev: BoosterState) => ({
           ...prev,
           [type]: Math.max(0, Math.floor(prev[type] - 1))
         }));
         setSelectedBooster(null);
+        const tutorial = engineRef.current?.getTutorialState();
+        if (tutorial?.step === 'tnt_action' && type === 'tnt') {
+          engineRef.current?.handleTutorialInteraction('drag_tnt_complete');
+        } else if (tutorial?.step === 'net_action' && type === 'net') {
+          engineRef.current?.handleTutorialInteraction('tap_sea_complete');
+        }
       }
     });
 
     engine.start();
     engineRef.current = engine;
+
+    pendingCurseRef.current = shouldShowCurse ? levelCurse : null;
+    if (shouldShowRegion) {
+      shownRegionLevelsRef.current.add(currentLevel);
+      engine.pause();
+      setIsPaused(true);
+      setRegionCardStartLevel(currentLevel);
+    } else if (shouldShowCurse) {
+      shownCurseLevelsRef.current.add(currentLevel);
+      engine.pause();
+      setIsPaused(true);
+      setCurseCard(levelCurse);
+    }
 
     const uiSync = setInterval(() => {
       const state = engineRef.current?.getState();
@@ -251,6 +380,11 @@ export default function Game() {
         setCurseTimerMs(state.curseTimerMs || 0);
         setIsPaused(state.isPaused || false);
 
+        const perf = engineRef.current?.getPerfStats();
+        if (perf?.enabled) {
+          setPerfStats({ ...perf });
+        }
+
         if (state.upgrades) {
           setUpgrades(prev => ({
             ...prev,
@@ -267,6 +401,14 @@ export default function Game() {
             kelpDuration: state.upgrades.kelpDuration,
           }));
         }
+        const tutorial = engineRef.current?.getTutorialState();
+        setTutorialState(tutorial ? { ...tutorial } : null);
+        const hook = engineRef.current?.getState().hook;
+        if (hook?.state === 'tnt_aiming' && hook.targetX !== undefined && hook.targetY !== undefined) {
+          setTntAim({ x: hook.targetX, y: hook.targetY });
+        } else {
+          setTntAim(null);
+        }
       }
     }, 200);
 
@@ -281,6 +423,168 @@ export default function Game() {
       engineRef.current.getState().activeBooster = selectedBooster;
     }
   }, [selectedBooster]);
+
+  const tutorialAction = tutorialState?.allowedAction ?? null;
+  const tutorialFrozen = Boolean(tutorialState?.isFrozen);
+  const isTntAction = tutorialState?.step === 'tnt_action';
+  const isHarpoonAction = tutorialState?.step === 'harpoon_action';
+  const allowPointerDown = !tutorialFrozen || tutorialAction === 'drag_tnt' || tutorialAction === 'tap_sea' || tutorialAction === 'aim_harpoon';
+  const allowPointerMove = !tutorialFrozen || tutorialAction === 'drag_tnt' || tutorialAction === 'aim_harpoon';
+  const overlayBlocksInput = tutorialFrozen && (tutorialAction === 'tap_tnt' || tutorialAction === 'tap_net' || tutorialAction === 'tap_harpoon' || tutorialAction === 'tap_anchor');
+  const overlayOpacity = tutorialState?.overlayOpacity ?? 0.75;
+  const tntGridSize = 240;
+
+  const tutorialTarget = (() => {
+    if (!tutorialState?.targetFishIds.length) return null;
+    const engine = engineRef.current;
+    if (!engine) return null;
+    const targets = engine.getState().fishes.filter(fish => tutorialState.targetFishIds.includes(fish.id));
+    if (targets.length === 0) return null;
+    const sum = targets.reduce((acc, fish) => ({ x: acc.x + fish.x, y: acc.y + fish.y }), { x: 0, y: 0 });
+    const centerX = sum.x / targets.length;
+    const centerY = sum.y / targets.length;
+    const radius = Math.max(40, ...targets.map(fish => Math.hypot(fish.x - centerX, fish.y - centerY) + fish.radius));
+    return { centerX, centerY, radius, type: targets[0].type };
+  })();
+
+  const clampTntCenter = (center: { x: number; y: number }) => {
+    const half = tntGridSize / 2;
+    const minX = half;
+    const maxX = CANVAS_WIDTH - half;
+    const minY = SEA_LEVEL_Y + half;
+    const maxY = CANVAS_HEIGHT - half;
+    return {
+      x: Math.min(maxX, Math.max(minX, center.x)),
+      y: Math.min(maxY, Math.max(minY, center.y))
+    };
+  };
+
+  const tntCenter = (() => {
+    if (!tutorialTarget) return null;
+    return clampTntCenter({ x: tutorialTarget.centerX, y: tutorialTarget.centerY });
+  })();
+
+  const tntPreviewCenter = (() => {
+    if (!isTntAction || tutorialAction !== 'drag_tnt' || !isPointerDown || !tntAim) return null;
+    return clampTntCenter(tntAim);
+  })();
+
+  const spotlightFish = (() => {
+    if (!tutorialFrozen || tutorialState?.spotlightTarget !== 'target_fish' || isTntAction) return null;
+    const engine = engineRef.current;
+    const rect = playAreaRef.current?.getBoundingClientRect();
+    if (!engine || !rect || !tutorialTarget) return null;
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+    const radius = Math.max(60, tutorialTarget.radius * Math.max(scaleX, scaleY) + 30);
+    return {
+      x: tutorialTarget.centerX * scaleX,
+      y: tutorialTarget.centerY * scaleY,
+      radius
+    };
+  })();
+
+  const harpoonGuide = (() => {
+    if (!tutorialFrozen || tutorialState?.step !== 'harpoon_action') return null;
+    const engine = engineRef.current;
+    const rect = playAreaRef.current?.getBoundingClientRect();
+    if (!engine || !rect || !tutorialTarget) return null;
+    const pivot = engine.getHookPivotPositionOnCanvas();
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+    const startX = pivot.x * scaleX;
+    const startY = pivot.y * scaleY;
+    const endX = tutorialTarget.centerX * scaleX;
+    const endY = tutorialTarget.centerY * scaleY;
+    const length = Math.hypot(endX - startX, endY - startY);
+    const angle = Math.atan2(endY - startY, endX - startX);
+    return { startX, startY, length, angle };
+  })();
+
+  const overlayBackground = tutorialFrozen && !isHarpoonAction && !isTntAction && tutorialAction !== 'tap_sea'
+    ? spotlightFish
+      ? `radial-gradient(circle ${spotlightFish.radius}px at ${spotlightFish.x}px ${spotlightFish.y}px, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${spotlightFish.radius}px, rgba(0,0,0,${overlayOpacity}) ${spotlightFish.radius + 40}px)`
+      : `rgba(0,0,0,${overlayOpacity})`
+    : undefined;
+  const blurOverlayEnabled = Boolean(overlayBackground);
+
+  const boosterItems = [
+    { id: 'harpoon', imageSrc: '/assets/boosters/harpoon.png', label: 'Harpoon', count: activeBoosters.harpoon },
+    { id: 'net', imageSrc: '/assets/boosters/net.png', label: 'Net', count: activeBoosters.net },
+    { id: 'tnt', imageSrc: '/assets/boosters/tnt.png', label: 'TNT', count: activeBoosters.tnt },
+    { id: 'anchor', imageSrc: '/assets/boosters/the_anchor.png', label: 'Anchor', count: activeBoosters.anchor },
+  ];
+  const tutorialBoosterId = tutorialFrozen && tutorialState?.spotlightTarget?.endsWith('_btn')
+    ? tutorialState.spotlightTarget.replace('_btn', '')
+    : null;
+  const isTutorialActive = Boolean(tutorialState && tutorialState.step !== 'completed');
+  const visibleBoosters = isTutorialActive
+    ? (tutorialBoosterId ? boosterItems.filter(item => item.id === tutorialBoosterId) : [])
+    : boosterItems;
+
+  useEffect(() => {
+    if (tutorialState?.step !== 'tnt_action') return;
+    if (!tntCenter) return;
+    engineRef.current?.setTutorialTntAim(tntCenter.x, tntCenter.y);
+  }, [tutorialState?.step, tutorialState?.targetFishIds.join(','), tntCenter?.x, tntCenter?.y]);
+
+  useEffect(() => {
+    if (tutorialState?.step === 'net_action') {
+      setSelectedBooster('net');
+      if (engineRef.current) {
+        engineRef.current.getState().activeBooster = 'net';
+      }
+    }
+    if (tutorialState?.step === 'harpoon_action') {
+      setSelectedBooster('harpoon');
+      if (engineRef.current) {
+        engineRef.current.getState().activeBooster = 'harpoon';
+      }
+    }
+  }, [tutorialState?.step]);
+
+  const handleBoosterClick = (booster: { id: string; count: number }) => {
+    const tutorial = engineRef.current?.getTutorialState();
+    if (isTutorialActive) {
+      const allowedMap: Record<string, string> = {
+        tap_tnt: 'tnt',
+        tap_net: 'net',
+        tap_harpoon: 'harpoon',
+        tap_anchor: 'anchor'
+      };
+      const allowedBooster = tutorialAction ? allowedMap[tutorialAction] : null;
+      if (allowedBooster !== booster.id) return;
+    }
+    if (tutorial?.isFrozen) {
+      const allowed = tutorial.allowedAction;
+      const isAllowed = (booster.id === 'tnt' && allowed === 'tap_tnt')
+        || (booster.id === 'net' && allowed === 'tap_net')
+        || (booster.id === 'harpoon' && allowed === 'tap_harpoon')
+        || (booster.id === 'anchor' && allowed === 'tap_anchor');
+      if (!isAllowed) return;
+      if (allowed) {
+        engineRef.current?.handleTutorialInteraction(allowed);
+      }
+      if (allowed === 'tap_anchor') return;
+    }
+
+    if (booster.count <= 0) {
+      setPurchaseBoosterType(booster.id as BoosterType);
+      setPurchaseModalOpen(true);
+      if (engineRef.current) {
+        engineRef.current.pause();
+        setIsPaused(true);
+      }
+    } else {
+      if (booster.id === 'anchor') {
+        if (engineRef.current) {
+          engineRef.current.activateAnchor();
+        }
+      } else {
+        setSelectedBooster(prev => prev === booster.id ? null : booster.id as any);
+      }
+    }
+  };
 
   const handlePurchase = (pkg: { type: 'all' | 'single', amount: number }) => {
     if (!purchaseBoosterType) return;
@@ -324,6 +628,38 @@ export default function Game() {
       engineRef.current.earnCoins(totalValue);
       engineRef.current.recalculateStorage();
     }
+
+    if (showMarketTutorial && marketTutorialStep === 'sell') {
+      setMarketTutorialStep('fuel');
+    }
+  };
+
+  const handleClaimGift = () => {
+    setActiveBoosters(prev => {
+      const next = {
+        ...prev,
+        harpoon: Math.max(0, Math.floor((prev.harpoon || 0) + 2)),
+        net: Math.max(0, Math.floor((prev.net || 0) + 2)),
+        tnt: Math.max(0, Math.floor((prev.tnt || 0) + 2)),
+        anchor: Math.max(0, Math.floor((prev.anchor || 0) + 2))
+      };
+      localStorage.setItem('global_boosters', JSON.stringify(next));
+      if (engineRef.current) {
+        engineRef.current.getState().boosters = { ...next };
+        engineRef.current.resume();
+        setIsPaused(false);
+      }
+      return next;
+    });
+    setShowWelcomeGift(false);
+    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+
+    // Start market tutorial if not completed
+    const marketDone = localStorage.getItem('market_tutorial_v10') === 'true';
+    if (!marketDone) {
+      setMarketTutorialStep('sell');
+      setShowMarketTutorial(true);
+    }
   };
 
   const buyFuel = () => {
@@ -340,34 +676,57 @@ export default function Game() {
       engineRef.current.getState().score -= fuelCost;
       engineRef.current.getState().upgrades.hasFuel = true;
     }
+
+    if (showMarketTutorial && marketTutorialStep === 'fuel') {
+      setMarketTutorialStep('continue');
+    }
   };
 
-  const REPAIR_COST = 60;
+  const getSawtoothFactor = (level: number) => {
+    const blockIndex = Math.floor((level - 1) / 5);
+    const blockStart = blockIndex * 5 + 1;
+    const progress = (level - blockStart) / 4;
+    const regionIndex = Math.floor((level - 1) / 20);
+    const saw = 0.85 + progress * 0.3;
+    const region = 1 + regionIndex * 0.12;
+    const block = 1 + blockIndex * 0.02;
+    return saw * region * block;
+  };
+  const repairCost = Math.max(1, Math.round(60 * getSawtoothFactor(currentLevel)));
+  const AD_REWARD = 50;
 
   const repairHook = (amount: number) => {
     if (hookAttempts >= maxHookAttempts) return;
-    if (score < REPAIR_COST) return; // Insufficient balance check
+    if (score < repairCost) {
+      setShowRepairModal(true);
+      return;
+    }
 
     const newAttempts = Math.min(maxHookAttempts, hookAttempts + amount);
-    setScore(prev => prev - REPAIR_COST);
+    setScore(prev => prev - repairCost);
     setHookAttempts(newAttempts);
 
     if (engineRef.current) {
-      engineRef.current.getState().score -= REPAIR_COST;
+      engineRef.current.getState().score -= repairCost;
       engineRef.current.getState().hookAttempts = newAttempts;
     }
   };
 
-  const handleWatchAdForFuel = () => {
-    if (upgrades.hasFuel) return;
-    setUpgrades(prev => ({ ...prev, hasFuel: true }));
+  const handleWatchAdReward = () => {
+    setScore(prev => prev + AD_REWARD);
     if (engineRef.current) {
-      engineRef.current.getState().upgrades.hasFuel = true;
+      engineRef.current.getState().score += AD_REWARD;
     }
   };
 
   const handleNextLevel = () => {
     if (!upgrades.hasFuel) return;
+
+    if (showMarketTutorial && marketTutorialStep === 'continue') {
+      setMarketTutorialStep('completed');
+      setShowMarketTutorial(false);
+      localStorage.setItem('market_tutorial_v10', 'true');
+    }
 
     if (currentLevel >= 100) return;
     setCurrentLevel(prev => {
@@ -419,16 +778,25 @@ export default function Game() {
     return `/assets/fish/${type}_fish.png`;
   };
 
-  const groupedInventory = inventory.reduce((acc, item) => {
-    const existing = acc.find(i => i.type === item.type);
-    if (existing) {
-      existing.count++;
-      (existing as any).totalValue += item.value;
-    } else {
-      acc.push({ ...item, count: 1, totalValue: item.value } as any);
-    }
-    return acc;
-  }, [] as (InventoryItem & { count: number, totalValue: number })[]);
+  const isReverseMarket = activeCurse === 'reverse_market' || activeCurse === 'final_3';
+  const groupedInventory = inventory
+    .filter(item => item.type !== 'env_bubbles')
+    .reduce((acc, item) => {
+      const existing = acc.find(i => i.type === item.type);
+      if (existing) {
+        existing.count++;
+        existing.totalValue += isReverseMarket ? Math.round(item.value * 0.5) : item.value;
+      } else {
+        acc.push({
+          id: item.id,
+          type: item.type,
+          name: item.name,
+          count: 1,
+          totalValue: isReverseMarket ? Math.round(item.value * 0.5) : item.value
+        });
+      }
+      return acc;
+    }, [] as { id: string, type: FishClass, name: string, count: number, totalValue: number }[]);
 
   const togglePause = () => {
     if (engineRef.current) {
@@ -441,49 +809,45 @@ export default function Game() {
     }
   };
 
-  const handleEntityInfoOpen = (type: FishClass) => {
-    if (engineRef.current) {
-      engineRef.current.pause();
-      setIsPaused(true);
-    }
-    setSelectedEntityForInfo(type);
-  };
-
   return (
     <div className="relative w-full h-screen bg-slate-900 flex items-center justify-center overflow-hidden"
       style={{
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
-      <div className="relative w-full h-full max-w-[450px] max-h-[800px] bg-sky-100 shadow-2xl overflow-hidden md:rounded-[32px] md:border-8 md:border-slate-800">
+      <div ref={playAreaRef} className="relative w-full h-full max-w-[450px] max-h-[800px] bg-sky-100 shadow-2xl overflow-hidden md:rounded-[32px] md:border-8 md:border-slate-800">
 
         {/* Playable Area */}
         {gameState === "playing" && (
           <>
-            <div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-start pointer-events-none">
-              <div className="flex gap-2 items-center pointer-events-auto">
-                <div
-                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-3 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors"
-                  onClick={() => setShowDoubloonShop(true)}
-                  title="Buy Gold Doubloons"
-                >
-                  <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-6 h-6 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
-                  <span className="text-xl font-display font-bold text-slate-700">{score}</span>
+            <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10 flex justify-between items-start pointer-events-none px-safe">
+              <div className="flex flex-col gap-1.5 items-start pointer-events-auto max-w-[65%]">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors shrink-0"
+                    onClick={() => setShowDoubloonShop(true)}
+                    title="Buy Gold Doubloons"
+                  >
+                    <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
+                    <span className="text-lg font-display font-bold text-slate-700">{score}</span>
+                  </div>
+                  <button
+                    onClick={togglePause}
+                    className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
+                  >
+                    <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
+                  </button>
                 </div>
-                <div className={`border-2 border-white rounded-2xl px-3 py-1.5 shadow-md flex items-center gap-2 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
-                  <Clock className={`w-5 h-5 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
-                  <span className="text-xl font-display font-bold text-white">
-                    {anchorEffectTimer > 0
-                      ? formatTime(Math.ceil(anchorEffectTimer / 1000))
-                      : formatTime(timeLeft)}
-                  </span>
-                </div>
-                <button
-                  onClick={togglePause}
-                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95"
-                >
-                  <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
-                </button>
+                {currentLevel !== 1 && (
+                  <div className={`border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1.5 shrink-0 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
+                    <Clock className={`w-4 h-4 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
+                    <span className="text-lg font-display font-bold text-white whitespace-nowrap">
+                      {anchorEffectTimer > 0
+                        ? formatTime(Math.ceil(anchorEffectTimer / 1000))
+                        : currentLevel === 1 ? "Tutorial" : `L${currentLevel - 1}`}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-2 items-end">
@@ -521,25 +885,52 @@ export default function Game() {
               width={CANVAS_WIDTH}
               height={CANVAS_HEIGHT}
               onPointerDown={(e) => {
+                setIsPointerDown(true);
+                setTntDragged(false);
+                if (tutorialFrozen && tutorialState?.step === 'anchor_action' && tutorialAction === 'tap_sea') {
+                  engineRef.current?.activateAnchor();
+                  engineRef.current?.handleTutorialInteraction('tap_sea_complete');
+                  return;
+                }
+                if (!allowPointerDown) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
                 const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+                if (isTntAction && tutorialAction === 'drag_tnt') {
+                  setTntAim({ x, y });
+                  setTntDragStart({ x, y });
+                }
                 engineRef.current?.handlePointerDown(x, y);
               }}
               onPointerMove={(e) => {
+                if (!allowPointerMove) return;
+                if (isTntAction && tutorialAction === 'drag_tnt' && !isPointerDown) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
                 const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+                if (isTntAction && tutorialAction === 'drag_tnt') {
+                  if (tntDragStart) {
+                    const dist = Math.hypot(x - tntDragStart.x, y - tntDragStart.y);
+                    if (dist > 6) {
+                      setTntDragged(true);
+                    }
+                  }
+                  setTntAim({ x, y });
+                }
                 engineRef.current?.handlePointerMove(x, y);
               }}
               onPointerUp={(e) => {
+                setIsPointerDown(false);
+                setTntDragStart(null);
+                if (isTntAction && tutorialAction === 'drag_tnt' && !tntDragged) return;
+                if (!allowPointerDown) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
                 const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
                 engineRef.current?.handlePointerUp(x, y);
               }}
               className="absolute inset-0 w-full h-full block touch-none"
-              style={{ zIndex: 1 }}
+              style={{ zIndex: 1, pointerEvents: allowPointerDown ? 'auto' : 'none' }}
             />
             <img
               ref={whirlpoolImgRef}
@@ -555,74 +946,239 @@ export default function Game() {
                 zIndex: 2,
               }}
             />
-
-            {caughtFish && (
-              <div className="absolute left-4 z-50 pointer-events-auto" style={{ top: SEA_LEVEL_Y - 140 }}>
-                <button
-                  onClick={() => handleEntityInfoOpen(caughtFish.type as FishClass)}
-                  className="bg-white/50 backdrop-blur-md p-2 rounded-2xl shadow-[0_12px_24px_rgba(0,0,0,0.08)] border-2 border-white/50 flex flex-col items-center text-center animate-in zoom-in-50 duration-300 w-[100px] group hover:scale-105 active:scale-95 transition-all"
-                >
-                  <div className="w-20 h-14 mb-1 flex items-center justify-center relative">
-                    <div className="absolute inset-0 bg-blue-100 rounded-full opacity-25 blur-lg scale-110 group-hover:scale-125 transition-transform animate-pulse"></div>
-                    <img
-                      src={['coral', 'gold_doubloon', 'whirlpool', 'sunken_boat', 'shark_skeleton', 'env_bubbles', 'anchor', 'shell', 'sea_kelp', 'sea_rock', 'sea_rock_large', 'sea_kelp_horizontal'].includes(caughtFish.type) ? `/assets/environment/${caughtFish.type === 'env_bubbles' ? 'bubbles' : caughtFish.type}.png` : `/assets/fish/${caughtFish.type}_fish.png`}
-                      alt={caughtFish.name}
-                      className="w-full h-full object-contain drop-shadow-md relative z-10 scale-125"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  </div>
-                  <h2 className="text-[11px] font-display font-bold text-slate-800 leading-tight mb-1">{caughtFish.name}</h2>
-                  <div className="bg-primary/20 text-primary text-[8px] px-2 py-0.5 rounded-full font-bold">INFO</div>
-                </button>
+            {perfStats?.enabled && (
+              <div className="absolute left-3 bottom-3 z-50 bg-black/60 text-white text-[10px] rounded-md px-2 py-1 font-mono">
+                <div>fps: {perfStats.fps}</div>
+                <div>frame: {perfStats.avgFrameMs}ms</div>
+                <div>update: {perfStats.avgUpdateMs}ms</div>
+                <div>draw: {perfStats.avgDrawMs}ms</div>
+                <div>fish: {perfStats.fishCount}</div>
+                <div>level: {perfStats.level}</div>
               </div>
             )}
-
-            {/* Booster Selection Buttons */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
-              {[
-                { id: 'harpoon', imageSrc: '/assets/boosters/harpoon.png', label: 'Harpoon', count: activeBoosters.harpoon },
-                { id: 'net', imageSrc: '/assets/boosters/net.png', label: 'Net', count: activeBoosters.net },
-                { id: 'tnt', imageSrc: '/assets/boosters/tnt.png', label: 'TNT', count: activeBoosters.tnt },
-                { id: 'anchor', imageSrc: '/assets/boosters/the_anchor.png', label: 'Anchor', count: activeBoosters.anchor },
-              ].map((booster) => (
-                <button
-                  key={booster.id}
-                  onClick={() => {
-                    if (booster.count <= 0) {
-                      setPurchaseBoosterType(booster.id as BoosterType);
-                      setPurchaseModalOpen(true);
-                      if (engineRef.current) {
-                        engineRef.current.pause();
-                        setIsPaused(true);
-                      }
-                    } else {
-                      if (booster.id === 'anchor') {
-                        if (engineRef.current) {
-                          engineRef.current.activateAnchor();
-                        }
-                      } else {
-                        setSelectedBooster(prev => prev === booster.id ? null : booster.id as any);
-                      }
+            {tutorialFrozen && overlayBackground && blurOverlayEnabled && !isTntAction && (
+              <div
+                className="absolute inset-0 z-40 backdrop-blur-sm"
+                style={{ background: overlayBackground, pointerEvents: overlayBlocksInput ? 'auto' : 'none' }}
+              />
+            )}
+            {tutorialFrozen && overlayBackground && !blurOverlayEnabled && !isTntAction && (
+              <div
+                className="absolute inset-0 z-40"
+                style={{ background: overlayBackground, pointerEvents: overlayBlocksInput ? 'auto' : 'none' }}
+              />
+            )}
+            {tutorialFrozen && isTntAction && tntCenter && (
+              (() => {
+                const rect = playAreaRef.current?.getBoundingClientRect();
+                if (!rect) return null;
+                const scaleX = rect.width / CANVAS_WIDTH;
+                const scaleY = rect.height / CANVAS_HEIGHT;
+                const targetWidth = tntGridSize * scaleX;
+                const targetHeight = tntGridSize * scaleY;
+                const targetLeft = tntCenter.x * scaleX - targetWidth / 2;
+                const targetTop = tntCenter.y * scaleY - targetHeight / 2;
+                const targetRect = {
+                  left: targetLeft,
+                  top: targetTop,
+                  right: targetLeft + targetWidth,
+                  bottom: targetTop + targetHeight,
+                  width: targetWidth,
+                  height: targetHeight
+                };
+                const previewRect = tntPreviewCenter
+                  ? (() => {
+                    const width = tntGridSize * scaleX;
+                    const height = tntGridSize * scaleY;
+                    const left = tntPreviewCenter.x * scaleX - width / 2;
+                    const top = tntPreviewCenter.y * scaleY - height / 2;
+                    return { left, top, right: left + width, bottom: top + height, width, height };
+                  })()
+                  : null;
+                const windows = previewRect ? [targetRect, previewRect] : [targetRect];
+                const xs = Array.from(new Set([0, rect.width, ...windows.flatMap(w => [w.left, w.right])])).sort((a, b) => a - b);
+                const ys = Array.from(new Set([0, rect.height, ...windows.flatMap(w => [w.top, w.bottom])])).sort((a, b) => a - b);
+                const blurRects: Array<{ left: number; top: number; width: number; height: number }> = [];
+                for (let i = 0; i < xs.length - 1; i++) {
+                  for (let j = 0; j < ys.length - 1; j++) {
+                    const left = xs[i];
+                    const top = ys[j];
+                    const right = xs[i + 1];
+                    const bottom = ys[j + 1];
+                    const insideWindow = windows.some(w => left >= w.left && right <= w.right && top >= w.top && bottom <= w.bottom);
+                    if (!insideWindow) {
+                      blurRects.push({ left, top, width: right - left, height: bottom - top });
                     }
-                  }}
-                  className={`relative w-20 h-20 flex items-center justify-center transition-all ${booster.count === 0
-                    ? 'opacity-50 grayscale hover:scale-105'
-                    : selectedBooster === booster.id
-                      ? 'scale-125 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]'
-                      : 'hover:scale-110 drop-shadow-md'
-                    }`}
-                >
-                  <img src={booster.imageSrc} alt={booster.label} className="w-24 h-24 max-w-none object-contain scale-125 hover:scale-150 transition-transform origin-center" />
-                  <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border border-white">
-                    {booster.count}
-                  </span>
-                  {selectedBooster === booster.id && (
-                    <div className="absolute -top-1 -right-1 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-md animate-in zoom-in-50">
-                      <X className="w-3 h-3" />
-                    </div>
-                  )}
-                </button>
-              ))}
+                  }
+                }
+                return (
+                  <>
+                    {blurRects.map((cell, idx) => (
+                      <div
+                        key={`tnt-blur-${idx}`}
+                        className="absolute z-40 backdrop-blur-sm pointer-events-none"
+                        style={{
+                          left: cell.left,
+                          top: cell.top,
+                          width: cell.width,
+                          height: cell.height,
+                          background: `rgba(0,0,0,${overlayOpacity})`
+                        }}
+                      />
+                    ))}
+                    <div
+                      className="absolute z-50 pointer-events-none"
+                      style={{
+                        left: targetRect.left,
+                        top: targetRect.top,
+                        width: targetRect.width,
+                        height: targetRect.height,
+                        backgroundColor: 'rgba(160,160,160,0.18)',
+                        backgroundImage: 'linear-gradient(to right, rgba(180,180,180,0.8) 1px, transparent 1px), linear-gradient(to bottom, rgba(180,180,180,0.8) 1px, transparent 1px)',
+                        backgroundSize: `${targetRect.width / 3}px ${targetRect.height / 3}px`,
+                        border: '2px solid rgba(180,180,180,0.9)',
+                        boxShadow: '0 0 16px rgba(180,180,180,0.6)'
+                      }}
+                    />
+                    {previewRect && (
+                      <div
+                        className="absolute z-50 pointer-events-none"
+                        style={{
+                          left: previewRect.left,
+                          top: previewRect.top,
+                          width: previewRect.width,
+                          height: previewRect.height,
+                          backgroundColor: 'rgba(255,60,60,0.12)',
+                          backgroundImage: 'linear-gradient(to right, rgba(255,90,90,0.9) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,90,90,0.9) 1px, transparent 1px)',
+                          backgroundSize: `${previewRect.width / 3}px ${previewRect.height / 3}px`,
+                          border: '2px solid rgba(255,90,90,0.95)',
+                          boxShadow: '0 0 24px rgba(255,90,90,0.7)'
+                        }}
+                      />
+                    )}
+                  </>
+                );
+              })()
+            )}
+            {isHarpoonAction && harpoonGuide && (
+              (() => {
+                const radius = Math.max(140, harpoonGuide.length);
+                const startAngle = harpoonGuide.angle - Math.PI / 2;
+                const endAngle = harpoonGuide.angle + Math.PI / 2;
+                const cx = harpoonGuide.startX;
+                const cy = harpoonGuide.startY;
+                const startX = cx + radius * Math.cos(startAngle);
+                const startY = cy + radius * Math.sin(startAngle);
+                const endX = cx + radius * Math.cos(endAngle);
+                const endY = cy + radius * Math.sin(endAngle);
+                return (
+                  <svg
+                    className="absolute z-50 pointer-events-none"
+                    style={{
+                      left: cx - radius,
+                      top: cy - radius,
+                      width: radius * 2,
+                      height: radius * 2
+                    }}
+                  >
+                    <path
+                      d={`M ${startX - (cx - radius)} ${startY - (cy - radius)} A ${radius} ${radius} 0 0 1 ${endX - (cx - radius)} ${endY - (cy - radius)}`}
+                      stroke="rgba(255,255,255,0.75)"
+                      strokeWidth="3"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                );
+              })()
+            )}
+            {isHarpoonAction && tutorialTarget && (
+              (() => {
+                const rect = playAreaRef.current?.getBoundingClientRect();
+                if (!rect) return null;
+                const scaleX = rect.width / CANVAS_WIDTH;
+                const scaleY = rect.height / CANVAS_HEIGHT;
+                const size = Math.max(70, tutorialTarget.radius * Math.max(scaleX, scaleY) * 2.2);
+                const left = tutorialTarget.centerX * scaleX - size / 2;
+                const top = tutorialTarget.centerY * scaleY - size / 2;
+                return (
+                  <img
+                    src={`/assets/fish/${tutorialTarget.type}_fish.png`}
+                    alt=""
+                    className="absolute z-50 animate-pulse"
+                    style={{
+                      left,
+                      top,
+                      width: size,
+                      height: size,
+                      filter: 'drop-shadow(0 0 16px rgba(255,255,255,0.9))'
+                    }}
+                  />
+                );
+              })()
+            )}
+            {spotlightFish && (
+              <div
+                className="absolute z-50 rounded-full border-2 border-yellow-300 animate-pulse pointer-events-none"
+                style={{
+                  left: spotlightFish.x - spotlightFish.radius,
+                  top: spotlightFish.y - spotlightFish.radius,
+                  width: spotlightFish.radius * 2,
+                  height: spotlightFish.radius * 2,
+                  boxShadow: '0 0 30px rgba(255,215,0,0.85)'
+                }}
+              />
+            )}
+            {harpoonGuide && (
+              <div
+                className="absolute z-50 pointer-events-none"
+                style={{
+                  left: harpoonGuide.startX,
+                  top: harpoonGuide.startY,
+                  width: harpoonGuide.length,
+                  height: 4,
+                  transformOrigin: '0 50%',
+                  transform: `rotate(${harpoonGuide.angle}rad)`,
+                  background: 'linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,0))',
+                  boxShadow: '0 0 12px rgba(255,255,255,0.6)'
+                }}
+              />
+            )}
+            {tutorialState?.overlayText && (
+              <div className="absolute inset-x-0 top-20 z-50 flex justify-center pointer-events-none">
+                <div className="text-lg font-display font-bold text-yellow-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] text-center px-6">
+                  {tutorialState.overlayText}
+                </div>
+              </div>
+            )}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
+              {visibleBoosters.map((booster) => {
+                const spotlighted = tutorialFrozen && tutorialState?.spotlightTarget === `${booster.id}_btn`;
+                const pointerEnabled = !tutorialFrozen || spotlighted;
+                return (
+                  <button
+                    key={booster.id}
+                    onClick={() => handleBoosterClick(booster)}
+                    className={`relative w-20 h-20 flex items-center justify-center transition-all ${booster.count === 0
+                      ? 'opacity-50 grayscale hover:scale-105'
+                      : selectedBooster === booster.id
+                        ? 'scale-125 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]'
+                        : 'hover:scale-110 drop-shadow-md'
+                      } ${spotlighted ? 'scale-125 drop-shadow-[0_0_20px_rgba(255,215,0,0.9)] animate-pulse' : ''}`}
+                    style={{ pointerEvents: pointerEnabled ? 'auto' : 'none', zIndex: spotlighted ? 60 : undefined }}
+                  >
+                    <img src={booster.imageSrc} alt={booster.label} className="w-24 h-24 max-w-none object-contain scale-125 hover:scale-150 transition-transform origin-center" />
+                    <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border border-white">
+                      {booster.count}
+                    </span>
+                    {selectedBooster === booster.id && (
+                      <div className="absolute -top-1 -right-1 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-md animate-in zoom-in-50">
+                        <X className="w-3 h-3" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </>
         )}
@@ -636,7 +1192,16 @@ export default function Game() {
                   <HomeIcon className="w-5 h-5" />
                 </button>
               </Link>
-              <h2 className="text-xl font-display font-bold text-blue-600">Level {currentLevel - 1} Complete!</h2>
+              <h2 className="text-xl font-display font-bold text-blue-600">
+                <div className="flex flex-col">
+                  <span className="text-slate-500 text-[10px] uppercase font-black tracking-widest leading-none mb-1">
+                    {currentLevel === 1 ? "Tutorial" : `Level ${currentLevel - 1}`}
+                  </span>
+                  <span className="text-blue-600 text-base font-display font-bold leading-none">
+                    {currentLevel === 1 ? "Training Bay" : (LEVEL_NAMES[currentLevel] ?? "Deep Voyage")}
+                  </span>
+                </div>
+              </h2>
               <div className="text-lg font-bold text-green-600 flex items-center justify-center gap-1">
                 <img src="/assets/environment/gold_doubloon.png" alt="" className="w-5 h-5 object-contain" />
                 {score}
@@ -682,12 +1247,27 @@ export default function Game() {
                   ))
                 )}
               </div>
-              <Button onClick={handleSellAll} disabled={inventory.length === 0} className="w-full h-8 text-xs bg-green-500 hover:bg-green-600">Sell All</Button>
+              <Button
+                id="market-sell-all"
+                onClick={handleSellAll}
+                disabled={inventory.length === 0 && (!showMarketTutorial || marketTutorialStep !== 'sell')}
+                className="w-full h-8 text-xs bg-green-500 hover:bg-green-600"
+                style={{ position: 'relative', zIndex: marketTutorialStep === 'sell' ? 9999 : undefined }}
+              >
+                Sell All
+              </Button>
             </div>
 
             <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
               <div className="text-sm font-bold text-slate-700 mb-2">Buy Fuel</div>
-              <Button onClick={buyFuel} disabled={upgrades.hasFuel} variant={upgrades.hasFuel ? "outline" : "default"} className="w-full h-10 bg-red-500 hover:bg-red-600 text-white">
+              <Button
+                id="market-buy-fuel"
+                onClick={buyFuel}
+                disabled={upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'fuel')}
+                variant={upgrades.hasFuel ? "outline" : "default"}
+                className="w-full h-10 bg-red-500 hover:bg-red-600 text-white"
+                style={{ position: 'relative', zIndex: marketTutorialStep === 'fuel' ? 9999 : undefined }}
+              >
                 <div className="flex items-center justify-center gap-2 text-sm font-bold">
                   <Fuel className="w-4 h-4" />
                   <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain" />
@@ -708,50 +1288,53 @@ export default function Game() {
               </Button>
             </div>
 
-            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
-              <div className="text-sm font-bold text-slate-700 mb-2">Boosters</div>
+            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-2">
               <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
                 <button
                   onClick={() => { setPurchaseBoosterType('harpoon'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/harpoon.png" alt="Harpoon" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">Harpoon</span>
-                  <span className="text-sm font-black text-yellow-600 leading-tight">{activeBoosters.harpoon}</span>
+                  <img src="/assets/boosters/harpoon.png" alt="Harpoon" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">Harpoon ({activeBoosters.harpoon})</span>
                 </button>
                 <button
                   onClick={() => { setPurchaseBoosterType('net'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/net.png" alt="Net" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">Net</span>
-                  <span className="text-sm font-black text-blue-600 leading-tight">{activeBoosters.net}</span>
+                  <img src="/assets/boosters/net.png" alt="Net" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">Net ({activeBoosters.net})</span>
                 </button>
                 <button
                   onClick={() => { setPurchaseBoosterType('tnt'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/tnt.png" alt="TNT" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">TNT</span>
-                  <span className="text-sm font-black text-red-600 leading-tight">{activeBoosters.tnt}</span>
+                  <img src="/assets/boosters/tnt.png" alt="TNT" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">TNT ({activeBoosters.tnt})</span>
                 </button>
                 <button
                   onClick={() => { setPurchaseBoosterType('anchor'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/the_anchor.png" alt="Anchor" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">Anchor</span>
-                  <span className="text-sm font-black text-slate-600 leading-tight">{activeBoosters.anchor}</span>
+                  <img src="/assets/boosters/the_anchor.png" alt="Anchor" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">Anchor ({activeBoosters.anchor})</span>
                 </button>
               </div>
             </div>
 
             <Button
+              id="market-next-level"
               onClick={handleNextLevel}
-              disabled={!upgrades.hasFuel}
+              disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
               className={`w-full py-4 text-base font-display font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 ${upgrades.hasFuel ? 'animate-pulse ring-4 ring-blue-300' : ''}`}
             >
-              {upgrades.hasFuel ? `Set Sail for Level ${currentLevel + 1}!` : "Buy Fuel to Continue"}
+              {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? `Level ${currentLevel}`}!` : "Buy Fuel to Continue"}
+            </Button>
+
+            <Button
+              onClick={() => handleTriggerGameOver("Out of Fuel! Journey ended at the market.")}
+              className="w-full py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-black rounded-2xl shadow-lg active:translate-y-1 transition-all"
+            >
+              GIVE UP (END JOURNEY)
             </Button>
           </div>
         )}
@@ -774,7 +1357,7 @@ export default function Game() {
         )}
 
         {/* Pause Menu Overlay */}
-        {isPaused && !selectedEntityForInfo && (
+        {isPaused && !curseCard && !regionCardStartLevel && (
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center animate-in fade-in duration-300 px-8">
             <div className="bg-white rounded-[32px] w-full max-w-xs p-8 shadow-2xl flex flex-col gap-4 border-4 border-white">
               <h2 className="text-3xl font-display font-bold text-slate-800 text-center mb-4">PAUSED</h2>
@@ -809,14 +1392,37 @@ export default function Game() {
           </div>
         )}
 
-        {/* Info Card Overlay */}
-        {selectedEntityForInfo && (
-          <div className="z-[110]">
-            <InfoCard
-              entityKey={selectedEntityForInfo}
-              onClose={() => setSelectedEntityForInfo(null)}
-            />
-          </div>
+        {curseCard && (
+          <CursedLevelCard
+            curse={curseCard}
+            onClose={() => {
+              setCurseCard(null);
+              if (engineRef.current) {
+                engineRef.current.resume();
+                setIsPaused(false);
+              }
+            }}
+          />
+        )}
+
+        {regionCardStartLevel && (
+          <RegionIntroCard
+            startLevel={regionCardStartLevel}
+            onClose={() => {
+              setRegionCardStartLevel(null);
+              const pendingCurse = pendingCurseRef.current;
+              pendingCurseRef.current = null;
+              if (pendingCurse && !shownCurseLevelsRef.current.has(currentLevel)) {
+                shownCurseLevelsRef.current.add(currentLevel);
+                setCurseCard(pendingCurse);
+                return;
+              }
+              if (engineRef.current) {
+                engineRef.current.resume();
+                setIsPaused(false);
+              }
+            }}
+          />
         )}
 
         {purchaseBoosterType && (
@@ -835,32 +1441,68 @@ export default function Game() {
           />
         )}
 
+
         <InsufficientFuelModal
           isOpen={showFuelModal}
           onClose={() => setShowFuelModal(false)}
           onWatchAd={() => {
-            handleWatchAdForFuel();
+            handleWatchAdReward();
             setShowFuelModal(false);
           }}
-          onEndGame={() => {
-            setGameState("gameover");
+          onGetDoubloons={() => {
             setShowFuelModal(false);
+            setIsFuelShopOpened(true);
+            setShowDoubloonShop(true);
+          }}
+          onGiveUp={() => {
+            setShowFuelModal(false);
+            handleTriggerGameOver("Insufficient fuel to continue the journey.");
           }}
           fuelCost={fuelCost}
+        />
+
+        <InsufficientRepairModal
+          isOpen={showRepairModal}
+          onClose={() => setShowRepairModal(false)}
+          onWatchAd={() => {
+            handleWatchAdReward();
+            setShowRepairModal(false);
+          }}
+          onGetDoubloons={() => {
+            setShowRepairModal(false);
+            setIsFuelShopOpened(true);
+            setShowDoubloonShop(true);
+          }}
+          repairCost={repairCost}
         />
 
         <GoldDoubloonShopModal
           isOpen={showDoubloonShop}
           onClose={() => {
             setShowDoubloonShop(false);
+            setIsFuelShopOpened(false);
             if (engineRef.current && isPaused) {
               engineRef.current.resume();
               setIsPaused(false);
             }
           }}
+          isFuelShop={isFuelShopOpened}
           onPurchase={(doubloons, _price) => {
-            const current = getPermanentCoins();
-            setPermanentCoins(current + doubloons);
+            if (isFuelShopOpened) {
+              // Add to session score (run-specific coins)
+              const newScore = score + doubloons;
+              setScore(newScore);
+
+              // Also sync with engine state if it exists
+              if (engineRef.current) {
+                engineRef.current.getState().score = newScore;
+                engineRef.current.totalCoinsEarned += doubloons;
+              }
+            } else {
+              // Add to permanent coins
+              const current = getPermanentCoins();
+              setPermanentCoins(current + doubloons);
+            }
           }}
         />
 
@@ -870,7 +1512,20 @@ export default function Game() {
             <ArrowLeft className="text-white w-6 h-6" />
           </Link>
         )}
+
+        {showWelcomeGift && (
+          <WelcomeGiftModal onClaim={handleClaimGift} />
+        )}
+
+        {showMarketTutorial && (
+          <MarketTutorialOverlay step={marketTutorialStep} />
+        )}
       </div>
+      {/* Game Over Fade Overlay */}
+      <div
+        className="fixed inset-0 bg-black pointer-events-none z-[99999] transition-opacity duration-1000"
+        style={{ opacity: isGameOverFading ? 1 : 0 }}
+      />
     </div>
   );
 }

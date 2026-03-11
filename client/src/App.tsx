@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Game from "@/pages/Game";
 import Garage from "@/pages/Garage";
+import LevelSelect from "@/pages/LevelSelect";
 import Leaderboard from "@/pages/Leaderboard";
 import { useLocation } from "wouter";
 
@@ -14,7 +15,7 @@ function GarageWrapper() {
   return (
     <Garage
       onStartFishing={(vehicleId) => {
-        setLocation(`/game?vehicle=${vehicleId}`);
+        setLocation(`/levels?vehicle=${vehicleId}`);
       }}
     />
   );
@@ -25,6 +26,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/garage" component={GarageWrapper} />
+      <Route path="/levels" component={LevelSelect} />
       <Route path="/game" component={Game} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route component={NotFound} />

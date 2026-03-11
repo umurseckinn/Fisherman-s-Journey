@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Star, Shield, Gift } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Star, Shield, Gift, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export type BoosterType = 'harpoon' | 'net' | 'tnt' | 'anchor';
@@ -34,6 +34,61 @@ export function BoosterPurchaseModal({
     if (!isOpen) return null;
 
     const activeConfig = BOOSTER_CONFIG[boosterType];
+    const [showInfo, setShowInfo] = useState(false);
+    const infoMap: Record<BoosterType, { title: string; summary: string; usage: string[]; tips: string[] }> = {
+        harpoon: {
+            title: 'Harpoon',
+            summary: 'Fires a straight spear to grab a single target instantly.',
+            usage: [
+                'Tap to launch; it pierces forward and grabs the first valid target.',
+                'Best for high‑value fish or tight corridors where precision matters.',
+                'Harpoon catches do not add to storage weight while carried by the booster.'
+            ],
+            tips: [
+                'Use while the target is aligned with the boat’s line.',
+                'Great for escaping clutch moments when time is low.'
+            ]
+        },
+        net: {
+            title: 'Net',
+            summary: 'Casts a wide net that gathers multiple fish in its radius.',
+            usage: [
+                'Tap to deploy; everything inside the circle is collected.',
+                'Perfect for dense schools and stacked spawns.',
+                'Net catches do not add to storage weight while carried by the booster.'
+            ],
+            tips: [
+                'Wait for a cluster before triggering to maximize value.',
+                'Combine with slow moments to sweep large groups.'
+            ]
+        },
+        tnt: {
+            title: 'TNT',
+            summary: 'Detonates a 3×3 area to clear obstacles and grab loot.',
+            usage: [
+                'Tap to place; the blast clears the grid instantly.',
+                'Ideal for heavy obstacle zones and blocked paths.',
+                'TNT pickups do not add to storage weight while carried by the booster.'
+            ],
+            tips: [
+                'Drop it where obstacles are densest for maximum impact.',
+                'Use to open routes when you are trapped.'
+            ]
+        },
+        anchor: {
+            title: 'Anchor',
+            summary: 'Freezes time briefly so you can aim and collect safely.',
+            usage: [
+                'Tap to activate; time slows and movement becomes manageable.',
+                'Best for precise grabs and avoiding hazards.',
+                'Anchor pickups do not add to storage weight while carried by the booster.'
+            ],
+            tips: [
+                'Trigger it right before a risky cast.',
+                'Use it to stabilize when hooks are low.'
+            ]
+        }
+    };
 
     const handleBuy = (pkg: PurchasePackage) => {
         // Fake processing delay for visual feedback if desired, or just instant:
@@ -57,6 +112,12 @@ export function BoosterPurchaseModal({
 
                 {/* Header */}
                 <div className="flex flex-col items-center text-center mt-2 relative z-10">
+                    <button
+                        onClick={() => setShowInfo(true)}
+                        className="absolute left-0 top-0 p-2 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
+                    >
+                        <Info className="w-4 h-4" />
+                    </button>
                     <div className={`w-40 h-40 flex items-center justify-center mb-4 relative`}>
                         <img src={activeConfig.imageSrc} alt={activeConfig.label} className="w-40 h-40 object-contain filter drop-shadow-xl relative z-10 scale-125" />
                     </div>
@@ -139,6 +200,54 @@ export function BoosterPurchaseModal({
                     </div>
                 </div>
             </div>
+            {showInfo && (
+                <div className="absolute inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-black rounded-[32px] w-full max-w-sm p-6 shadow-2xl flex flex-col gap-5 border-4 border-yellow-500/80 relative overflow-hidden">
+                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-yellow-600/20 rounded-full blur-3xl pointer-events-none" />
+
+                        <button
+                            onClick={() => setShowInfo(false)}
+                            className="absolute top-4 right-4 text-slate-300 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all z-10"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+
+                        <div className="flex items-center gap-3 relative z-10">
+                            <img src={activeConfig.imageSrc} alt={activeConfig.label} className="w-12 h-12 object-contain drop-shadow-md" />
+                            <div>
+                                <div className="text-yellow-400 font-bold text-xl">{infoMap[boosterType].title}</div>
+                                <div className="text-yellow-100/80 text-sm">{infoMap[boosterType].summary}</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/40 border border-white/10 rounded-2xl p-4 text-left text-sm text-slate-100/90">
+                            <div className="font-bold text-yellow-300 mb-2">How it works</div>
+                            <ul className="list-disc pl-5 space-y-1">
+                                {infoMap[boosterType].usage.map(line => (
+                                    <li key={line}>{line}</li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="bg-black/40 border border-white/10 rounded-2xl p-4 text-left text-sm text-slate-100/90">
+                            <div className="font-bold text-yellow-300 mb-2">Tips</div>
+                            <ul className="list-disc pl-5 space-y-1">
+                                {infoMap[boosterType].tips.map(line => (
+                                    <li key={line}>{line}</li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <Button
+                            onClick={() => setShowInfo(false)}
+                            className="w-full bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-bold"
+                        >
+                            Close
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

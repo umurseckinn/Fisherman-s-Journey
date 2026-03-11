@@ -1,12 +1,13 @@
 import React from 'react';
-import { Fuel, Play, XCircle, ArrowLeft } from 'lucide-react';
+import { Fuel, Play, ArrowLeft, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface InsufficientFuelModalProps {
     isOpen: boolean;
     onClose: () => void;
     onWatchAd: () => void;
-    onEndGame: () => void;
+    onGetDoubloons: () => void;
+    onGiveUp: () => void;
     fuelCost: number;
 }
 
@@ -14,7 +15,8 @@ export function InsufficientFuelModal({
     isOpen,
     onClose,
     onWatchAd,
-    onEndGame,
+    onGetDoubloons,
+    onGiveUp,
     fuelCost
 }: InsufficientFuelModalProps) {
     if (!isOpen) return null;
@@ -44,26 +46,35 @@ export function InsufficientFuelModal({
                         className="w-full py-7 text-lg font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-purple-200"
                     >
                         <Play className="w-5 h-5 fill-current" />
-                        Watch an Ad
+                        Watch an Ad (+50)
                     </Button>
 
                     <Button
-                        onClick={onEndGame}
-                        variant="outline"
-                        className="w-full py-7 text-lg font-bold border-2 border-red-100 text-red-500 hover:bg-red-50 rounded-2xl flex items-center justify-center gap-3"
+                        onClick={onGetDoubloons}
+                        className="w-full py-7 text-lg font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-200"
                     >
-                        <XCircle className="w-5 h-5" />
-                        End the Game
+                        <Coins className="w-5 h-5" />
+                        Get More Doubloons
                     </Button>
 
-                    <Button
-                        onClick={onClose}
-                        variant="ghost"
-                        className="w-full py-4 text-slate-400 font-bold hover:text-slate-600 hover:bg-transparent rounded-2xl flex items-center justify-center gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Market
-                    </Button>
+                    <div className="flex flex-col gap-1">
+                        <Button
+                            onClick={onClose}
+                            variant="ghost"
+                            className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 hover:bg-transparent rounded-2xl flex items-center justify-center gap-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Market
+                        </Button>
+
+                        <Button
+                            onClick={onGiveUp}
+                            variant="ghost"
+                            className="w-full py-2 text-red-400 text-xs font-bold hover:text-red-600 hover:bg-red-50 rounded-xl flex items-center justify-center gap-2"
+                        >
+                            Give Up (End Journey)
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

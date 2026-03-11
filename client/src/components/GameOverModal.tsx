@@ -1,9 +1,7 @@
 import { motion } from "framer-motion";
-import { RefreshCcw, Trophy, Home } from "lucide-react";
+import { RefreshCcw, Home, Trophy, Play } from "lucide-react";
 import { Link } from "wouter";
-import { useState } from "react";
-import { useSubmitScore } from "@/hooks/use-high-scores";
-
+import { useMemo } from "react";
 import { type RunScoreBreakdown } from "@/game/storage";
 
 interface GameOverModalProps {
@@ -15,125 +13,165 @@ interface GameOverModalProps {
 }
 
 export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }: GameOverModalProps) {
-  const [name, setName] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const submitScore = useSubmitScore();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    
-    await submitScore.mutateAsync({
-      playerName: name,
-      score: score,
-      maxIslandReached: island
-    });
-    setSubmitted(true);
-  };
+  const theme = useMemo(() => {
+    const r = reason?.toLowerCase() || "";
+    if (r.includes("unusable") || r.includes("broken")) {
+      return {
+        type: 'ROD_BROKEN',
+        title: "Oh snap! Rod Broken!",
+        image: "/assets/game_over/ROD_BROKEN.png",
+        color: "from-orange-400 to-red-600",
+        btn: "bg-orange-500 hover:bg-orange-600 shadow-orange-900/50",
+        scale: 1.5,
+        rotate: 90
+      };
+    }
+    if (r.includes("sank") || r.includes("heavy load")) {
+      return {
+        type: 'STORAGE_FULL_SUNK',
+        title: "Overweight! Boat Sunk!",
+        image: "/assets/game_over/STORAGE_FULL_SUNK.png",
+        color: "from-cyan-400 to-blue-600",
+        btn: "bg-cyan-500 hover:bg-cyan-600 shadow-cyan-900/50",
+        scale: 1.9,
+        rotate: 0
+      };
+    }
+    if (r.includes("fuel")) {
+      return {
+        type: 'OUT_OF_FUEL',
+        title: "Stranded! Out of Fuel!",
+        image: "/assets/game_over/OUT_OF_FUEL.png",
+        color: "from-red-400 to-yellow-600",
+        btn: "bg-red-500 hover:bg-red-600 shadow-red-900/50",
+        scale: 1.8,
+        rotate: 0
+      };
+    }
+    return {
+      type: 'DEFAULT',
+      title: "Game Over",
+      image: "/assets/game_over/ROD_BROKEN.png",
+      color: "from-slate-400 to-slate-600",
+      btn: "bg-primary hover:bg-primary/90 shadow-slate-900/50",
+      scale: 1.0,
+      rotate: 0
+    };
+  }, [reason]);
 
   return (
-    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div 
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-4 border-destructive/20"
+    <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[500] flex items-center justify-center p-6">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0, y: 30 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        className="bg-slate-950 rounded-[40px] w-full max-w-sm relative shadow-2xl border-8 border-slate-900 flex flex-col pt-12 pb-8 px-6 overflow-hidden"
       >
-        <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-4xl">⚓️</span>
+        {/* Header Image Container */}
+        <div className="w-full h-44 mb-2 drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] flex items-center justify-center relative">
+          <img
+            src={theme.image}
+            alt={theme.type}
+            className="h-full object-contain animate-bounce-slow"
+            style={{
+              transform: `rotate(${theme.rotate}deg) scale(${theme.scale})`,
+              filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.5))'
+            }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
         </div>
-        
-        <h2 className="text-3xl font-display font-bold text-destructive mb-2">Game Over</h2>
-        <p className="text-muted-foreground mb-3">
-          Island reached: <span className="font-bold text-foreground">{island}</span>
-        </p>
-        {reason && (
-          <p className="text-sm text-slate-600 mb-4 font-medium">{reason}</p>
-        )}
 
-        <div className="bg-muted/50 rounded-xl p-4 mb-6">
-          <div className="text-sm text-muted-foreground uppercase tracking-wider font-bold mb-1">Score</div>
-          <div className="text-4xl font-mono font-bold text-primary">{score}</div>
-          
-          {scoreBreakdown && (
-            <div className="mt-3 space-y-1 border-t border-slate-200 pt-2 text-xs">
-              <div className="flex justify-between text-slate-600">
-                <span>Base:</span>
-                <span>{scoreBreakdown.baseScore}</span>
-              </div>
-              <div className="flex justify-between text-blue-600 font-medium">
-                <span>Depth Bonus:</span>
-                <span>+{scoreBreakdown.depthBonus}</span>
-              </div>
-              {scoreBreakdown.kingBonus > 0 && (
-                <div className="flex justify-between text-yellow-600 font-bold">
-                  <span>King Bonus:</span>
-                  <span>+{scoreBreakdown.kingBonus}</span>
-                </div>
-              )}
-              {scoreBreakdown.isNewRecord && (
-                <div className="text-center text-green-600 font-bold mt-2 animate-bounce">
-                  🏆 NEW RECORD! 🏆
-                </div>
-              )}
-              
-              <div className="mt-3 pt-2 border-t border-slate-200">
-                <div className="flex justify-between items-center text-purple-700 font-bold bg-purple-50 p-2 rounded-lg">
-                  <span>To Permanent Vault:</span>
-                  <span className="text-lg flex items-center gap-1">+{scoreBreakdown.finalScore} <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain inline" /></span>
-                </div>
-                <div className="text-[10px] text-center text-slate-400 mt-1">
-                  (100% of Total Score as Gold Doubloons)
-                </div>
-              </div>
-            </div>
+        {/* Dynamic Title */}
+        <div className="text-center mb-6">
+          <h2 className={`text-2xl font-black italic tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] bg-gradient-to-b ${theme.color} bg-clip-text text-transparent uppercase`}>
+            {theme.title}
+          </h2>
+          <p className="text-slate-500 font-black uppercase text-[10px] tracking-widest mt-1">
+            Island {island} Reached
+          </p>
+        </div>
+
+        {/* Score Board (Dark Mode) */}
+        <div className="bg-slate-900/50 rounded-[32px] p-5 mb-8 border border-white/5 inner-shadow relative">
+          {scoreBreakdown?.isNewRecord && (
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="absolute -top-2 -right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg border-2 border-slate-950 z-20"
+            >
+              NEW RECORD!
+            </motion.div>
           )}
+
+          <div className="text-center mb-4">
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">TOTAL SCORE</div>
+            <div className="text-4xl font-black text-white tracking-tighter tabular-nums drop-shadow-sm">
+              {score.toLocaleString()}
+            </div>
+          </div>
+
+          <div className="space-y-2 border-t border-white/5 pt-4 px-2">
+            <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+              <span>Base Score</span>
+              <span className="text-slate-200">{scoreBreakdown?.baseScore.toLocaleString() || 0}</span>
+            </div>
+            <div className="flex justify-between items-center text-[10px] font-black text-blue-400 uppercase">
+              <span>Depth Bonus</span>
+              <span>+{scoreBreakdown?.depthBonus.toLocaleString() || 0}</span>
+            </div>
+            {(scoreBreakdown?.kingBonus || 0) > 0 && (
+              <div className="flex justify-between items-center text-[10px] font-black text-amber-500 uppercase">
+                <span>King Bounty</span>
+                <span>+{scoreBreakdown?.kingBonus.toLocaleString() || 0}</span>
+              </div>
+            )}
+
+            {/* Vault Translation (Dark) */}
+            <div className="mt-4 bg-slate-900 rounded-2xl p-3 border border-white/5 flex items-center justify-between shadow-inner">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black text-slate-500 uppercase leading-none mb-1">Vault Earnings</span>
+                <div className="flex items-center gap-1 leading-none">
+                  <span className="text-lg font-black text-amber-500">+{scoreBreakdown?.finalScore.toLocaleString() || score.toLocaleString()}</span>
+                  <img src="/assets/environment/gold_doubloon.png" alt="🪙" className="w-4 h-4 object-contain" />
+                </div>
+              </div>
+              <Play className="w-5 h-5 text-amber-500/30 fill-current" />
+            </div>
+          </div>
         </div>
 
-        {!submitted ? (
-          <form onSubmit={handleSubmit} className="mb-6">
-            <label className="block text-left text-sm font-bold text-gray-700 mb-2">Save High Score</label>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Name"
-                className="flex-1 px-4 py-2 rounded-xl border-2 border-border focus:border-primary focus:outline-none"
-                maxLength={10}
-              />
-              <button 
-                type="submit"
-                disabled={submitScore.isPending || !name}
-                className="bg-accent text-white px-4 py-2 rounded-xl font-bold hover:bg-accent/90 disabled:opacity-50"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="bg-green-100 text-green-700 p-3 rounded-xl mb-6 font-bold flex items-center justify-center gap-2">
-            <Trophy className="w-5 h-5" /> Score saved!
-          </div>
-        )}
-
+        {/* Action Buttons (Dark) */}
         <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={onRetry}
-            className="flex items-center justify-center gap-2 bg-primary text-white py-3 px-4 rounded-xl font-bold hover:bg-primary/90 transition-colors"
-          >
-            <RefreshCcw className="w-5 h-5" />
-            Try Again
-          </button>
-          
-          <Link 
-            href="/" 
-            className="flex items-center justify-center gap-2 bg-muted text-foreground py-3 px-4 rounded-xl font-bold hover:bg-muted/80 transition-colors"
-          >
-            <Home className="w-5 h-5" />
-            Main Menu
+          <Link href="/">
+            <button className="w-full py-4 rounded-[24px] font-black text-[12px] text-slate-400 bg-slate-900 border-b-4 border-black active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2">
+              <Home className="w-4 h-4 text-slate-500" />
+              MENU
+            </button>
           </Link>
+
+          <button
+            onClick={onRetry}
+            className={`w-full py-4 rounded-[24px] font-black text-[12px] text-white shadow-[0_4px_0_rgba(0,0,0,0.3)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2 ${theme.btn}`}
+          >
+            <RefreshCcw className="w-4 h-4" />
+            RETRY
+          </button>
         </div>
       </motion.div>
+
+      <style>{`
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 3s ease-in-out infinite;
+        }
+        .inner-shadow {
+          box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+      `}</style>
     </div>
   );
 }

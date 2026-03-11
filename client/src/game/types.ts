@@ -123,6 +123,7 @@ export interface GameState {
   };
   activeBooster: 'harpoon' | 'net' | 'tnt' | 'anchor' | null;
   anchorEffectTimerMs: number;
+  startTimerMs: number;
 }
 
 export const OBJECT_MATRIX: Record<FishClass, {
