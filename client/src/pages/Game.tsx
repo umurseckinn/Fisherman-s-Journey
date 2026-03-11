@@ -1191,11 +1191,11 @@ export default function Game() {
               </Link>
               <h2 className="text-xl font-display font-bold text-blue-600">
                 <div className="flex flex-col">
-                  <span className="text-white/60 text-[10px] uppercase font-black tracking-widest leading-none mb-1">
-                    {LEVEL_NAMES[currentLevel] ? "Region" : "Voyage"}
+                  <span className="text-slate-500 text-[10px] uppercase font-black tracking-widest leading-none mb-1">
+                    {currentLevel === 1 ? "Tutorial" : `Level ${currentLevel - 1}`}
                   </span>
-                  <span className="text-white text-base font-display font-bold leading-none">
-                    {currentLevel === 1 ? "Training Bay" : (LEVEL_NAMES[currentLevel] ?? `Level ${currentLevel - 1}`)}
+                  <span className="text-blue-600 text-base font-display font-bold leading-none">
+                    {currentLevel === 1 ? "Training Bay" : (LEVEL_NAMES[currentLevel] ?? "Deep Voyage")}
                   </span>
                 </div>
               </h2>

@@ -70,9 +70,8 @@ export const MarketTutorialOverlay: React.FC<MarketTutorialOverlayProps> = ({ st
 
     let textStyle: React.CSSProperties = {
         left: '50%',
-        transform: 'translateX(-50%)',
         width: '90%',
-        maxWidth: '320px',
+        maxWidth: '340px',
     };
 
     if (currentConfig.position === 'bottom') {
@@ -131,14 +130,14 @@ export const MarketTutorialOverlay: React.FC<MarketTutorialOverlayProps> = ({ st
             <AnimatePresence mode="wait">
                 <motion.div
                     key={step}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="absolute text-center z-[9999]"
+                    initial={{ opacity: 0, scale: 0.9, x: "-50%" }}
+                    animate={{ opacity: 1, scale: 1, x: "-50%" }}
+                    exit={{ opacity: 0, scale: 0.9, x: "-50%" }}
+                    className="absolute text-center z-[9999] flex flex-col items-center"
                     style={textStyle}
                 >
                     <p
-                        className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_12px_rgba(0,0,0,1)] leading-tight px-4"
+                        className="text-lg sm:text-xl md:text-2xl font-black text-white drop-shadow-[0_2px_8px_rgba(0,0,0,1)] leading-tight px-2"
                         style={{ textWrap: 'balance' } as any}
                     >
                         {currentConfig.text}
