@@ -5,7 +5,20 @@ import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y, LEVEL_CONFIG } fr
 import { type TutorialState } from "@/game/TutorialManager";
 import { LEVEL_NAMES } from "@/game/levelNames";
 import { VEHICLES, getEffectiveStats } from "@/game/vehicles";
-import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown, getStartLevelForMode, getAdminMode, updateUserUnlockedLevel } from "@/game/storage";
+import {
+  getActiveVehicleId,
+  getStoFlags,
+  getRodFlags,
+  submitPersonalBest,
+  type RunScoreBreakdown,
+  getStartLevelForMode,
+  getAdminMode,
+  updateUserUnlockedLevel,
+  getPermanentCoins,
+  setPermanentCoins,
+  isTutorialCompleted,
+  setTutorialCompleted
+} from "@/game/storage";
 import { type GameState, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
 import { GameOverModal } from "@/components/GameOverModal";
 import { CursedLevelCard } from "@/components/CursedLevelCard";
@@ -16,7 +29,6 @@ import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
 import { RegionIntroCard } from "@/components/RegionIntroCard";
 import { WelcomeGiftModal } from "@/components/WelcomeGiftModal";
 import { MarketTutorialOverlay, MarketTutorialStep } from "@/components/MarketTutorialOverlay";
-import { getPermanentCoins, setPermanentCoins } from "@/game/storage";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 
@@ -302,10 +314,13 @@ export default function Game() {
         }
 
         if (level === 1) {
-          setShowWelcomeGift(true);
-          if (engineRef.current) {
-            engineRef.current.pause();
-            setIsPaused(true);
+          if (!isTutorialCompleted()) {
+            setTutorialCompleted(true);
+            setShowWelcomeGift(true);
+            if (engineRef.current) {
+              engineRef.current.pause();
+              setIsPaused(true);
+            }
           }
         }
 
@@ -820,7 +835,7 @@ export default function Game() {
                     <span className="text-xl font-display font-bold text-white">
                       {anchorEffectTimer > 0
                         ? formatTime(Math.ceil(anchorEffectTimer / 1000))
-                        : formatTime(timeLeft)}
+                        : currentLevel === 1 ? "Tutorial" : `Level ${currentLevel - 1}`}
                     </span>
                   </div>
                 )}
@@ -1174,7 +1189,16 @@ export default function Game() {
                   <HomeIcon className="w-5 h-5" />
                 </button>
               </Link>
-              <h2 className="text-xl font-display font-bold text-blue-600">{LEVEL_NAMES[currentLevel - 1] ?? `Level ${currentLevel - 1}`} Complete!</h2>
+              <h2 className="text-xl font-display font-bold text-blue-600">
+                <div className="flex flex-col">
+                  <span className="text-white/60 text-[10px] uppercase font-black tracking-widest leading-none mb-1">
+                    {LEVEL_NAMES[currentLevel] ? "Region" : "Voyage"}
+                  </span>
+                  <span className="text-white text-base font-display font-bold leading-none">
+                    {currentLevel === 1 ? "Training Bay" : (LEVEL_NAMES[currentLevel] ?? `Level ${currentLevel - 1}`)}
+                  </span>
+                </div>
+              </h2>
               <div className="text-lg font-bold text-green-600 flex items-center justify-center gap-1">
                 <img src="/assets/environment/gold_doubloon.png" alt="" className="w-5 h-5 object-contain" />
                 {score}
@@ -1300,7 +1324,7 @@ export default function Game() {
               disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
               className={`w-full py-4 text-base font-display font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 ${upgrades.hasFuel ? 'animate-pulse ring-4 ring-blue-300' : ''}`}
             >
-              {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? `Level ${currentLevel + 1}`}!` : "Buy Fuel to Continue"}
+              {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? `Level ${currentLevel}`}!` : "Buy Fuel to Continue"}
             </Button>
 
             <Button

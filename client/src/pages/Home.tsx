@@ -4,7 +4,7 @@ import { InfoCard } from "../components/InfoCard";
 import { FishClass } from "../game/types";
 import { Link } from "wouter";
 import { BoosterPurchaseModal, BoosterType, PurchasePackage } from "../components/BoosterPurchaseModal";
-import { resetProfile, getSelectedStartLevel, setSelectedStartLevel, getAdminMode, setAdminMode, getUserSelectedStartLevel, setUserSelectedStartLevel, getUserUnlockedLevel } from "../game/storage";
+import { resetProfile, getSelectedStartLevel, setSelectedStartLevel, getAdminMode, setAdminMode, getUserSelectedStartLevel, setUserSelectedStartLevel, getUserUnlockedLevel, isTutorialCompleted } from "../game/storage";
 import { VEHICLES } from "../game/vehicles";
 
 export default function Home() {
@@ -29,6 +29,7 @@ export default function Home() {
   const [adminSelectedStartLevel, setAdminSelectedStartLevelState] = useState(() => getSelectedStartLevel());
   const [userSelectedStartLevel, setUserSelectedStartLevelState] = useState(() => getUserSelectedStartLevel());
   const [userUnlockedLevel, setUserUnlockedLevelState] = useState(() => getUserUnlockedLevel());
+  const tutorialDone = isTutorialCompleted();
   const effectiveUserStartLevel = Math.min(userSelectedStartLevel, userUnlockedLevel);
 
   useEffect(() => {
@@ -408,12 +409,12 @@ export default function Home() {
         </div>
 
         <div className="w-full space-y-3 mt-4">
-          <Link href="/garage">
-            <button className="w-full group relative overflow-hidden bg-primary text-white p-4 rounded-2xl font-bold text-xl shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <Link href="/game">
+            <button className={`w-full group relative overflow-hidden ${!tutorialDone ? 'bg-amber-500 shadow-amber-500/25' : 'bg-primary shadow-blue-500/25'} text-white p-4 rounded-2xl font-bold text-xl shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]`}>
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              <div className="relative flex items-center justify-center gap-3">
+              <div className="relative flex items-center justify-center gap-3 text-shadow-sm">
                 <Play className="w-6 h-6 fill-current" />
-                PLAY THE GAME
+                {!tutorialDone ? 'PLAY TUTORIAL' : 'PLAY THE GAME'}
               </div>
             </button>
           </Link>
@@ -441,11 +442,14 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => setShowLevelPicker(true)}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors"
+              onClick={() => {
+                if (!tutorialDone && !isAdminMode) return;
+                setShowLevelPicker(true);
+              }}
+              className={`w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors ${!tutorialDone && !isAdminMode ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Anchor className="w-4 h-4" />
-              LEVELS L{isAdminMode ? adminSelectedStartLevel : effectiveUserStartLevel}
+              LEVELS {isAdminMode ? `L${adminSelectedStartLevel}` : tutorialDone ? `L${effectiveUserStartLevel - 1}` : 'L1'}
             </button>
             <button
               onClick={() => {
@@ -498,28 +502,34 @@ export default function Home() {
               <div className="text-xs text-slate-500 mt-1">{isAdminMode ? "Admin mode selection" : `Unlocked up to L${userUnlockedLevel}`}</div>
             </div>
             <div className="grid grid-cols-5 gap-2 max-h-[420px] overflow-y-auto pr-1">
-              {Array.from({ length: 100 }, (_, i) => i + 1).map(level => (
-                <button
-                  key={level}
-                  onClick={() => {
-                    if (isAdminMode) {
-                      setSelectedStartLevel(level);
-                      setAdminSelectedStartLevelState(level);
-                      setShowLevelPicker(false);
-                    } else if (level <= userUnlockedLevel) {
-                      setUserSelectedStartLevel(level);
-                      setUserSelectedStartLevelState(level);
-                      setShowLevelPicker(false);
-                    }
-                  }}
-                  className={`rounded-xl py-2 text-sm font-bold transition-all ${isAdminMode ? "" : level > userUnlockedLevel ? "bg-slate-100 text-slate-400 cursor-not-allowed" : ""} ${(isAdminMode ? level === adminSelectedStartLevel : level === effectiveUserStartLevel)
-                    ? 'bg-primary text-white shadow-md'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                >
-                  {level}{!isAdminMode && level > userUnlockedLevel ? " 🔒" : ""}
-                </button>
-              ))}
+              {Array.from({ length: isAdminMode ? 100 : 99 }, (_, i) => i + (isAdminMode ? 1 : 1)).map(num => {
+                const internalLevel = isAdminMode ? num : num + 1;
+                const isSelected = isAdminMode ? num === adminSelectedStartLevel : internalLevel === effectiveUserStartLevel;
+                const isLocked = !isAdminMode && internalLevel > userUnlockedLevel;
+
+                return (
+                  <button
+                    key={num}
+                    onClick={() => {
+                      if (isAdminMode) {
+                        setSelectedStartLevel(num);
+                        setAdminSelectedStartLevelState(num);
+                        setShowLevelPicker(false);
+                      } else if (!isLocked) {
+                        setUserSelectedStartLevel(internalLevel);
+                        setUserSelectedStartLevelState(internalLevel);
+                        setShowLevelPicker(false);
+                      }
+                    }}
+                    className={`rounded-xl py-2 text-sm font-bold transition-all ${isLocked ? "bg-slate-100 text-slate-400 cursor-not-allowed" : ""} ${isSelected
+                      ? 'bg-primary text-white shadow-md'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                  >
+                    {num}{isLocked ? " 🔒" : ""}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

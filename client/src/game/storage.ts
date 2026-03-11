@@ -13,6 +13,7 @@ const K = {
   userSelectedStartLevel: 'fj_userSelectedStartLevel',
   userUnlockedLevel: 'fj_userUnlockedLevel',
   adminMode: 'fj_adminMode',
+  tutorialCompleted: 'fj_tutorialCompleted',
   vehicleOwned: (id: string) => `fj_vehicle_${id}_owned`,
   vehicleSto: (id: string, n: 1 | 2 | 3 | 4 | 5) => `fj_vehicle_${id}_sto_${n}`,
   vehicleRod: (id: string, n: 1 | 2 | 3 | 4 | 5) => `fj_vehicle_${id}_rod_${n}`,
@@ -143,6 +144,14 @@ export function getAdminMode(): boolean {
 
 export function setAdminMode(value: boolean) {
   setBool(K.adminMode, value);
+}
+
+export function isTutorialCompleted(): boolean {
+  return getBool(K.tutorialCompleted);
+}
+
+export function setTutorialCompleted(value: boolean) {
+  setBool(K.tutorialCompleted, value);
 }
 
 export function getStartLevelForMode(): number {
