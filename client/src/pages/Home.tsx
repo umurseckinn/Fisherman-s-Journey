@@ -350,6 +350,22 @@ export default function Home() {
               <span className="text-xs font-bold text-primary bg-white/50 px-2 py-1 rounded-full mt-1">25 🪙</span>
             </div>
 
+            {/* Bubbles Card */}
+            <div
+              onClick={() => handleCardClick('env_bubbles')}
+              className="cursor-pointer flex-shrink-0 w-[120px] bg-sky-50 rounded-[16px] p-3 pt-4 flex flex-col items-center shadow-sm hover:scale-105 transition-transform duration-150 snap-center group"
+            >
+              <div className="w-[80px] h-[80px] flex items-center justify-center mb-2 relative">
+                <img
+                  src="/assets/environment/bubbles.png"
+                  alt="Bubbles"
+                  className="w-[96px] h-[72px] object-contain group-hover:scale-110 transition-all duration-300"
+                />
+              </div>
+              <span className="text-sm font-bold text-slate-700">Bubbles</span>
+              <span className="text-xs font-bold text-primary bg-white/50 px-2 py-1 rounded-full mt-1">Boost 💨</span>
+            </div>
+
           </div>
         </div>
 

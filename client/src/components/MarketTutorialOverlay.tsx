@@ -137,7 +137,10 @@ export const MarketTutorialOverlay: React.FC<MarketTutorialOverlayProps> = ({ st
                     className="absolute text-center z-[9999]"
                     style={textStyle}
                 >
-                    <p className="text-2xl font-black text-white drop-shadow-[0_4px_12px_rgba(0,0,0,1)] leading-tight px-4">
+                    <p
+                        className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_12px_rgba(0,0,0,1)] leading-tight px-4"
+                        style={{ textWrap: 'balance' } as any}
+                    >
                         {currentConfig.text}
                     </p>
                     <motion.div

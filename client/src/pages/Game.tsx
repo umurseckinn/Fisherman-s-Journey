@@ -762,16 +762,25 @@ export default function Game() {
     return `/assets/fish/${type}_fish.png`;
   };
 
-  const groupedInventory = inventory.reduce((acc, item) => {
-    const existing = acc.find(i => i.type === item.type);
-    if (existing) {
-      existing.count++;
-      (existing as any).totalValue += item.value;
-    } else {
-      acc.push({ ...item, count: 1, totalValue: item.value } as any);
-    }
-    return acc;
-  }, [] as (InventoryItem & { count: number, totalValue: number })[]);
+  const isReverseMarket = activeCurse === 'reverse_market' || activeCurse === 'final_3';
+  const groupedInventory = inventory
+    .filter(item => item.type !== 'env_bubbles')
+    .reduce((acc, item) => {
+      const existing = acc.find(i => i.type === item.type);
+      if (existing) {
+        existing.count++;
+        existing.totalValue += isReverseMarket ? Math.round(item.value * 0.5) : item.value;
+      } else {
+        acc.push({
+          id: item.id,
+          type: item.type,
+          name: item.name,
+          count: 1,
+          totalValue: isReverseMarket ? Math.round(item.value * 0.5) : item.value
+        });
+      }
+      return acc;
+    }, [] as { id: string, type: FishClass, name: string, count: number, totalValue: number }[]);
 
   const togglePause = () => {
     if (engineRef.current) {
@@ -1252,40 +1261,35 @@ export default function Game() {
               </Button>
             </div>
 
-            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
-              <div className="text-sm font-bold text-slate-700 mb-2">Boosters</div>
+            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-2">
               <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
                 <button
                   onClick={() => { setPurchaseBoosterType('harpoon'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/harpoon.png" alt="Harpoon" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">Harpoon</span>
-                  <span className="text-sm font-black text-yellow-600 leading-tight">{activeBoosters.harpoon}</span>
+                  <img src="/assets/boosters/harpoon.png" alt="Harpoon" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">Harpoon ({activeBoosters.harpoon})</span>
                 </button>
                 <button
                   onClick={() => { setPurchaseBoosterType('net'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/net.png" alt="Net" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">Net</span>
-                  <span className="text-sm font-black text-blue-600 leading-tight">{activeBoosters.net}</span>
+                  <img src="/assets/boosters/net.png" alt="Net" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">Net ({activeBoosters.net})</span>
                 </button>
                 <button
                   onClick={() => { setPurchaseBoosterType('tnt'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/tnt.png" alt="TNT" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">TNT</span>
-                  <span className="text-sm font-black text-red-600 leading-tight">{activeBoosters.tnt}</span>
+                  <img src="/assets/boosters/tnt.png" alt="TNT" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">TNT ({activeBoosters.tnt})</span>
                 </button>
                 <button
                   onClick={() => { setPurchaseBoosterType('anchor'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-2 shadow-sm border border-slate-100 min-w-[80px] hover:scale-105 transition-all"
+                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
                 >
-                  <img src="/assets/boosters/the_anchor.png" alt="Anchor" className="w-16 h-16 object-contain scale-125" />
-                  <span className="text-[10px] font-extrabold text-slate-700 bg-white/70 px-2 py-0.5 rounded-full">Anchor</span>
-                  <span className="text-sm font-black text-slate-600 leading-tight">{activeBoosters.anchor}</span>
+                  <img src="/assets/boosters/the_anchor.png" alt="Anchor" className="w-12 h-12 object-contain scale-110" />
+                  <span className="text-[9px] font-extrabold text-slate-700">Anchor ({activeBoosters.anchor})</span>
                 </button>
               </div>
             </div>
@@ -1295,9 +1299,15 @@ export default function Game() {
               onClick={handleNextLevel}
               disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
               className={`w-full py-4 text-base font-display font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 ${upgrades.hasFuel ? 'animate-pulse ring-4 ring-blue-300' : ''}`}
-              style={{ position: 'relative', zIndex: marketTutorialStep === 'continue' ? 9999 : undefined }}
             >
               {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? `Level ${currentLevel + 1}`}!` : "Buy Fuel to Continue"}
+            </Button>
+
+            <Button
+              onClick={() => handleTriggerGameOver("Out of Fuel! Journey ended at the market.")}
+              className="w-full py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-black rounded-2xl shadow-lg active:translate-y-1 transition-all"
+            >
+              GIVE UP (END JOURNEY)
             </Button>
           </div>
         )}
