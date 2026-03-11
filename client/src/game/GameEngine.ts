@@ -5,6 +5,7 @@ import { GameEffects } from "./GameEffects";
 import { VEHICLES, getRodTipOnCanvas, getEffectiveStats, type VehicleData } from "./vehicles";
 import { addSessionEarning, updateMaxLevelReached, getStoFlags, getRodFlags, getActiveVehicleId, type RunScoreBreakdown, submitPersonalBest, markTutorialCatch } from "./storage";
 import { LEVEL_NAMES } from "./levelNames";
+import { DynamicBackgroundManager } from "./DynamicBackgroundManager";
 
 export const CANVAS_WIDTH = 450;
 export const CANVAS_HEIGHT = 800;
@@ -234,6 +235,7 @@ export class GameEngine {
   private lastSnagType: 'anchor' | 'kelp' | 'rock' | null = null;
   private lastSpawnedType: FishClass | null = null;
   public effects: GameEffects;
+  private backgroundManager: DynamicBackgroundManager;
   private wasSubmerged: boolean = false;
   private hookLaunchMs: number = 0; // timer for launch animation
   private isPointerDown: boolean = false;
@@ -298,6 +300,7 @@ export class GameEngine {
     });
     this.spriteManager.loadImages(ASSETS);
     this.effects = new GameEffects(CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.backgroundManager = new DynamicBackgroundManager(initialState.level);
     if (typeof window !== 'undefined') {
       this.perfEnabled = new URLSearchParams(window.location.search).has('perf');
       this.perfStats.enabled = this.perfEnabled;
@@ -326,6 +329,7 @@ export class GameEngine {
       this.state.region = config.region;
       this.state.activeCurse = config.curse || 'none';
       this.state.curseTimerMs = 0;
+      this.backgroundManager.update(this.state.level, 0);
     }
     this.state.startTimerMs = 750;
     const storedVehicleId = getActiveVehicleId();
@@ -738,8 +742,10 @@ export class GameEngine {
     if (this.tutorialManager) {
       this.tutorialManager.update(deltaTime);
     }
-    if (this.tutorialFrozen) {
-      // Partial update during tutorial freeze: allow hook aiming/movement (e.g. Harpoon/TNT/Net)
+    this.backgroundManager.update(this.state.level, deltaTime);
+
+    if (this.tutorialFrozen || this.state.hook.state === 'aiming' || this.state.hook.state === 'tnt_aiming') {
+      // Partial update during tutorial freeze or aiming: allow hook aiming/movement
       this.updateHook(deltaTime);
       return;
     }
@@ -2723,18 +2729,12 @@ export class GameEngine {
   private draw(timestamp: number = 0) {
     const bx = this.bgCtx;
 
-    // Draw background only when needed (level change, arrival, sinking)
-    const needsBgRedraw = this.backgroundDirty || this.isArriving || this.isSinking;
-    if (needsBgRedraw) {
-      if (!this.isArriving && !this.isSinking) {
-        // Static scene — draw once and cache
-        this.drawBackground(bx);
-        this.backgroundDirty = false;
-      } else {
-        // Arrival / Sinking scenes change every frame — keep dirty but redraw each frame
-        this.drawBackground(bx);
-        this.drawArrivalOrSinking(bx);
-      }
+    // Dynamic Background System
+    this.backgroundManager.draw(bx);
+
+    // Any specific overlays (sinking/arrival) on top of the dynamic background
+    if (this.isArriving || this.isSinking) {
+      this.drawArrivalOrSinking(bx);
     }
 
     // Level start text moved to end of draw for proper clearing

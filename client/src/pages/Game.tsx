@@ -73,6 +73,7 @@ export default function Game() {
   const [showFuelModal, setShowFuelModal] = useState(false);
   const [showRepairModal, setShowRepairModal] = useState(false);
   const [showDoubloonShop, setShowDoubloonShop] = useState(false);
+  const [isFuelShopOpened, setIsFuelShopOpened] = useState(false);
   const [showWelcomeGift, setShowWelcomeGift] = useState(false);
   const [showMarketTutorial, setShowMarketTutorial] = useState(false);
   const [marketTutorialStep, setMarketTutorialStep] = useState<MarketTutorialStep>('completed');
@@ -819,15 +820,23 @@ export default function Game() {
         {/* Playable Area */}
         {gameState === "playing" && (
           <>
-            <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10 flex justify-between items-start pointer-events-none">
-              <div className="flex flex-wrap gap-2 items-center pointer-events-auto max-w-[65%]">
-                <div
-                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors shrink-0"
-                  onClick={() => setShowDoubloonShop(true)}
-                  title="Buy Gold Doubloons"
-                >
-                  <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
-                  <span className="text-lg font-display font-bold text-slate-700">{score}</span>
+            <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10 flex justify-between items-start pointer-events-none px-safe">
+              <div className="flex flex-col gap-1.5 items-start pointer-events-auto max-w-[65%]">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors shrink-0"
+                    onClick={() => setShowDoubloonShop(true)}
+                    title="Buy Gold Doubloons"
+                  >
+                    <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
+                    <span className="text-lg font-display font-bold text-slate-700">{score}</span>
+                  </div>
+                  <button
+                    onClick={togglePause}
+                    className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
+                  >
+                    <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
+                  </button>
                 </div>
                 {currentLevel !== 1 && (
                   <div className={`border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1.5 shrink-0 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
@@ -839,12 +848,6 @@ export default function Game() {
                     </span>
                   </div>
                 )}
-                <button
-                  onClick={togglePause}
-                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
-                >
-                  <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
-                </button>
               </div>
 
               <div className="flex flex-col gap-2 items-end">
@@ -1448,6 +1451,7 @@ export default function Game() {
           }}
           onGetDoubloons={() => {
             setShowFuelModal(false);
+            setIsFuelShopOpened(true);
             setShowDoubloonShop(true);
           }}
           onGiveUp={() => {
@@ -1466,6 +1470,7 @@ export default function Game() {
           }}
           onGetDoubloons={() => {
             setShowRepairModal(false);
+            setIsFuelShopOpened(true);
             setShowDoubloonShop(true);
           }}
           repairCost={repairCost}
@@ -1475,14 +1480,29 @@ export default function Game() {
           isOpen={showDoubloonShop}
           onClose={() => {
             setShowDoubloonShop(false);
+            setIsFuelShopOpened(false);
             if (engineRef.current && isPaused) {
               engineRef.current.resume();
               setIsPaused(false);
             }
           }}
+          isFuelShop={isFuelShopOpened}
           onPurchase={(doubloons, _price) => {
-            const current = getPermanentCoins();
-            setPermanentCoins(current + doubloons);
+            if (isFuelShopOpened) {
+              // Add to session score (run-specific coins)
+              const newScore = score + doubloons;
+              setScore(newScore);
+
+              // Also sync with engine state if it exists
+              if (engineRef.current) {
+                engineRef.current.getState().score = newScore;
+                engineRef.current.totalCoinsEarned += doubloons;
+              }
+            } else {
+              // Add to permanent coins
+              const current = getPermanentCoins();
+              setPermanentCoins(current + doubloons);
+            }
           }}
         />
 

@@ -65,16 +65,16 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-100 flex items-center justify-center p-4 pt-safe pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
+    <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-start py-10 px-4 pt-safe pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
       {/* Decorative Background Elements */}
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-yellow-200 rounded-full blur-3xl opacity-50" />
       <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-blue-300 rounded-full blur-3xl opacity-50" />
 
       {/* Main Card */}
-      <div className="max-w-sm w-full bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl px-6 py-4 border-4 border-white relative z-10 flex flex-col items-center text-center my-auto">
+      <div className="max-w-sm w-full bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl px-6 py-4 border-4 border-white relative z-10 flex flex-col items-center text-center">
 
         {/* Logo / Icon Area */}
-        <div className="flex items-center justify-center -mt-10 -mb-12 transform -rotate-6 hover:rotate-0 transition-transform duration-500 z-0">
+        <div className="flex items-center justify-center -mt-2 -mb-4 transform -rotate-6 hover:rotate-0 transition-transform duration-500 z-0">
           <img
             src="/assets/home-logo-emblem.png"
             alt="Fisherman's Journey Logo"
@@ -82,7 +82,7 @@ export default function Home() {
           />
         </div>
 
-        <h1 className="text-3xl font-display font-bold text-foreground mb-4 mt-8 text-shadow relative z-10">
+        <h1 className="text-3xl font-display font-bold text-foreground mb-4 mt-2 text-shadow relative z-10">
           Fisherman's <br /> <span className="text-primary">Journey</span>
         </h1>
 
@@ -409,7 +409,7 @@ export default function Home() {
         </div>
 
         <div className="w-full space-y-3 mt-4">
-          <Link href="/game">
+          <Link href={!tutorialDone ? "/game" : "/garage"}>
             <button className={`w-full group relative overflow-hidden ${!tutorialDone ? 'bg-amber-500 shadow-amber-500/25' : 'bg-primary shadow-blue-500/25'} text-white p-4 rounded-2xl font-bold text-xl shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]`}>
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center justify-center gap-3 text-shadow-sm">

@@ -5,6 +5,7 @@ interface GoldDoubloonShopModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPurchase: (doubloons: number, price: number) => void;
+  isFuelShop?: boolean;
 }
 
 interface DoubloonPackage {
@@ -25,7 +26,7 @@ const DOUBLOON_PACKAGES: DoubloonPackage[] = [
   { id: 'poseidon', name: "Poseidon's Doubloon Hoard", doubloons: 75000, price: 49.99, badge: 'BEST VALUE', highlight: 'best' },
 ];
 
-export function GoldDoubloonShopModal({ isOpen, onClose, onPurchase }: GoldDoubloonShopModalProps) {
+export function GoldDoubloonShopModal({ isOpen, onClose, onPurchase, isFuelShop }: GoldDoubloonShopModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -98,7 +99,9 @@ export function GoldDoubloonShopModal({ isOpen, onClose, onPurchase }: GoldDoubl
                 <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" style={{ width: '40px', height: '40px', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.8))' }} />
               </div>
               <p style={{ color: 'rgba(180,210,255,0.75)', fontSize: '13px', margin: 0 }}>
-                Spend Gold Doubloons on boosters, fuel, repairs & more
+                {isFuelShop
+                  ? "Get doubloons for fuel, repairs & continuing your current run!"
+                  : "Spend Gold Doubloons on boosters, fuel, repairs & more"}
               </p>
             </div>
 

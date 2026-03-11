@@ -94,15 +94,15 @@ export default function LevelSelect() {
                 className={`relative rounded-xl px-2 py-3 text-left transition-all border ${isUnlocked ? "border-white/50" : "border-slate-200"} ${isSelected ? "ring-2 ring-yellow-400 border-yellow-300 scale-[1.02]" : ""} ${isUnlocked ? "shadow-[0_8px_18px_rgba(15,23,42,0.25)]" : "opacity-70"}`}
                 style={{ backgroundImage: gradient, backgroundColor: vibrantSea, boxShadow: isUnlocked ? glow : undefined }}
               >
-                <div className="relative z-10">
-                  <div className="inline-flex items-center rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-bold text-yellow-200">
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="inline-flex items-center rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-bold text-yellow-200 w-fit">
                     L{level}
                   </div>
-                  <div className="mt-1 rounded-md bg-black/45 px-1.5 py-1 text-[9px] font-semibold text-yellow-200 leading-tight">
+                  <div className="mt-1 rounded-md bg-black/45 px-1.5 py-1 text-[9px] font-semibold text-yellow-200 leading-tight truncate">
                     {LEVEL_NAMES[level] ?? `Level ${level}`}
                   </div>
                   {isCheckpoint && (
-                    <div className="mt-1 inline-flex rounded-md bg-yellow-300/90 px-1 py-0.5 text-[7px] font-bold text-slate-900 leading-none uppercase tracking-tighter shadow-sm w-fit max-w-full">
+                    <div className="mt-auto pt-1 inline-flex rounded-md bg-yellow-300/90 px-1 py-0.5 text-[7px] font-bold text-slate-900 leading-none uppercase tracking-tighter shadow-sm w-fit max-w-full">
                       CHKPNT
                     </div>
                   )}
