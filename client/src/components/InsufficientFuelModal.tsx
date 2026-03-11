@@ -7,6 +7,7 @@ interface InsufficientFuelModalProps {
     onClose: () => void;
     onWatchAd: () => void;
     onGetDoubloons: () => void;
+    onGiveUp: () => void;
     fuelCost: number;
 }
 
@@ -15,6 +16,7 @@ export function InsufficientFuelModal({
     onClose,
     onWatchAd,
     onGetDoubloons,
+    onGiveUp,
     fuelCost
 }: InsufficientFuelModalProps) {
     if (!isOpen) return null;
@@ -55,14 +57,24 @@ export function InsufficientFuelModal({
                         Get More Doubloons
                     </Button>
 
-                    <Button
-                        onClick={onClose}
-                        variant="ghost"
-                        className="w-full py-4 text-slate-400 font-bold hover:text-slate-600 hover:bg-transparent rounded-2xl flex items-center justify-center gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Market
-                    </Button>
+                    <div className="flex flex-col gap-1">
+                        <Button
+                            onClick={onClose}
+                            variant="ghost"
+                            className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 hover:bg-transparent rounded-2xl flex items-center justify-center gap-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Market
+                        </Button>
+
+                        <Button
+                            onClick={onGiveUp}
+                            variant="ghost"
+                            className="w-full py-2 text-red-400 text-xs font-bold hover:text-red-600 hover:bg-red-50 rounded-xl flex items-center justify-center gap-2"
+                        >
+                            Give Up (End Journey)
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

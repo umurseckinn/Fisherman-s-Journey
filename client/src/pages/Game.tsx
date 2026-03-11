@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Clock, Fuel, Anchor, Pause, RotateCcw, Home as HomeIcon, Play, Bomb, X } from "lucide-react";
 import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y, LEVEL_CONFIG } from "@/game/GameEngine";
+import { type TutorialState } from "@/game/TutorialManager";
 import { LEVEL_NAMES } from "@/game/levelNames";
 import { VEHICLES, getEffectiveStats } from "@/game/vehicles";
 import { getActiveVehicleId, getStoFlags, getRodFlags, submitPersonalBest, type RunScoreBreakdown, getStartLevelForMode, getAdminMode, updateUserUnlockedLevel } from "@/game/storage";
@@ -13,6 +14,8 @@ import { InsufficientFuelModal } from "@/components/InsufficientFuelModal";
 import { InsufficientRepairModal } from "@/components/InsufficientRepairModal";
 import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
 import { RegionIntroCard } from "@/components/RegionIntroCard";
+import { WelcomeGiftModal } from "@/components/WelcomeGiftModal";
+import { MarketTutorialOverlay, MarketTutorialStep } from "@/components/MarketTutorialOverlay";
 import { getPermanentCoins, setPermanentCoins } from "@/game/storage";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
@@ -21,6 +24,7 @@ export default function Game() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const whirlpoolImgRef = useRef<HTMLImageElement>(null);
+  const playAreaRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const [gameState, setGameState] = useState<"playing" | "gameover" | "shop" | "win">("playing");
   const initialLevel = getStartLevelForMode();
@@ -57,6 +61,10 @@ export default function Game() {
   const [showFuelModal, setShowFuelModal] = useState(false);
   const [showRepairModal, setShowRepairModal] = useState(false);
   const [showDoubloonShop, setShowDoubloonShop] = useState(false);
+  const [showWelcomeGift, setShowWelcomeGift] = useState(false);
+  const [showMarketTutorial, setShowMarketTutorial] = useState(false);
+  const [marketTutorialStep, setMarketTutorialStep] = useState<MarketTutorialStep>('completed');
+  const [isGameOverFading, setIsGameOverFading] = useState(false);
   const [perfStats, setPerfStats] = useState<{
     enabled: boolean;
     fps: number;
@@ -66,6 +74,11 @@ export default function Game() {
     fishCount: number;
     level: number;
   } | null>(null);
+  const [tutorialState, setTutorialState] = useState<TutorialState | null>(null);
+  const [tntAim, setTntAim] = useState<{ x: number; y: number } | null>(null);
+  const [isPointerDown, setIsPointerDown] = useState(false);
+  const [tntDragged, setTntDragged] = useState(false);
+  const [tntDragStart, setTntDragStart] = useState<{ x: number; y: number } | null>(null);
 
   const [upgrades, setUpgrades] = useState({
     rodLevel: derivedRodLevel,
@@ -123,12 +136,59 @@ export default function Game() {
   }, [activeBoosters]);
 
   useEffect(() => {
+    if (currentLevel !== 1) return;
+    setActiveBoosters(prev => {
+      const next = {
+        ...prev,
+        harpoon: Math.max(1, Math.floor(prev.harpoon || 0)),
+        net: Math.max(1, Math.floor(prev.net || 0)),
+        tnt: Math.max(1, Math.floor(prev.tnt || 0)),
+        anchor: Math.max(1, Math.floor(prev.anchor || 0))
+      };
+      if (engineRef.current) {
+        engineRef.current.getState().boosters = { ...next };
+      }
+      return next;
+    });
+  }, [currentLevel]);
+
+  useEffect(() => {
     curseCardRef.current = curseCard;
   }, [curseCard]);
 
   useEffect(() => {
     regionCardRef.current = regionCardStartLevel;
   }, [regionCardStartLevel]);
+
+  const handleTriggerGameOver = useCallback((reason: string | null) => {
+    setIsGameOverFading(true);
+    setTimeout(() => {
+      setGameState("gameover");
+      setGameOverReason(reason);
+
+      const lastEngine = engineRef.current;
+      if (lastEngine) {
+        const finalScore = score;
+        const finalLevel = currentLevel;
+
+        const baseScore = runStats.current.totalCoins;
+        const depthBonus = Math.max(runStats.current.maxLevel, finalLevel) * 50;
+        const kingBonus = runStats.current.kingFishCount * 500;
+        const totalFinalScore = baseScore + depthBonus + kingBonus;
+
+        const isNewRecord = submitPersonalBest(totalFinalScore);
+
+        setScoreBreakdown({
+          baseScore,
+          depthBonus,
+          kingBonus,
+          finalScore: totalFinalScore,
+          isNewRecord
+        });
+      }
+      setIsGameOverFading(false);
+    }, 1000);
+  }, [score, currentLevel]);
 
   useEffect(() => {
     if (!canvasRef.current || !bgCanvasRef.current || gameState !== "playing") return;
@@ -184,28 +244,13 @@ export default function Game() {
       boosters: activeBoosters,
       activeBooster: selectedBooster,
       anchorEffectTimerMs: 0,
+      startTimerMs: 750,
       isPaused: shouldShowRegion || shouldShowCurse
     };
 
     const engine = new GameEngine(ctx, bgCtx, whirlpoolImgRef.current, initialState, {
       onGameOver: (finalScore, finalLevel, reason) => {
-        setGameState("gameover");
-        setGameOverReason(reason ?? null);
-
-        const baseScore = runStats.current.totalCoins;
-        const depthBonus = Math.max(runStats.current.maxLevel, finalLevel) * 50;
-        const kingBonus = runStats.current.kingFishCount * 500;
-        const totalFinalScore = baseScore + depthBonus + kingBonus;
-
-        const isNewRecord = submitPersonalBest(totalFinalScore);
-
-        setScoreBreakdown({
-          baseScore,
-          depthBonus,
-          kingBonus,
-          finalScore: totalFinalScore,
-          isNewRecord
-        });
+        handleTriggerGameOver(reason ?? null);
       },
       onScoreUpdate: (newScore) => setScore(newScore),
       onEarning: (amount) => {
@@ -255,6 +300,15 @@ export default function Game() {
           confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
           return;
         }
+
+        if (level === 1) {
+          setShowWelcomeGift(true);
+          if (engineRef.current) {
+            engineRef.current.pause();
+            setIsPaused(true);
+          }
+        }
+
         setGameState("shop");
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       },
@@ -269,6 +323,12 @@ export default function Game() {
           [type]: Math.max(0, Math.floor(prev[type] - 1))
         }));
         setSelectedBooster(null);
+        const tutorial = engineRef.current?.getTutorialState();
+        if (tutorial?.step === 'tnt_action' && type === 'tnt') {
+          engineRef.current?.handleTutorialInteraction('drag_tnt_complete');
+        } else if (tutorial?.step === 'net_action' && type === 'net') {
+          engineRef.current?.handleTutorialInteraction('tap_sea_complete');
+        }
       }
     });
 
@@ -325,6 +385,14 @@ export default function Game() {
             kelpDuration: state.upgrades.kelpDuration,
           }));
         }
+        const tutorial = engineRef.current?.getTutorialState();
+        setTutorialState(tutorial ? { ...tutorial } : null);
+        const hook = engineRef.current?.getState().hook;
+        if (hook?.state === 'tnt_aiming' && hook.targetX !== undefined && hook.targetY !== undefined) {
+          setTntAim({ x: hook.targetX, y: hook.targetY });
+        } else {
+          setTntAim(null);
+        }
       }
     }, 200);
 
@@ -339,6 +407,168 @@ export default function Game() {
       engineRef.current.getState().activeBooster = selectedBooster;
     }
   }, [selectedBooster]);
+
+  const tutorialAction = tutorialState?.allowedAction ?? null;
+  const tutorialFrozen = Boolean(tutorialState?.isFrozen);
+  const isTntAction = tutorialState?.step === 'tnt_action';
+  const isHarpoonAction = tutorialState?.step === 'harpoon_action';
+  const allowPointerDown = !tutorialFrozen || tutorialAction === 'drag_tnt' || tutorialAction === 'tap_sea' || tutorialAction === 'aim_harpoon';
+  const allowPointerMove = !tutorialFrozen || tutorialAction === 'drag_tnt' || tutorialAction === 'aim_harpoon';
+  const overlayBlocksInput = tutorialFrozen && (tutorialAction === 'tap_tnt' || tutorialAction === 'tap_net' || tutorialAction === 'tap_harpoon' || tutorialAction === 'tap_anchor');
+  const overlayOpacity = tutorialState?.overlayOpacity ?? 0.75;
+  const tntGridSize = 240;
+
+  const tutorialTarget = (() => {
+    if (!tutorialState?.targetFishIds.length) return null;
+    const engine = engineRef.current;
+    if (!engine) return null;
+    const targets = engine.getState().fishes.filter(fish => tutorialState.targetFishIds.includes(fish.id));
+    if (targets.length === 0) return null;
+    const sum = targets.reduce((acc, fish) => ({ x: acc.x + fish.x, y: acc.y + fish.y }), { x: 0, y: 0 });
+    const centerX = sum.x / targets.length;
+    const centerY = sum.y / targets.length;
+    const radius = Math.max(40, ...targets.map(fish => Math.hypot(fish.x - centerX, fish.y - centerY) + fish.radius));
+    return { centerX, centerY, radius, type: targets[0].type };
+  })();
+
+  const clampTntCenter = (center: { x: number; y: number }) => {
+    const half = tntGridSize / 2;
+    const minX = half;
+    const maxX = CANVAS_WIDTH - half;
+    const minY = SEA_LEVEL_Y + half;
+    const maxY = CANVAS_HEIGHT - half;
+    return {
+      x: Math.min(maxX, Math.max(minX, center.x)),
+      y: Math.min(maxY, Math.max(minY, center.y))
+    };
+  };
+
+  const tntCenter = (() => {
+    if (!tutorialTarget) return null;
+    return clampTntCenter({ x: tutorialTarget.centerX, y: tutorialTarget.centerY });
+  })();
+
+  const tntPreviewCenter = (() => {
+    if (!isTntAction || tutorialAction !== 'drag_tnt' || !isPointerDown || !tntAim) return null;
+    return clampTntCenter(tntAim);
+  })();
+
+  const spotlightFish = (() => {
+    if (!tutorialFrozen || tutorialState?.spotlightTarget !== 'target_fish' || isTntAction) return null;
+    const engine = engineRef.current;
+    const rect = playAreaRef.current?.getBoundingClientRect();
+    if (!engine || !rect || !tutorialTarget) return null;
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+    const radius = Math.max(60, tutorialTarget.radius * Math.max(scaleX, scaleY) + 30);
+    return {
+      x: tutorialTarget.centerX * scaleX,
+      y: tutorialTarget.centerY * scaleY,
+      radius
+    };
+  })();
+
+  const harpoonGuide = (() => {
+    if (!tutorialFrozen || tutorialState?.step !== 'harpoon_action') return null;
+    const engine = engineRef.current;
+    const rect = playAreaRef.current?.getBoundingClientRect();
+    if (!engine || !rect || !tutorialTarget) return null;
+    const pivot = engine.getHookPivotPositionOnCanvas();
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+    const startX = pivot.x * scaleX;
+    const startY = pivot.y * scaleY;
+    const endX = tutorialTarget.centerX * scaleX;
+    const endY = tutorialTarget.centerY * scaleY;
+    const length = Math.hypot(endX - startX, endY - startY);
+    const angle = Math.atan2(endY - startY, endX - startX);
+    return { startX, startY, length, angle };
+  })();
+
+  const overlayBackground = tutorialFrozen && !isHarpoonAction && !isTntAction && tutorialAction !== 'tap_sea'
+    ? spotlightFish
+      ? `radial-gradient(circle ${spotlightFish.radius}px at ${spotlightFish.x}px ${spotlightFish.y}px, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${spotlightFish.radius}px, rgba(0,0,0,${overlayOpacity}) ${spotlightFish.radius + 40}px)`
+      : `rgba(0,0,0,${overlayOpacity})`
+    : undefined;
+  const blurOverlayEnabled = Boolean(overlayBackground);
+
+  const boosterItems = [
+    { id: 'harpoon', imageSrc: '/assets/boosters/harpoon.png', label: 'Harpoon', count: activeBoosters.harpoon },
+    { id: 'net', imageSrc: '/assets/boosters/net.png', label: 'Net', count: activeBoosters.net },
+    { id: 'tnt', imageSrc: '/assets/boosters/tnt.png', label: 'TNT', count: activeBoosters.tnt },
+    { id: 'anchor', imageSrc: '/assets/boosters/the_anchor.png', label: 'Anchor', count: activeBoosters.anchor },
+  ];
+  const tutorialBoosterId = tutorialFrozen && tutorialState?.spotlightTarget?.endsWith('_btn')
+    ? tutorialState.spotlightTarget.replace('_btn', '')
+    : null;
+  const isTutorialActive = Boolean(tutorialState && tutorialState.step !== 'completed');
+  const visibleBoosters = isTutorialActive
+    ? (tutorialBoosterId ? boosterItems.filter(item => item.id === tutorialBoosterId) : [])
+    : boosterItems;
+
+  useEffect(() => {
+    if (tutorialState?.step !== 'tnt_action') return;
+    if (!tntCenter) return;
+    engineRef.current?.setTutorialTntAim(tntCenter.x, tntCenter.y);
+  }, [tutorialState?.step, tutorialState?.targetFishIds.join(','), tntCenter?.x, tntCenter?.y]);
+
+  useEffect(() => {
+    if (tutorialState?.step === 'net_action') {
+      setSelectedBooster('net');
+      if (engineRef.current) {
+        engineRef.current.getState().activeBooster = 'net';
+      }
+    }
+    if (tutorialState?.step === 'harpoon_action') {
+      setSelectedBooster('harpoon');
+      if (engineRef.current) {
+        engineRef.current.getState().activeBooster = 'harpoon';
+      }
+    }
+  }, [tutorialState?.step]);
+
+  const handleBoosterClick = (booster: { id: string; count: number }) => {
+    const tutorial = engineRef.current?.getTutorialState();
+    if (isTutorialActive) {
+      const allowedMap: Record<string, string> = {
+        tap_tnt: 'tnt',
+        tap_net: 'net',
+        tap_harpoon: 'harpoon',
+        tap_anchor: 'anchor'
+      };
+      const allowedBooster = tutorialAction ? allowedMap[tutorialAction] : null;
+      if (allowedBooster !== booster.id) return;
+    }
+    if (tutorial?.isFrozen) {
+      const allowed = tutorial.allowedAction;
+      const isAllowed = (booster.id === 'tnt' && allowed === 'tap_tnt')
+        || (booster.id === 'net' && allowed === 'tap_net')
+        || (booster.id === 'harpoon' && allowed === 'tap_harpoon')
+        || (booster.id === 'anchor' && allowed === 'tap_anchor');
+      if (!isAllowed) return;
+      if (allowed) {
+        engineRef.current?.handleTutorialInteraction(allowed);
+      }
+      if (allowed === 'tap_anchor') return;
+    }
+
+    if (booster.count <= 0) {
+      setPurchaseBoosterType(booster.id as BoosterType);
+      setPurchaseModalOpen(true);
+      if (engineRef.current) {
+        engineRef.current.pause();
+        setIsPaused(true);
+      }
+    } else {
+      if (booster.id === 'anchor') {
+        if (engineRef.current) {
+          engineRef.current.activateAnchor();
+        }
+      } else {
+        setSelectedBooster(prev => prev === booster.id ? null : booster.id as any);
+      }
+    }
+  };
 
   const handlePurchase = (pkg: { type: 'all' | 'single', amount: number }) => {
     if (!purchaseBoosterType) return;
@@ -382,6 +612,38 @@ export default function Game() {
       engineRef.current.earnCoins(totalValue);
       engineRef.current.recalculateStorage();
     }
+
+    if (showMarketTutorial && marketTutorialStep === 'sell') {
+      setMarketTutorialStep('fuel');
+    }
+  };
+
+  const handleClaimGift = () => {
+    setActiveBoosters(prev => {
+      const next = {
+        ...prev,
+        harpoon: Math.max(0, Math.floor((prev.harpoon || 0) + 2)),
+        net: Math.max(0, Math.floor((prev.net || 0) + 2)),
+        tnt: Math.max(0, Math.floor((prev.tnt || 0) + 2)),
+        anchor: Math.max(0, Math.floor((prev.anchor || 0) + 2))
+      };
+      localStorage.setItem('global_boosters', JSON.stringify(next));
+      if (engineRef.current) {
+        engineRef.current.getState().boosters = { ...next };
+        engineRef.current.resume();
+        setIsPaused(false);
+      }
+      return next;
+    });
+    setShowWelcomeGift(false);
+    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+
+    // Start market tutorial if not completed
+    const marketDone = localStorage.getItem('market_tutorial_v10') === 'true';
+    if (!marketDone) {
+      setMarketTutorialStep('sell');
+      setShowMarketTutorial(true);
+    }
   };
 
   const buyFuel = () => {
@@ -397,6 +659,10 @@ export default function Game() {
     if (engineRef.current) {
       engineRef.current.getState().score -= fuelCost;
       engineRef.current.getState().upgrades.hasFuel = true;
+    }
+
+    if (showMarketTutorial && marketTutorialStep === 'fuel') {
+      setMarketTutorialStep('continue');
     }
   };
 
@@ -439,6 +705,12 @@ export default function Game() {
 
   const handleNextLevel = () => {
     if (!upgrades.hasFuel) return;
+
+    if (showMarketTutorial && marketTutorialStep === 'continue') {
+      setMarketTutorialStep('completed');
+      setShowMarketTutorial(false);
+      localStorage.setItem('market_tutorial_v10', 'true');
+    }
 
     if (currentLevel >= 100) return;
     setCurrentLevel(prev => {
@@ -518,7 +790,7 @@ export default function Game() {
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
-      <div className="relative w-full h-full max-w-[450px] max-h-[800px] bg-sky-100 shadow-2xl overflow-hidden md:rounded-[32px] md:border-8 md:border-slate-800">
+      <div ref={playAreaRef} className="relative w-full h-full max-w-[450px] max-h-[800px] bg-sky-100 shadow-2xl overflow-hidden md:rounded-[32px] md:border-8 md:border-slate-800">
 
         {/* Playable Area */}
         {gameState === "playing" && (
@@ -533,14 +805,16 @@ export default function Game() {
                   <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-6 h-6 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
                   <span className="text-xl font-display font-bold text-slate-700">{score}</span>
                 </div>
-                <div className={`border-2 border-white rounded-2xl px-3 py-1.5 shadow-md flex items-center gap-2 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
-                  <Clock className={`w-5 h-5 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
-                  <span className="text-xl font-display font-bold text-white">
-                    {anchorEffectTimer > 0
-                      ? formatTime(Math.ceil(anchorEffectTimer / 1000))
-                      : formatTime(timeLeft)}
-                  </span>
-                </div>
+                {currentLevel !== 1 && (
+                  <div className={`border-2 border-white rounded-2xl px-3 py-1.5 shadow-md flex items-center gap-2 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
+                    <Clock className={`w-5 h-5 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
+                    <span className="text-xl font-display font-bold text-white">
+                      {anchorEffectTimer > 0
+                        ? formatTime(Math.ceil(anchorEffectTimer / 1000))
+                        : formatTime(timeLeft)}
+                    </span>
+                  </div>
+                )}
                 <button
                   onClick={togglePause}
                   className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95"
@@ -584,25 +858,52 @@ export default function Game() {
               width={CANVAS_WIDTH}
               height={CANVAS_HEIGHT}
               onPointerDown={(e) => {
+                setIsPointerDown(true);
+                setTntDragged(false);
+                if (tutorialFrozen && tutorialState?.step === 'anchor_action' && tutorialAction === 'tap_sea') {
+                  engineRef.current?.activateAnchor();
+                  engineRef.current?.handleTutorialInteraction('tap_sea_complete');
+                  return;
+                }
+                if (!allowPointerDown) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
                 const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+                if (isTntAction && tutorialAction === 'drag_tnt') {
+                  setTntAim({ x, y });
+                  setTntDragStart({ x, y });
+                }
                 engineRef.current?.handlePointerDown(x, y);
               }}
               onPointerMove={(e) => {
+                if (!allowPointerMove) return;
+                if (isTntAction && tutorialAction === 'drag_tnt' && !isPointerDown) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
                 const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+                if (isTntAction && tutorialAction === 'drag_tnt') {
+                  if (tntDragStart) {
+                    const dist = Math.hypot(x - tntDragStart.x, y - tntDragStart.y);
+                    if (dist > 6) {
+                      setTntDragged(true);
+                    }
+                  }
+                  setTntAim({ x, y });
+                }
                 engineRef.current?.handlePointerMove(x, y);
               }}
               onPointerUp={(e) => {
+                setIsPointerDown(false);
+                setTntDragStart(null);
+                if (isTntAction && tutorialAction === 'drag_tnt' && !tntDragged) return;
+                if (!allowPointerDown) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
                 const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
                 engineRef.current?.handlePointerUp(x, y);
               }}
               className="absolute inset-0 w-full h-full block touch-none"
-              style={{ zIndex: 1 }}
+              style={{ zIndex: 1, pointerEvents: allowPointerDown ? 'auto' : 'none' }}
             />
             <img
               ref={whirlpoolImgRef}
@@ -628,53 +929,229 @@ export default function Game() {
                 <div>level: {perfStats.level}</div>
               </div>
             )}
-
-            {/* Booster Selection Buttons */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
-              {[
-                { id: 'harpoon', imageSrc: '/assets/boosters/harpoon.png', label: 'Harpoon', count: activeBoosters.harpoon },
-                { id: 'net', imageSrc: '/assets/boosters/net.png', label: 'Net', count: activeBoosters.net },
-                { id: 'tnt', imageSrc: '/assets/boosters/tnt.png', label: 'TNT', count: activeBoosters.tnt },
-                { id: 'anchor', imageSrc: '/assets/boosters/the_anchor.png', label: 'Anchor', count: activeBoosters.anchor },
-              ].map((booster) => (
-                <button
-                  key={booster.id}
-                  onClick={() => {
-                    if (booster.count <= 0) {
-                      setPurchaseBoosterType(booster.id as BoosterType);
-                      setPurchaseModalOpen(true);
-                      if (engineRef.current) {
-                        engineRef.current.pause();
-                        setIsPaused(true);
-                      }
-                    } else {
-                      if (booster.id === 'anchor') {
-                        if (engineRef.current) {
-                          engineRef.current.activateAnchor();
-                        }
-                      } else {
-                        setSelectedBooster(prev => prev === booster.id ? null : booster.id as any);
-                      }
+            {tutorialFrozen && overlayBackground && blurOverlayEnabled && !isTntAction && (
+              <div
+                className="absolute inset-0 z-40 backdrop-blur-sm"
+                style={{ background: overlayBackground, pointerEvents: overlayBlocksInput ? 'auto' : 'none' }}
+              />
+            )}
+            {tutorialFrozen && overlayBackground && !blurOverlayEnabled && !isTntAction && (
+              <div
+                className="absolute inset-0 z-40"
+                style={{ background: overlayBackground, pointerEvents: overlayBlocksInput ? 'auto' : 'none' }}
+              />
+            )}
+            {tutorialFrozen && isTntAction && tntCenter && (
+              (() => {
+                const rect = playAreaRef.current?.getBoundingClientRect();
+                if (!rect) return null;
+                const scaleX = rect.width / CANVAS_WIDTH;
+                const scaleY = rect.height / CANVAS_HEIGHT;
+                const targetWidth = tntGridSize * scaleX;
+                const targetHeight = tntGridSize * scaleY;
+                const targetLeft = tntCenter.x * scaleX - targetWidth / 2;
+                const targetTop = tntCenter.y * scaleY - targetHeight / 2;
+                const targetRect = {
+                  left: targetLeft,
+                  top: targetTop,
+                  right: targetLeft + targetWidth,
+                  bottom: targetTop + targetHeight,
+                  width: targetWidth,
+                  height: targetHeight
+                };
+                const previewRect = tntPreviewCenter
+                  ? (() => {
+                    const width = tntGridSize * scaleX;
+                    const height = tntGridSize * scaleY;
+                    const left = tntPreviewCenter.x * scaleX - width / 2;
+                    const top = tntPreviewCenter.y * scaleY - height / 2;
+                    return { left, top, right: left + width, bottom: top + height, width, height };
+                  })()
+                  : null;
+                const windows = previewRect ? [targetRect, previewRect] : [targetRect];
+                const xs = Array.from(new Set([0, rect.width, ...windows.flatMap(w => [w.left, w.right])])).sort((a, b) => a - b);
+                const ys = Array.from(new Set([0, rect.height, ...windows.flatMap(w => [w.top, w.bottom])])).sort((a, b) => a - b);
+                const blurRects: Array<{ left: number; top: number; width: number; height: number }> = [];
+                for (let i = 0; i < xs.length - 1; i++) {
+                  for (let j = 0; j < ys.length - 1; j++) {
+                    const left = xs[i];
+                    const top = ys[j];
+                    const right = xs[i + 1];
+                    const bottom = ys[j + 1];
+                    const insideWindow = windows.some(w => left >= w.left && right <= w.right && top >= w.top && bottom <= w.bottom);
+                    if (!insideWindow) {
+                      blurRects.push({ left, top, width: right - left, height: bottom - top });
                     }
-                  }}
-                  className={`relative w-20 h-20 flex items-center justify-center transition-all ${booster.count === 0
-                    ? 'opacity-50 grayscale hover:scale-105'
-                    : selectedBooster === booster.id
-                      ? 'scale-125 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]'
-                      : 'hover:scale-110 drop-shadow-md'
-                    }`}
-                >
-                  <img src={booster.imageSrc} alt={booster.label} className="w-24 h-24 max-w-none object-contain scale-125 hover:scale-150 transition-transform origin-center" />
-                  <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border border-white">
-                    {booster.count}
-                  </span>
-                  {selectedBooster === booster.id && (
-                    <div className="absolute -top-1 -right-1 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-md animate-in zoom-in-50">
-                      <X className="w-3 h-3" />
-                    </div>
-                  )}
-                </button>
-              ))}
+                  }
+                }
+                return (
+                  <>
+                    {blurRects.map((cell, idx) => (
+                      <div
+                        key={`tnt-blur-${idx}`}
+                        className="absolute z-40 backdrop-blur-sm pointer-events-none"
+                        style={{
+                          left: cell.left,
+                          top: cell.top,
+                          width: cell.width,
+                          height: cell.height,
+                          background: `rgba(0,0,0,${overlayOpacity})`
+                        }}
+                      />
+                    ))}
+                    <div
+                      className="absolute z-50 pointer-events-none"
+                      style={{
+                        left: targetRect.left,
+                        top: targetRect.top,
+                        width: targetRect.width,
+                        height: targetRect.height,
+                        backgroundColor: 'rgba(160,160,160,0.18)',
+                        backgroundImage: 'linear-gradient(to right, rgba(180,180,180,0.8) 1px, transparent 1px), linear-gradient(to bottom, rgba(180,180,180,0.8) 1px, transparent 1px)',
+                        backgroundSize: `${targetRect.width / 3}px ${targetRect.height / 3}px`,
+                        border: '2px solid rgba(180,180,180,0.9)',
+                        boxShadow: '0 0 16px rgba(180,180,180,0.6)'
+                      }}
+                    />
+                    {previewRect && (
+                      <div
+                        className="absolute z-50 pointer-events-none"
+                        style={{
+                          left: previewRect.left,
+                          top: previewRect.top,
+                          width: previewRect.width,
+                          height: previewRect.height,
+                          backgroundColor: 'rgba(255,60,60,0.12)',
+                          backgroundImage: 'linear-gradient(to right, rgba(255,90,90,0.9) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,90,90,0.9) 1px, transparent 1px)',
+                          backgroundSize: `${previewRect.width / 3}px ${previewRect.height / 3}px`,
+                          border: '2px solid rgba(255,90,90,0.95)',
+                          boxShadow: '0 0 24px rgba(255,90,90,0.7)'
+                        }}
+                      />
+                    )}
+                  </>
+                );
+              })()
+            )}
+            {isHarpoonAction && harpoonGuide && (
+              (() => {
+                const radius = Math.max(140, harpoonGuide.length);
+                const startAngle = harpoonGuide.angle - Math.PI / 2;
+                const endAngle = harpoonGuide.angle + Math.PI / 2;
+                const cx = harpoonGuide.startX;
+                const cy = harpoonGuide.startY;
+                const startX = cx + radius * Math.cos(startAngle);
+                const startY = cy + radius * Math.sin(startAngle);
+                const endX = cx + radius * Math.cos(endAngle);
+                const endY = cy + radius * Math.sin(endAngle);
+                return (
+                  <svg
+                    className="absolute z-50 pointer-events-none"
+                    style={{
+                      left: cx - radius,
+                      top: cy - radius,
+                      width: radius * 2,
+                      height: radius * 2
+                    }}
+                  >
+                    <path
+                      d={`M ${startX - (cx - radius)} ${startY - (cy - radius)} A ${radius} ${radius} 0 0 1 ${endX - (cx - radius)} ${endY - (cy - radius)}`}
+                      stroke="rgba(255,255,255,0.75)"
+                      strokeWidth="3"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                );
+              })()
+            )}
+            {isHarpoonAction && tutorialTarget && (
+              (() => {
+                const rect = playAreaRef.current?.getBoundingClientRect();
+                if (!rect) return null;
+                const scaleX = rect.width / CANVAS_WIDTH;
+                const scaleY = rect.height / CANVAS_HEIGHT;
+                const size = Math.max(70, tutorialTarget.radius * Math.max(scaleX, scaleY) * 2.2);
+                const left = tutorialTarget.centerX * scaleX - size / 2;
+                const top = tutorialTarget.centerY * scaleY - size / 2;
+                return (
+                  <img
+                    src={`/assets/fish/${tutorialTarget.type}_fish.png`}
+                    alt=""
+                    className="absolute z-50 animate-pulse"
+                    style={{
+                      left,
+                      top,
+                      width: size,
+                      height: size,
+                      filter: 'drop-shadow(0 0 16px rgba(255,255,255,0.9))'
+                    }}
+                  />
+                );
+              })()
+            )}
+            {spotlightFish && (
+              <div
+                className="absolute z-50 rounded-full border-2 border-yellow-300 animate-pulse pointer-events-none"
+                style={{
+                  left: spotlightFish.x - spotlightFish.radius,
+                  top: spotlightFish.y - spotlightFish.radius,
+                  width: spotlightFish.radius * 2,
+                  height: spotlightFish.radius * 2,
+                  boxShadow: '0 0 30px rgba(255,215,0,0.85)'
+                }}
+              />
+            )}
+            {harpoonGuide && (
+              <div
+                className="absolute z-50 pointer-events-none"
+                style={{
+                  left: harpoonGuide.startX,
+                  top: harpoonGuide.startY,
+                  width: harpoonGuide.length,
+                  height: 4,
+                  transformOrigin: '0 50%',
+                  transform: `rotate(${harpoonGuide.angle}rad)`,
+                  background: 'linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,0))',
+                  boxShadow: '0 0 12px rgba(255,255,255,0.6)'
+                }}
+              />
+            )}
+            {tutorialState?.overlayText && (
+              <div className="absolute inset-x-0 top-20 z-50 flex justify-center pointer-events-none">
+                <div className="text-lg font-display font-bold text-yellow-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] text-center px-6">
+                  {tutorialState.overlayText}
+                </div>
+              </div>
+            )}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
+              {visibleBoosters.map((booster) => {
+                const spotlighted = tutorialFrozen && tutorialState?.spotlightTarget === `${booster.id}_btn`;
+                const pointerEnabled = !tutorialFrozen || spotlighted;
+                return (
+                  <button
+                    key={booster.id}
+                    onClick={() => handleBoosterClick(booster)}
+                    className={`relative w-20 h-20 flex items-center justify-center transition-all ${booster.count === 0
+                      ? 'opacity-50 grayscale hover:scale-105'
+                      : selectedBooster === booster.id
+                        ? 'scale-125 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]'
+                        : 'hover:scale-110 drop-shadow-md'
+                      } ${spotlighted ? 'scale-125 drop-shadow-[0_0_20px_rgba(255,215,0,0.9)] animate-pulse' : ''}`}
+                    style={{ pointerEvents: pointerEnabled ? 'auto' : 'none', zIndex: spotlighted ? 60 : undefined }}
+                  >
+                    <img src={booster.imageSrc} alt={booster.label} className="w-24 h-24 max-w-none object-contain scale-125 hover:scale-150 transition-transform origin-center" />
+                    <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border border-white">
+                      {booster.count}
+                    </span>
+                    {selectedBooster === booster.id && (
+                      <div className="absolute -top-1 -right-1 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-md animate-in zoom-in-50">
+                        <X className="w-3 h-3" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </>
         )}
@@ -734,12 +1211,27 @@ export default function Game() {
                   ))
                 )}
               </div>
-              <Button onClick={handleSellAll} disabled={inventory.length === 0} className="w-full h-8 text-xs bg-green-500 hover:bg-green-600">Sell All</Button>
+              <Button
+                id="market-sell-all"
+                onClick={handleSellAll}
+                disabled={inventory.length === 0 && (!showMarketTutorial || marketTutorialStep !== 'sell')}
+                className="w-full h-8 text-xs bg-green-500 hover:bg-green-600"
+                style={{ position: 'relative', zIndex: marketTutorialStep === 'sell' ? 9999 : undefined }}
+              >
+                Sell All
+              </Button>
             </div>
 
             <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
               <div className="text-sm font-bold text-slate-700 mb-2">Buy Fuel</div>
-              <Button onClick={buyFuel} disabled={upgrades.hasFuel} variant={upgrades.hasFuel ? "outline" : "default"} className="w-full h-10 bg-red-500 hover:bg-red-600 text-white">
+              <Button
+                id="market-buy-fuel"
+                onClick={buyFuel}
+                disabled={upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'fuel')}
+                variant={upgrades.hasFuel ? "outline" : "default"}
+                className="w-full h-10 bg-red-500 hover:bg-red-600 text-white"
+                style={{ position: 'relative', zIndex: marketTutorialStep === 'fuel' ? 9999 : undefined }}
+              >
                 <div className="flex items-center justify-center gap-2 text-sm font-bold">
                   <Fuel className="w-4 h-4" />
                   <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain" />
@@ -799,9 +1291,11 @@ export default function Game() {
             </div>
 
             <Button
+              id="market-next-level"
               onClick={handleNextLevel}
-              disabled={!upgrades.hasFuel}
+              disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
               className={`w-full py-4 text-base font-display font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 ${upgrades.hasFuel ? 'animate-pulse ring-4 ring-blue-300' : ''}`}
+              style={{ position: 'relative', zIndex: marketTutorialStep === 'continue' ? 9999 : undefined }}
             >
               {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? `Level ${currentLevel + 1}`}!` : "Buy Fuel to Continue"}
             </Button>
@@ -922,6 +1416,10 @@ export default function Game() {
             setShowFuelModal(false);
             setShowDoubloonShop(true);
           }}
+          onGiveUp={() => {
+            setShowFuelModal(false);
+            handleTriggerGameOver("Insufficient fuel to continue the journey.");
+          }}
           fuelCost={fuelCost}
         />
 
@@ -960,7 +1458,20 @@ export default function Game() {
             <ArrowLeft className="text-white w-6 h-6" />
           </Link>
         )}
+
+        {showWelcomeGift && (
+          <WelcomeGiftModal onClaim={handleClaimGift} />
+        )}
+
+        {showMarketTutorial && (
+          <MarketTutorialOverlay step={marketTutorialStep} />
+        )}
       </div>
+      {/* Game Over Fade Overlay */}
+      <div
+        className="fixed inset-0 bg-black pointer-events-none z-[99999] transition-opacity duration-1000"
+        style={{ opacity: isGameOverFading ? 1 : 0 }}
+      />
     </div>
   );
 }

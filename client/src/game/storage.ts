@@ -2,6 +2,8 @@
 // localStorage persistence layer — from master_prompt.md §6.7
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { type FishClass } from "./types";
+
 const K = {
   permanentCoins: 'fj_permanentCoins',
   maxLevelReached: 'fj_maxLevelReached',
@@ -12,9 +14,11 @@ const K = {
   userUnlockedLevel: 'fj_userUnlockedLevel',
   adminMode: 'fj_adminMode',
   vehicleOwned: (id: string) => `fj_vehicle_${id}_owned`,
-  vehicleSto:   (id: string, n: 1|2|3|4|5) => `fj_vehicle_${id}_sto_${n}`,
-  vehicleRod:   (id: string, n: 1|2|3|4|5) => `fj_vehicle_${id}_rod_${n}`,
+  vehicleSto: (id: string, n: 1 | 2 | 3 | 4 | 5) => `fj_vehicle_${id}_sto_${n}`,
+  vehicleRod: (id: string, n: 1 | 2 | 3 | 4 | 5) => `fj_vehicle_${id}_rod_${n}`,
 };
+
+const TUTORIAL_CAUGHT_KEY = 'fj_tutorial_caught';
 
 function getNum(key: string, fallback = 0): number {
   const v = localStorage.getItem(key);
@@ -28,6 +32,21 @@ function getBool(key: string): boolean {
 }
 function setBool(key: string, value: boolean) {
   localStorage.setItem(key, value ? 'true' : 'false');
+}
+
+export function markTutorialCatch(type: FishClass) {
+  const raw = localStorage.getItem(TUTORIAL_CAUGHT_KEY);
+  const map = raw ? JSON.parse(raw) : {};
+  if (!map[type]) {
+    map[type] = true;
+    localStorage.setItem(TUTORIAL_CAUGHT_KEY, JSON.stringify(map));
+  }
+}
+
+export function hasTutorialCaught(type: FishClass): boolean {
+  const raw = localStorage.getItem(TUTORIAL_CAUGHT_KEY);
+  const map = raw ? JSON.parse(raw) : {};
+  return Boolean(map[type]);
 }
 
 // ── Permanent Coins ──────────────────────────────────────────────────────────
@@ -149,33 +168,34 @@ export function buyVehicle(id: string): boolean {
 
 // ── Vehicle Upgrades ──────────────────────────────────────────────────────────
 
-export function isStoOwned(vehicleId: string, level: 1|2|3|4|5): boolean {
+export function isStoOwned(vehicleId: string, level: 1 | 2 | 3 | 4 | 5): boolean {
   return getBool(K.vehicleSto(vehicleId, level));
 }
 
-export function buySto(vehicleId: string, level: 1|2|3|4|5) {
+export function buySto(vehicleId: string, level: 1 | 2 | 3 | 4 | 5) {
   setBool(K.vehicleSto(vehicleId, level), true);
 }
 
-export function isRodOwned(vehicleId: string, level: 1|2|3|4|5): boolean {
+export function isRodOwned(vehicleId: string, level: 1 | 2 | 3 | 4 | 5): boolean {
   return getBool(K.vehicleRod(vehicleId, level));
 }
 
-export function buyRod(vehicleId: string, level: 1|2|3|4|5) {
+export function buyRod(vehicleId: string, level: 1 | 2 | 3 | 4 | 5) {
   setBool(K.vehicleRod(vehicleId, level), true);
 }
 
 /** Get all STO owned flags for a vehicle as boolean[5] */
 export function getStoFlags(vehicleId: string): boolean[] {
-  return [1,2,3,4,5].map(n => isStoOwned(vehicleId, n as 1|2|3|4|5));
+  return [1, 2, 3, 4, 5].map(n => isStoOwned(vehicleId, n as 1 | 2 | 3 | 4 | 5));
 }
 
 /** Get all ROD owned flags for a vehicle as boolean[5] */
 export function getRodFlags(vehicleId: string): boolean[] {
-  return [1,2,3,4,5].map(n => isRodOwned(vehicleId, n as 1|2|3|4|5));
+  return [1, 2, 3, 4, 5].map(n => isRodOwned(vehicleId, n as 1 | 2 | 3 | 4 | 5));
 }
 
 export function resetProfile(vehicleIds: string[]) {
+  // Clear specific known keys
   localStorage.removeItem(K.permanentCoins);
   localStorage.removeItem(K.maxLevelReached);
   localStorage.removeItem(K.personalBest);
@@ -184,13 +204,30 @@ export function resetProfile(vehicleIds: string[]) {
   localStorage.removeItem(K.userSelectedStartLevel);
   localStorage.removeItem(K.userUnlockedLevel);
   localStorage.removeItem(K.adminMode);
+
+  // Clear boosters and tutorials
+  localStorage.removeItem('global_boosters');
+  localStorage.removeItem('market_tutorial_v10'); // Market tutorial
+  localStorage.removeItem(TUTORIAL_CAUGHT_KEY);   // 'fj_tutorial_caught'
+
+  // Clear vehicle-specific upgrades
   vehicleIds.forEach(id => {
     localStorage.removeItem(K.vehicleOwned(id));
-    [1,2,3,4,5].forEach(n => {
-      localStorage.removeItem(K.vehicleSto(id, n as 1|2|3|4|5));
-      localStorage.removeItem(K.vehicleRod(id, n as 1|2|3|4|5));
+    [1, 2, 3, 4, 5].forEach(n => {
+      localStorage.removeItem(K.vehicleSto(id, n as 1 | 2 | 3 | 4 | 5));
+      localStorage.removeItem(K.vehicleRod(id, n as 1 | 2 | 3 | 4 | 5));
     });
   });
+
+  // Future-proof: Clear any key starting with 'fj_'
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('fj_')) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(k => localStorage.removeItem(k));
 }
 
 // ── Score Calculation ─────────────────────────────────────────────────────────
@@ -208,9 +245,9 @@ export function calculateRunScore(
   maxLevelReached: number,
   kingFishCaught: number
 ): RunScoreBreakdown {
-  const baseScore  = totalCoinsEarned;
+  const baseScore = totalCoinsEarned;
   const depthBonus = maxLevelReached * 50;
-  const kingBonus  = kingFishCaught * 500;
+  const kingBonus = kingFishCaught * 500;
   const finalScore = baseScore + depthBonus + kingBonus;
   const isNewRecord = submitPersonalBest(finalScore);
   return { baseScore, depthBonus, kingBonus, finalScore, isNewRecord };

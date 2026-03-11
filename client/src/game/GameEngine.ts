@@ -1,8 +1,9 @@
 import { type GameState, type Entity, type FishClass, type CurseType, OBJECT_MATRIX } from "./types";
 import { SpriteManager, ASSETS } from "./SpriteManager";
+import { TutorialLevelManager } from "./TutorialManager";
 import { GameEffects } from "./GameEffects";
 import { VEHICLES, getRodTipOnCanvas, getEffectiveStats, type VehicleData } from "./vehicles";
-import { addSessionEarning, updateMaxLevelReached, getStoFlags, getRodFlags, getActiveVehicleId, type RunScoreBreakdown, submitPersonalBest } from "./storage";
+import { addSessionEarning, updateMaxLevelReached, getStoFlags, getRodFlags, getActiveVehicleId, type RunScoreBreakdown, submitPersonalBest, markTutorialCatch } from "./storage";
 import { LEVEL_NAMES } from "./levelNames";
 
 export const CANVAS_WIDTH = 450;
@@ -206,9 +207,9 @@ export class GameEngine {
   private lastFrameTime: number = 0;
   private timers: Record<string, number> = {};
   private onGameOver: (score: number, level: number, reason?: string) => void;
-    private onScoreUpdate: (score: number) => void;
-    private onEarning: (amount: number) => void;
-    private onLevelComplete: (level: number) => void;
+  private onScoreUpdate: (score: number) => void;
+  private onEarning: (amount: number) => void;
+  private onLevelComplete: (level: number) => void;
   private onFishCaught: (fish: Entity) => void;
   private onBoosterUsed: (type: 'harpoon' | 'net' | 'tnt' | 'anchor') => void;
   private onPermanentCoinsUpdate?: (pCoins: number) => void;
@@ -247,6 +248,10 @@ export class GameEngine {
   private levelObjectWeights: Record<number, Partial<Record<FishClass, number>>> | null = null;
   private activeWhirlpool: Entity | null = null;
   private perfEnabled: boolean = false;
+  private tutorialManager: TutorialLevelManager | null = null;
+  private tutorialFrozen: boolean = false;
+  private tutorialAnchorUsed: boolean = false;
+  private tutorialArrivalTimeout: number | null = null;
   private perfStats = {
     enabled: false,
     fps: 0,
@@ -269,9 +274,9 @@ export class GameEngine {
     initialState: GameState,
     callbacks: {
       onGameOver: (score: number, level: number, reason?: string) => void;
-        onScoreUpdate: (score: number) => void;
-        onEarning: (amount: number) => void;
-        onLevelComplete: (level: number) => void;
+      onScoreUpdate: (score: number) => void;
+      onEarning: (amount: number) => void;
+      onLevelComplete: (level: number) => void;
       onFishCaught: (fish: Entity) => void;
       onBoosterUsed: (type: 'harpoon' | 'net' | 'tnt' | 'anchor') => void;
     }
@@ -322,6 +327,7 @@ export class GameEngine {
       this.state.activeCurse = config.curse || 'none';
       this.state.curseTimerMs = 0;
     }
+    this.state.startTimerMs = 750;
     const storedVehicleId = getActiveVehicleId();
     const activeVehicle = VEHICLES.find(vehicle => vehicle.id === storedVehicleId) ?? VEHICLES[0];
     this.activeVehicleId = activeVehicle.id;
@@ -381,6 +387,13 @@ export class GameEngine {
     this.hookLaunchMs = 0;
     this.wasSubmerged = false;
     this.backgroundDirty = true; // Force background redraw at start
+    this.tutorialFrozen = false;
+    this.tutorialAnchorUsed = false;
+    if (this.tutorialArrivalTimeout !== null) {
+      window.clearTimeout(this.tutorialArrivalTimeout);
+      this.tutorialArrivalTimeout = null;
+    }
+    this.tutorialManager = this.state.level === 1 ? new TutorialLevelManager(this) : null;
     this.seedStaticObstacles();
     this.lastFrameTime = performance.now();
     requestAnimationFrame(this.loop);
@@ -401,6 +414,91 @@ export class GameEngine {
 
   public getState() {
     return this.state;
+  }
+
+  public getTutorialState() {
+    return this.tutorialManager?.getState() ?? null;
+  }
+
+  public handleTutorialInteraction(action: string) {
+    this.tutorialManager?.handleInteraction(action);
+  }
+
+  public setTutorialFreeze(isFrozen: boolean) {
+    this.tutorialFrozen = isFrozen;
+    if (isFrozen) {
+      const hook = this.state.hook;
+      if (hook.caughtEntity) {
+        const caught = hook.caughtEntity;
+        const storeCatch = this.state.anchorEffectTimerMs <= 0;
+        if (caught.type === 'sunken_boat') {
+          this.handleSunkenBoat(caught, storeCatch);
+        } else if (caught.type === 'shell') {
+          this.handleShell(caught, storeCatch);
+        } else {
+          this.handleStandardCatch(caught, false, storeCatch);
+        }
+      }
+      hook.state = 'idle';
+      hook.length = 0;
+      hook.caughtEntity = null;
+      const pivot = this.getHookPivotPosition();
+      hook.x = pivot.x;
+      hook.y = pivot.y;
+      this.wasSubmerged = false;
+      this.hookLaunchMs = 0;
+    }
+  }
+
+  public spawnTutorialFish(type: FishClass, count: number, closeTogether: boolean = false) {
+    const ids: number[] = [];
+    const spacing = 45;
+    const baseX = CANVAS_WIDTH + 80;
+    const baseY = closeTogether ? this.getTutorialSpawnY(type) : undefined;
+    for (let i = 0; i < count; i++) {
+      const offsetIndex = count > 1 ? i - (count - 1) / 2 : 0;
+      const x = closeTogether
+        ? baseX + offsetIndex * spacing
+        : CANVAS_WIDTH + 60 + Math.random() * 120;
+      const y = baseY ?? this.getTutorialSpawnY(type);
+      const entity = this.buildTutorialEntity(type, x, y);
+      this.state.fishes.push(entity);
+      ids.push(entity.id);
+    }
+    return ids;
+  }
+
+  public spawnTutorialFishAt(type: FishClass, x: number, y: number) {
+    const entity = this.buildTutorialEntity(type, x, y);
+    this.state.fishes.push(entity);
+    return entity.id;
+  }
+
+  public getHookPivotPositionOnCanvas() {
+    return this.getHookPivotPosition();
+  }
+
+  public setTutorialTntAim(x: number, y: number) {
+    const gridSize = 240;
+    const half = gridSize / 2;
+    const clampedX = Math.min(CANVAS_WIDTH - half, Math.max(half, x));
+    const clampedY = Math.min(CANVAS_HEIGHT - half, Math.max(SEA_LEVEL_Y + half, y));
+    this.state.hook.state = 'tnt_aiming';
+    this.state.hook.targetX = clampedX;
+    this.state.hook.targetY = clampedY;
+  }
+
+  public scheduleTutorialArrival(delayMs: number) {
+    if (this.tutorialArrivalTimeout !== null) {
+      window.clearTimeout(this.tutorialArrivalTimeout);
+    }
+    this.tutorialArrivalTimeout = window.setTimeout(() => {
+      this.tutorialArrivalTimeout = null;
+      if (!this.state.isPlaying || this.isArriving) return;
+      this.isArriving = true;
+      this.state.hook.state = 'idle';
+      this.arrivalProgress = 0;
+    }, delayMs);
   }
 
   public isPerfEnabled() {
@@ -444,6 +542,10 @@ export class GameEngine {
 
   public handlePointerDown(cx: number, cy: number) {
     if (this.state.isPaused || this.state.hookBrokenMs > 0) {
+      this.isPointerDown = false;
+      return;
+    }
+    if (this.tutorialFrozen && !this.state.activeBooster) {
       this.isPointerDown = false;
       return;
     }
@@ -491,6 +593,7 @@ export class GameEngine {
 
   public handlePointerMove(cx: number, cy: number) {
     if (this.state.isPaused || this.state.hookBrokenMs > 0) return;
+    if (this.tutorialFrozen && this.state.hook.state !== 'aiming' && this.state.hook.state !== 'tnt_aiming') return;
 
     if (this.state.hook.state === 'aiming') {
       const pivot = this.getHookPivotPosition();
@@ -514,14 +617,44 @@ export class GameEngine {
   public handlePointerUp(cx: number, cy: number) {
     this.isPointerDown = false;
     if (this.state.isPaused || this.state.hookBrokenMs > 0) return;
+    if (this.tutorialFrozen && !this.state.activeBooster && this.state.hook.state === 'idle') return;
 
     if (this.state.hook.state === 'aiming') {
+      const tutorial = this.tutorialManager?.getState();
+      if (tutorial?.step === 'harpoon_action') {
+        const target = this.getTutorialTargetCenter();
+        if (target) {
+          const pivot = this.getHookPivotPosition();
+          const dx = target.x - pivot.x;
+          const dy = target.y - pivot.y;
+          let targetAngle = Math.atan2(dy, -dx);
+          if (targetAngle < 0) {
+            targetAngle = dx > 0 ? 0 : Math.PI;
+          }
+          const angleDiff = Math.abs(this.state.hook.angle - targetAngle);
+          if (angleDiff > 0.28) {
+            return;
+          }
+        }
+      }
       this.state.hook.state = 'harpoon';
       this.state.hook.targetX = cx;
       this.state.hook.targetY = cy;
       this.onBoosterUsed('harpoon');
       return;
     } else if (this.state.hook.state === 'tnt_aiming' && this.state.hook.targetX !== undefined && this.state.hook.targetY !== undefined) {
+      const tutorial = this.tutorialManager?.getState();
+      if (tutorial?.step === 'tnt_action') {
+        const target = this.getTutorialTargetCenter();
+        if (target) {
+          const half = 120;
+          const dx = Math.abs(this.state.hook.targetX - target.x);
+          const dy = Math.abs(this.state.hook.targetY - target.y);
+          if (dx > half || dy > half) {
+            return;
+          }
+        }
+      }
       this.handleTntExplosion(this.state.hook.targetX, this.state.hook.targetY);
       this.state.hook.state = 'idle';
       this.onBoosterUsed('tnt');
@@ -583,6 +716,9 @@ export class GameEngine {
   public activateAnchor() {
     this.state.anchorEffectTimerMs = 20000;
     this.onBoosterUsed('anchor');
+    if (this.state.level === 1 && this.tutorialManager?.isActive()) {
+      this.tutorialAnchorUsed = true;
+    }
     this.effects.spawnSplash(CANVAS_WIDTH / 2, SEA_LEVEL_Y);
     const { x, y } = this.getAnchorAttachPoint();
     this.anchorVisualX = x;
@@ -592,7 +728,22 @@ export class GameEngine {
   }
 
   public update(deltaTime: number) {
+    if (this.state.startTimerMs > 0) {
+      this.state.startTimerMs -= deltaTime;
+      if (this.state.startTimerMs < 0) this.state.startTimerMs = 0;
+      return;
+    }
     if (!this.state.isPlaying || this.state.isPaused) return;
+
+    if (this.tutorialManager) {
+      this.tutorialManager.update(deltaTime);
+    }
+    if (this.tutorialFrozen) {
+      // Partial update during tutorial freeze: allow hook aiming/movement (e.g. Harpoon/TNT/Net)
+      this.updateHook(deltaTime);
+      return;
+    }
+    const tutorialActive = this.state.level === 1 && this.tutorialManager?.isActive();
 
     if (this.isSinking) {
       this.sinkProgress += deltaTime / 2000;
@@ -622,15 +773,17 @@ export class GameEngine {
       if (!this.state.isPlaying) return;
     }
 
-    if (this.state.timeRemaining > 0) {
-      if (this.state.anchorEffectTimerMs <= 0) {
-        this.state.timeRemaining -= deltaTime / 1000;
+    if (!tutorialActive) {
+      if (this.state.timeRemaining > 0) {
+        if (this.state.anchorEffectTimerMs <= 0) {
+          this.state.timeRemaining -= deltaTime / 1000;
+        }
+      } else if (!this.isArriving) {
+        this.isArriving = true;
+        this.state.hook.state = 'idle';
+        // Reset arrival progress to ensure a clean animation start
+        this.arrivalProgress = 0;
       }
-    } else if (!this.isArriving) {
-      this.isArriving = true;
-      this.state.hook.state = 'idle';
-      // Reset arrival progress to ensure a clean animation start
-      this.arrivalProgress = 0;
     }
 
     this.updateHook(deltaTime);
@@ -999,6 +1152,9 @@ export class GameEngine {
 
       if (hook.x < 0 || hook.x > CANVAS_WIDTH || hook.y > maxDepth) {
         hook.state = 'retracting';
+        if (this.tutorialManager?.getState().step === 'harpoon_action') {
+          this.handleTutorialInteraction('aim_harpoon_complete');
+        }
       }
 
       for (let i = 0; i < this.state.fishes.length; i++) {
@@ -1157,6 +1313,9 @@ export class GameEngine {
 
         // Standard catch
         hook.state = 'retracting';
+        if (this.tutorialManager?.getState().step === 'harpoon_action') {
+          this.handleTutorialInteraction('aim_harpoon_complete');
+        }
         hook.caughtEntity = fish;
         this.state.fishes.splice(i, 1);
         this.effects.shakeScreen(3, 3);
@@ -1495,6 +1654,7 @@ export class GameEngine {
   private spawnFishes(deltaTime: number) {
     // Stop spawning if arriving
     if (this.isArriving) return;
+    if (this.state.level === 1) return;
 
     const levelConfig = LEVEL_CONFIG[this.state.level];
     if (!levelConfig) return;
@@ -1510,282 +1670,282 @@ export class GameEngine {
 
       if (!this.levelSpawnWeights) {
         this.levelSpawnWeights = {
-  1: { bubble: 95, sakura: 70 },
-  2: { bubble: 88, sakura: 72, zap: 18 },
-  3: { bubble: 85, sakura: 70, zap: 25 },
-  4: { bubble: 82, sakura: 68, zap: 30, candy: 12 },
-  5: { bubble: 78, sakura: 65, zap: 35, candy: 30 },
-  6: { bubble: 72, sakura: 60, zap: 45, candy: 28 },
-  7: { bubble: 80, sakura: 68, zap: 38, candy: 28 },
-  8: { bubble: 68, sakura: 58, zap: 42, candy: 28, moon: 12 },
-  9: { bubble: 65, sakura: 55, zap: 42, candy: 32, moon: 16 },
-  10: { bubble: 72, sakura: 62, zap: 40, candy: 30, moon: 18 },
-  11: { bubble: 62, sakura: 55, zap: 44, candy: 28, moon: 18, lava: 8 },
-  12: { bubble: 60, sakura: 52, zap: 44, candy: 28, moon: 20, lava: 18 },
-  13: { bubble: 72, sakura: 62, zap: 40, candy: 30, moon: 20, lava: 15 },
-  14: { bubble: 58, sakura: 50, zap: 44, candy: 26, moon: 20, lava: 18, tide: 12 },
-  15: { bubble: 56, sakura: 49, zap: 43, candy: 26, moon: 20, lava: 18, tide: 14 },
-  16: { bubble: 54, sakura: 47, zap: 43, candy: 25, moon: 21, lava: 18, tide: 15, leaf: 6 },
-  17: { bubble: 52, sakura: 46, zap: 43, candy: 25, moon: 21, lava: 18, tide: 15, leaf: 7 },
-  18: { bubble: 50, sakura: 44, zap: 43, candy: 25, moon: 21, lava: 19, tide: 16, leaf: 8 },
-  19: { bubble: 48, sakura: 43, zap: 43, candy: 25, moon: 21, lava: 19, tide: 16, leaf: 8 },
-  20: { bubble: 46, sakura: 42, zap: 43, candy: 25, moon: 22, lava: 19, tide: 16, leaf: 9, crystal: 4 },
-  21: { bubble: 44, sakura: 40, zap: 43, candy: 26, moon: 22, lava: 19, tide: 16, leaf: 9, crystal: 5 },
-  22: { bubble: 42, sakura: 38, zap: 43, candy: 25, moon: 22, lava: 20, tide: 17, leaf: 10, crystal: 6 },
-  23: { bubble: 40, sakura: 36, zap: 48, candy: 24, moon: 22, lava: 20, tide: 22, leaf: 10, crystal: 6 },
-  24: { bubble: 46, sakura: 43, zap: 40, candy: 28, moon: 23, lava: 19, tide: 16, leaf: 11, crystal: 6 },
-  25: { bubble: 40, sakura: 36, zap: 42, candy: 24, moon: 23, lava: 20, tide: 17, leaf: 11, crystal: 7, galaxy: 5 },
-  26: { bubble: 38, sakura: 34, zap: 42, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 11, crystal: 7, galaxy: 6 },
-  27: { bubble: 38, sakura: 34, zap: 42, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 11, crystal: 7, galaxy: 6 },
-  28: { bubble: 38, sakura: 34, zap: 41, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 12, crystal: 8, galaxy: 6 },
-  29: { bubble: 45, sakura: 41, zap: 40, candy: 28, moon: 23, lava: 19, tide: 15, leaf: 12, crystal: 7, galaxy: 5 },
-  30: { bubble: 36, sakura: 32, zap: 42, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 12, crystal: 9, galaxy: 7, mushroom: 3 },
-  31: { bubble: 36, sakura: 32, zap: 41, candy: 23, moon: 23, lava: 21, tide: 17, leaf: 12, crystal: 10, galaxy: 7, mushroom: 5 },
-  32: { bubble: 34, sakura: 30, zap: 41, candy: 32, moon: 23, lava: 21, tide: 17, leaf: 13, crystal: 10, galaxy: 7, mushroom: 5 },
-  33: { bubble: 33, sakura: 30, zap: 45, candy: 23, moon: 23, lava: 22, tide: 20, leaf: 13, crystal: 10, galaxy: 8, mushroom: 5 },
-  34: { bubble: 42, sakura: 38, zap: 40, candy: 28, moon: 23, lava: 20, tide: 16, leaf: 13, crystal: 9, galaxy: 7, mushroom: 5 },
-  35: { bubble: 33, sakura: 30, zap: 41, candy: 23, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 8, mushroom: 6, king: 2 },
-  36: { bubble: 31, sakura: 28, zap: 41, candy: 23, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 8, mushroom: 6, king: 3 },
-  37: { bubble: 31, sakura: 28, zap: 41, candy: 23, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 8, mushroom: 12 },
-  38: { bubble: 30, sakura: 27, zap: 41, candy: 22, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 14, mushroom: 7, king: 3 },
-  39: { bubble: 29, sakura: 26, zap: 41, candy: 22, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 9, mushroom: 7, king: 4 },
-  40: { bubble: 28, sakura: 25, zap: 41, candy: 22, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 12, galaxy: 10, mushroom: 8, king: 5 },
-  41: { bubble: 27, sakura: 24, zap: 41, candy: 22, moon: 23, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 10, mushroom: 8, king: 5 },
-  42: { bubble: 26, sakura: 23, zap: 41, candy: 21, moon: 23, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 10, mushroom: 9, king: 5 },
-  43: { bubble: 26, sakura: 22, zap: 41, candy: 28, moon: 22, lava: 22, tide: 17, leaf: 14, crystal: 13, galaxy: 10, mushroom: 9, king: 5 },
-  44: { bubble: 32, sakura: 29, zap: 40, candy: 28, moon: 23, lava: 21, tide: 16, leaf: 14, crystal: 12, galaxy: 9, mushroom: 8, king: 4 },
-  45: { bubble: 25, sakura: 22, zap: 41, candy: 21, moon: 23, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 9, king: 8 },
-  46: { bubble: 24, sakura: 21, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 10, king: 8 },
-  47: { bubble: 24, sakura: 21, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 18, king: 7 },
-  48: { bubble: 23, sakura: 21, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 16, mushroom: 10, king: 8 },
-  49: { bubble: 22, sakura: 20, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 10, king: 9 },
-  50: { bubble: 21, sakura: 19, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 12, mushroom: 11, king: 10 },
-  51: { bubble: 20, sakura: 18, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 11, king: 10 },
-  52: { bubble: 19, sakura: 17, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 11, king: 11 },
-  53: { bubble: 26, sakura: 24, zap: 39, candy: 26, moon: 23, lava: 21, tide: 17, leaf: 14, crystal: 13, galaxy: 12, mushroom: 10, king: 8 },
-  54: { bubble: 18, sakura: 16, zap: 40, candy: 20, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 11, king: 14 },
-  55: { bubble: 18, sakura: 16, zap: 40, candy: 20, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 12, king: 11 },
-  56: { bubble: 17, sakura: 15, zap: 40, candy: 20, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 18, mushroom: 12, king: 11 },
-  57: { bubble: 17, sakura: 15, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 13, mushroom: 12, king: 12 },
-  58: { bubble: 16, sakura: 15, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 14, mushroom: 12, king: 13 },
-  59: { bubble: 16, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 14, mushroom: 13, king: 13 },
-  60: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  61: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  62: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  63: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  64: { bubble: 22, sakura: 20, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 14, galaxy: 13, mushroom: 12, king: 12 },
-  65: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  66: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  67: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  68: { bubble: 23, sakura: 21, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 14, galaxy: 13, mushroom: 12, king: 13 },
-  69: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
-  70: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
-  71: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
-  72: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
-  73: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
-  74: { bubble: 22, sakura: 20, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 15, galaxy: 14, mushroom: 13, king: 14 },
-  75: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 17 },
-  76: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 17 },
-  77: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 17 },
-  78: { bubble: 22, sakura: 20, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 15, galaxy: 14, mushroom: 14, king: 14 },
-  79: { bubble: 13, sakura: 12, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 15, king: 18 },
-  80: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 17, mushroom: 15, king: 19 },
-  81: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 19 },
-  82: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 19 },
-  83: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 19 },
-  84: { bubble: 20, sakura: 18, zap: 38, candy: 25, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 16, galaxy: 15, mushroom: 14, king: 16 },
-  85: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 20 },
-  86: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 20 },
-  87: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 20 },
-  88: { bubble: 20, sakura: 18, zap: 38, candy: 25, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 16, galaxy: 15, mushroom: 15, king: 17 },
-  89: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 21 },
-  90: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 22 },
-  91: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 22 },
-  92: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 22 },
-  93: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 23 },
-  94: { bubble: 18, sakura: 17, zap: 37, candy: 24, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 16, galaxy: 16, mushroom: 15, king: 18 },
-  95: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 24 },
-  96: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 24 },
-  97: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 25 },
-  98: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 26 },
-  99: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 27 },
-  100: { bubble: 10, sakura: 9, zap: 38, candy: 19, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 18, galaxy: 19, mushroom: 17, king: 28 }
+          1: { bubble: 95, sakura: 70 },
+          2: { bubble: 88, sakura: 72, zap: 18 },
+          3: { bubble: 85, sakura: 70, zap: 25 },
+          4: { bubble: 82, sakura: 68, zap: 30, candy: 12 },
+          5: { bubble: 78, sakura: 65, zap: 35, candy: 30 },
+          6: { bubble: 72, sakura: 60, zap: 45, candy: 28 },
+          7: { bubble: 80, sakura: 68, zap: 38, candy: 28 },
+          8: { bubble: 68, sakura: 58, zap: 42, candy: 28, moon: 12 },
+          9: { bubble: 65, sakura: 55, zap: 42, candy: 32, moon: 16 },
+          10: { bubble: 72, sakura: 62, zap: 40, candy: 30, moon: 18 },
+          11: { bubble: 62, sakura: 55, zap: 44, candy: 28, moon: 18, lava: 8 },
+          12: { bubble: 60, sakura: 52, zap: 44, candy: 28, moon: 20, lava: 18 },
+          13: { bubble: 72, sakura: 62, zap: 40, candy: 30, moon: 20, lava: 15 },
+          14: { bubble: 58, sakura: 50, zap: 44, candy: 26, moon: 20, lava: 18, tide: 12 },
+          15: { bubble: 56, sakura: 49, zap: 43, candy: 26, moon: 20, lava: 18, tide: 14 },
+          16: { bubble: 54, sakura: 47, zap: 43, candy: 25, moon: 21, lava: 18, tide: 15, leaf: 6 },
+          17: { bubble: 52, sakura: 46, zap: 43, candy: 25, moon: 21, lava: 18, tide: 15, leaf: 7 },
+          18: { bubble: 50, sakura: 44, zap: 43, candy: 25, moon: 21, lava: 19, tide: 16, leaf: 8 },
+          19: { bubble: 48, sakura: 43, zap: 43, candy: 25, moon: 21, lava: 19, tide: 16, leaf: 8 },
+          20: { bubble: 46, sakura: 42, zap: 43, candy: 25, moon: 22, lava: 19, tide: 16, leaf: 9, crystal: 4 },
+          21: { bubble: 44, sakura: 40, zap: 43, candy: 26, moon: 22, lava: 19, tide: 16, leaf: 9, crystal: 5 },
+          22: { bubble: 42, sakura: 38, zap: 43, candy: 25, moon: 22, lava: 20, tide: 17, leaf: 10, crystal: 6 },
+          23: { bubble: 40, sakura: 36, zap: 48, candy: 24, moon: 22, lava: 20, tide: 22, leaf: 10, crystal: 6 },
+          24: { bubble: 46, sakura: 43, zap: 40, candy: 28, moon: 23, lava: 19, tide: 16, leaf: 11, crystal: 6 },
+          25: { bubble: 40, sakura: 36, zap: 42, candy: 24, moon: 23, lava: 20, tide: 17, leaf: 11, crystal: 7, galaxy: 5 },
+          26: { bubble: 38, sakura: 34, zap: 42, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 11, crystal: 7, galaxy: 6 },
+          27: { bubble: 38, sakura: 34, zap: 42, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 11, crystal: 7, galaxy: 6 },
+          28: { bubble: 38, sakura: 34, zap: 41, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 12, crystal: 8, galaxy: 6 },
+          29: { bubble: 45, sakura: 41, zap: 40, candy: 28, moon: 23, lava: 19, tide: 15, leaf: 12, crystal: 7, galaxy: 5 },
+          30: { bubble: 36, sakura: 32, zap: 42, candy: 24, moon: 23, lava: 21, tide: 17, leaf: 12, crystal: 9, galaxy: 7, mushroom: 3 },
+          31: { bubble: 36, sakura: 32, zap: 41, candy: 23, moon: 23, lava: 21, tide: 17, leaf: 12, crystal: 10, galaxy: 7, mushroom: 5 },
+          32: { bubble: 34, sakura: 30, zap: 41, candy: 32, moon: 23, lava: 21, tide: 17, leaf: 13, crystal: 10, galaxy: 7, mushroom: 5 },
+          33: { bubble: 33, sakura: 30, zap: 45, candy: 23, moon: 23, lava: 22, tide: 20, leaf: 13, crystal: 10, galaxy: 8, mushroom: 5 },
+          34: { bubble: 42, sakura: 38, zap: 40, candy: 28, moon: 23, lava: 20, tide: 16, leaf: 13, crystal: 9, galaxy: 7, mushroom: 5 },
+          35: { bubble: 33, sakura: 30, zap: 41, candy: 23, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 8, mushroom: 6, king: 2 },
+          36: { bubble: 31, sakura: 28, zap: 41, candy: 23, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 8, mushroom: 6, king: 3 },
+          37: { bubble: 31, sakura: 28, zap: 41, candy: 23, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 8, mushroom: 12 },
+          38: { bubble: 30, sakura: 27, zap: 41, candy: 22, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 14, mushroom: 7, king: 3 },
+          39: { bubble: 29, sakura: 26, zap: 41, candy: 22, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 11, galaxy: 9, mushroom: 7, king: 4 },
+          40: { bubble: 28, sakura: 25, zap: 41, candy: 22, moon: 23, lava: 22, tide: 17, leaf: 13, crystal: 12, galaxy: 10, mushroom: 8, king: 5 },
+          41: { bubble: 27, sakura: 24, zap: 41, candy: 22, moon: 23, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 10, mushroom: 8, king: 5 },
+          42: { bubble: 26, sakura: 23, zap: 41, candy: 21, moon: 23, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 10, mushroom: 9, king: 5 },
+          43: { bubble: 26, sakura: 22, zap: 41, candy: 28, moon: 22, lava: 22, tide: 17, leaf: 14, crystal: 13, galaxy: 10, mushroom: 9, king: 5 },
+          44: { bubble: 32, sakura: 29, zap: 40, candy: 28, moon: 23, lava: 21, tide: 16, leaf: 14, crystal: 12, galaxy: 9, mushroom: 8, king: 4 },
+          45: { bubble: 25, sakura: 22, zap: 41, candy: 21, moon: 23, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 9, king: 8 },
+          46: { bubble: 24, sakura: 21, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 10, king: 8 },
+          47: { bubble: 24, sakura: 21, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 18, king: 7 },
+          48: { bubble: 23, sakura: 21, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 16, mushroom: 10, king: 8 },
+          49: { bubble: 22, sakura: 20, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 13, galaxy: 11, mushroom: 10, king: 9 },
+          50: { bubble: 21, sakura: 19, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 12, mushroom: 11, king: 10 },
+          51: { bubble: 20, sakura: 18, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 11, king: 10 },
+          52: { bubble: 19, sakura: 17, zap: 40, candy: 21, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 11, king: 11 },
+          53: { bubble: 26, sakura: 24, zap: 39, candy: 26, moon: 23, lava: 21, tide: 17, leaf: 14, crystal: 13, galaxy: 12, mushroom: 10, king: 8 },
+          54: { bubble: 18, sakura: 16, zap: 40, candy: 20, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 11, king: 14 },
+          55: { bubble: 18, sakura: 16, zap: 40, candy: 20, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 13, mushroom: 12, king: 11 },
+          56: { bubble: 17, sakura: 15, zap: 40, candy: 20, moon: 22, lava: 23, tide: 18, leaf: 13, crystal: 14, galaxy: 18, mushroom: 12, king: 11 },
+          57: { bubble: 17, sakura: 15, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 13, mushroom: 12, king: 12 },
+          58: { bubble: 16, sakura: 15, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 14, mushroom: 12, king: 13 },
+          59: { bubble: 16, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 14, mushroom: 13, king: 13 },
+          60: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          61: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          62: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          63: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          64: { bubble: 22, sakura: 20, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 14, galaxy: 13, mushroom: 12, king: 12 },
+          65: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          66: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          67: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          68: { bubble: 23, sakura: 21, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 14, galaxy: 13, mushroom: 12, king: 13 },
+          69: { bubble: 15, sakura: 14, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 15, galaxy: 15, mushroom: 13, king: 15 },
+          70: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
+          71: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
+          72: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
+          73: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 16 },
+          74: { bubble: 22, sakura: 20, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 15, galaxy: 14, mushroom: 13, king: 14 },
+          75: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 17 },
+          76: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 17 },
+          77: { bubble: 14, sakura: 13, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 14, king: 17 },
+          78: { bubble: 22, sakura: 20, zap: 38, candy: 26, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 15, galaxy: 14, mushroom: 14, king: 14 },
+          79: { bubble: 13, sakura: 12, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 16, mushroom: 15, king: 18 },
+          80: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 16, galaxy: 17, mushroom: 15, king: 19 },
+          81: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 19 },
+          82: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 19 },
+          83: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 19 },
+          84: { bubble: 20, sakura: 18, zap: 38, candy: 25, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 16, galaxy: 15, mushroom: 14, king: 16 },
+          85: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 20 },
+          86: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 20 },
+          87: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 20 },
+          88: { bubble: 20, sakura: 18, zap: 38, candy: 25, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 16, galaxy: 15, mushroom: 15, king: 17 },
+          89: { bubble: 12, sakura: 11, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 17, mushroom: 15, king: 21 },
+          90: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 22 },
+          91: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 22 },
+          92: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 22 },
+          93: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 23 },
+          94: { bubble: 18, sakura: 17, zap: 37, candy: 24, moon: 23, lava: 22, tide: 17, leaf: 14, crystal: 16, galaxy: 16, mushroom: 15, king: 18 },
+          95: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 24 },
+          96: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 24 },
+          97: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 25 },
+          98: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 26 },
+          99: { bubble: 11, sakura: 10, zap: 40, candy: 20, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 17, galaxy: 18, mushroom: 16, king: 27 },
+          100: { bubble: 10, sakura: 9, zap: 38, candy: 19, moon: 22, lava: 24, tide: 18, leaf: 13, crystal: 18, galaxy: 19, mushroom: 17, king: 28 }
         };
       }
       const LEVEL_SPAWN_WEIGHTS = this.levelSpawnWeights!;
 
       if (!this.levelObjectWeights) {
         this.levelObjectWeights = {
-  1: { shell: 100 },
-  2: { shell: 85 },
-  3: { shell: 88 },
-  4: { shell: 80 },
-  5: { shell: 75, gold_doubloon: 20 },
-  6: { shell: 65 },
-  7: { shell: 80, gold_doubloon: 100 },
-  8: { shell: 58, gold_doubloon: 22 },
-  9: { shell: 55 },
-  10: { shell: 75, gold_doubloon: 40 },
-  11: { shell: 52, sunken_boat: 22 },
-  12: { shell: 50, sunken_boat: 25 },
-  13: { shell: 72, gold_doubloon: 35, sunken_boat: 25 },
-  14: { shell: 45 },
-  15: { shell: 45 },
-  16: { shell: 45, gold_doubloon: 28 },
-  17: { shell: 42, sunken_boat: 28 },
-  18: { shell: 40, gold_doubloon: 28 },
-  19: { shell: 38, gold_doubloon: 32 },
-  20: { shell: 45, gold_doubloon: 45, sunken_boat: 35 },
-  21: { shell: 50, gold_doubloon: 25 },
-  22: { shell: 45, sunken_boat: 28 },
-  23: { shell: 42, gold_doubloon: 30 },
-  24: { shell: 70, gold_doubloon: 38, sunken_boat: 28 },
-  25: { shell: 40, gold_doubloon: 30 },
-  26: { shell: 38, sunken_boat: 30 },
-  27: { shell: 38, gold_doubloon: 32 },
-  28: { shell: 40, sunken_boat: 28 },
-  29: { shell: 68, gold_doubloon: 40, sunken_boat: 30 },
-  30: { shell: 45, gold_doubloon: 48, sunken_boat: 35 },
-  31: { shell: 40, gold_doubloon: 28, sunken_boat: 25 },
-  32: { shell: 38, gold_doubloon: 30 },
-  33: { shell: 36, sunken_boat: 28 },
-  34: { shell: 65, gold_doubloon: 42, sunken_boat: 32 },
-  35: { shell: 38, gold_doubloon: 32 },
-  36: { shell: 35, sunken_boat: 30 },
-  37: { shell: 36, gold_doubloon: 33, sunken_boat: 28 },
-  38: { shell: 35, gold_doubloon: 30 },
-  39: { shell: 35, gold_doubloon: 32, sunken_boat: 28 },
-  40: { shell: 45, gold_doubloon: 50, sunken_boat: 38 },
-  41: { shell: 36, gold_doubloon: 30, sunken_boat: 26 },
-  42: { shell: 34, sunken_boat: 30 },
-  43: { shell: 34, gold_doubloon: 30 },
-  44: { shell: 60, gold_doubloon: 45, sunken_boat: 35 },
-  45: { shell: 34, gold_doubloon: 32 },
-  46: { shell: 32, sunken_boat: 30 },
-  47: { shell: 35, gold_doubloon: 33, sunken_boat: 28 },
-  48: { shell: 32, gold_doubloon: 32 },
-  49: { shell: 32, gold_doubloon: 34, sunken_boat: 28 },
-  50: { shell: 45, gold_doubloon: 52, sunken_boat: 40 },
-  51: { shell: 32, gold_doubloon: 33, sunken_boat: 28 },
-  52: { shell: 30, sunken_boat: 30 },
-  53: { shell: 58, gold_doubloon: 48, sunken_boat: 38 },
-  54: { shell: 30, gold_doubloon: 32 },
-  55: { shell: 30, sunken_boat: 28 },
-  56: { shell: 30, gold_doubloon: 33 },
-  57: { shell: 28, sunken_boat: 30 },
-  58: { shell: 28, gold_doubloon: 34, sunken_boat: 28 },
-  59: { shell: 28, gold_doubloon: 35, sunken_boat: 30 },
-  60: { shell: 45, gold_doubloon: 55, sunken_boat: 42 },
-  61: { shell: 30, gold_doubloon: 35, sunken_boat: 30 },
-  62: { shell: 28, sunken_boat: 30 },
-  63: { shell: 28, gold_doubloon: 34 },
-  64: { shell: 58, gold_doubloon: 50, sunken_boat: 40 },
-  65: { shell: 28, gold_doubloon: 33 },
-  66: { shell: 28, sunken_boat: 30 },
-  67: { shell: 27, gold_doubloon: 33, sunken_boat: 28 },
-  68: { shell: 60, gold_doubloon: 52, sunken_boat: 42 },
-  69: { shell: 27, sunken_boat: 30 },
-  70: { shell: 45, gold_doubloon: 58, sunken_boat: 45 },
-  71: { shell: 28, gold_doubloon: 35, sunken_boat: 30 },
-  72: { shell: 26, sunken_boat: 30 },
-  73: { shell: 26, gold_doubloon: 34 },
-  74: { shell: 58, gold_doubloon: 52, sunken_boat: 42 },
-  75: { shell: 26, gold_doubloon: 34, sunken_boat: 28 },
-  76: { shell: 26, sunken_boat: 30 },
-  77: { shell: 26, gold_doubloon: 33 },
-  78: { shell: 58, gold_doubloon: 54, sunken_boat: 44 },
-  79: { shell: 26, gold_doubloon: 34, sunken_boat: 28 },
-  80: { shell: 50, gold_doubloon: 60, sunken_boat: 50 },
-  81: { shell: 28, gold_doubloon: 36, sunken_boat: 30 },
-  82: { shell: 26, sunken_boat: 30 },
-  83: { shell: 26, gold_doubloon: 35 },
-  84: { shell: 60, gold_doubloon: 55, sunken_boat: 45 },
-  85: { shell: 26, gold_doubloon: 35 },
-  86: { shell: 26, sunken_boat: 30 },
-  87: { shell: 25, gold_doubloon: 34 },
-  88: { shell: 58, gold_doubloon: 55, sunken_boat: 45 },
-  89: { shell: 25, gold_doubloon: 34, sunken_boat: 28 },
-  90: { shell: 52, gold_doubloon: 62, sunken_boat: 52 },
-  91: { shell: 28, gold_doubloon: 36, sunken_boat: 30 },
-  92: { shell: 26, sunken_boat: 30 },
-  93: { shell: 25, gold_doubloon: 35 },
-  94: { shell: 62, gold_doubloon: 58, sunken_boat: 48 },
-  95: { shell: 25, gold_doubloon: 35, sunken_boat: 28 },
-  96: { shell: 25, sunken_boat: 30 },
-  97: { shell: 25, gold_doubloon: 36 },
-  98: { shell: 25, gold_doubloon: 36, sunken_boat: 30 },
-  99: { shell: 25, gold_doubloon: 38, sunken_boat: 32 },
-  100: { shell: 55, gold_doubloon: 70, sunken_boat: 60 }
+          1: { shell: 100 },
+          2: { shell: 85 },
+          3: { shell: 88 },
+          4: { shell: 80 },
+          5: { shell: 75, gold_doubloon: 20 },
+          6: { shell: 65 },
+          7: { shell: 80, gold_doubloon: 100 },
+          8: { shell: 58, gold_doubloon: 22 },
+          9: { shell: 55 },
+          10: { shell: 75, gold_doubloon: 40 },
+          11: { shell: 52, sunken_boat: 22 },
+          12: { shell: 50, sunken_boat: 25 },
+          13: { shell: 72, gold_doubloon: 35, sunken_boat: 25 },
+          14: { shell: 45 },
+          15: { shell: 45 },
+          16: { shell: 45, gold_doubloon: 28 },
+          17: { shell: 42, sunken_boat: 28 },
+          18: { shell: 40, gold_doubloon: 28 },
+          19: { shell: 38, gold_doubloon: 32 },
+          20: { shell: 45, gold_doubloon: 45, sunken_boat: 35 },
+          21: { shell: 50, gold_doubloon: 25 },
+          22: { shell: 45, sunken_boat: 28 },
+          23: { shell: 42, gold_doubloon: 30 },
+          24: { shell: 70, gold_doubloon: 38, sunken_boat: 28 },
+          25: { shell: 40, gold_doubloon: 30 },
+          26: { shell: 38, sunken_boat: 30 },
+          27: { shell: 38, gold_doubloon: 32 },
+          28: { shell: 40, sunken_boat: 28 },
+          29: { shell: 68, gold_doubloon: 40, sunken_boat: 30 },
+          30: { shell: 45, gold_doubloon: 48, sunken_boat: 35 },
+          31: { shell: 40, gold_doubloon: 28, sunken_boat: 25 },
+          32: { shell: 38, gold_doubloon: 30 },
+          33: { shell: 36, sunken_boat: 28 },
+          34: { shell: 65, gold_doubloon: 42, sunken_boat: 32 },
+          35: { shell: 38, gold_doubloon: 32 },
+          36: { shell: 35, sunken_boat: 30 },
+          37: { shell: 36, gold_doubloon: 33, sunken_boat: 28 },
+          38: { shell: 35, gold_doubloon: 30 },
+          39: { shell: 35, gold_doubloon: 32, sunken_boat: 28 },
+          40: { shell: 45, gold_doubloon: 50, sunken_boat: 38 },
+          41: { shell: 36, gold_doubloon: 30, sunken_boat: 26 },
+          42: { shell: 34, sunken_boat: 30 },
+          43: { shell: 34, gold_doubloon: 30 },
+          44: { shell: 60, gold_doubloon: 45, sunken_boat: 35 },
+          45: { shell: 34, gold_doubloon: 32 },
+          46: { shell: 32, sunken_boat: 30 },
+          47: { shell: 35, gold_doubloon: 33, sunken_boat: 28 },
+          48: { shell: 32, gold_doubloon: 32 },
+          49: { shell: 32, gold_doubloon: 34, sunken_boat: 28 },
+          50: { shell: 45, gold_doubloon: 52, sunken_boat: 40 },
+          51: { shell: 32, gold_doubloon: 33, sunken_boat: 28 },
+          52: { shell: 30, sunken_boat: 30 },
+          53: { shell: 58, gold_doubloon: 48, sunken_boat: 38 },
+          54: { shell: 30, gold_doubloon: 32 },
+          55: { shell: 30, sunken_boat: 28 },
+          56: { shell: 30, gold_doubloon: 33 },
+          57: { shell: 28, sunken_boat: 30 },
+          58: { shell: 28, gold_doubloon: 34, sunken_boat: 28 },
+          59: { shell: 28, gold_doubloon: 35, sunken_boat: 30 },
+          60: { shell: 45, gold_doubloon: 55, sunken_boat: 42 },
+          61: { shell: 30, gold_doubloon: 35, sunken_boat: 30 },
+          62: { shell: 28, sunken_boat: 30 },
+          63: { shell: 28, gold_doubloon: 34 },
+          64: { shell: 58, gold_doubloon: 50, sunken_boat: 40 },
+          65: { shell: 28, gold_doubloon: 33 },
+          66: { shell: 28, sunken_boat: 30 },
+          67: { shell: 27, gold_doubloon: 33, sunken_boat: 28 },
+          68: { shell: 60, gold_doubloon: 52, sunken_boat: 42 },
+          69: { shell: 27, sunken_boat: 30 },
+          70: { shell: 45, gold_doubloon: 58, sunken_boat: 45 },
+          71: { shell: 28, gold_doubloon: 35, sunken_boat: 30 },
+          72: { shell: 26, sunken_boat: 30 },
+          73: { shell: 26, gold_doubloon: 34 },
+          74: { shell: 58, gold_doubloon: 52, sunken_boat: 42 },
+          75: { shell: 26, gold_doubloon: 34, sunken_boat: 28 },
+          76: { shell: 26, sunken_boat: 30 },
+          77: { shell: 26, gold_doubloon: 33 },
+          78: { shell: 58, gold_doubloon: 54, sunken_boat: 44 },
+          79: { shell: 26, gold_doubloon: 34, sunken_boat: 28 },
+          80: { shell: 50, gold_doubloon: 60, sunken_boat: 50 },
+          81: { shell: 28, gold_doubloon: 36, sunken_boat: 30 },
+          82: { shell: 26, sunken_boat: 30 },
+          83: { shell: 26, gold_doubloon: 35 },
+          84: { shell: 60, gold_doubloon: 55, sunken_boat: 45 },
+          85: { shell: 26, gold_doubloon: 35 },
+          86: { shell: 26, sunken_boat: 30 },
+          87: { shell: 25, gold_doubloon: 34 },
+          88: { shell: 58, gold_doubloon: 55, sunken_boat: 45 },
+          89: { shell: 25, gold_doubloon: 34, sunken_boat: 28 },
+          90: { shell: 52, gold_doubloon: 62, sunken_boat: 52 },
+          91: { shell: 28, gold_doubloon: 36, sunken_boat: 30 },
+          92: { shell: 26, sunken_boat: 30 },
+          93: { shell: 25, gold_doubloon: 35 },
+          94: { shell: 62, gold_doubloon: 58, sunken_boat: 48 },
+          95: { shell: 25, gold_doubloon: 35, sunken_boat: 28 },
+          96: { shell: 25, sunken_boat: 30 },
+          97: { shell: 25, gold_doubloon: 36 },
+          98: { shell: 25, gold_doubloon: 36, sunken_boat: 30 },
+          99: { shell: 25, gold_doubloon: 38, sunken_boat: 32 },
+          100: { shell: 55, gold_doubloon: 70, sunken_boat: 60 }
         };
       }
       const LEVEL_OBJECT_WEIGHTS = this.levelObjectWeights!;
 
       const LEVEL_HAZARD_WEIGHTS: Record<number, Partial<Record<FishClass, number>>> = {
-  17: { shark_skeleton: 25 },
-  18: { shark_skeleton: 20, whirlpool: 35 },
-  19: { shark_skeleton: 30, whirlpool: 45 },
-  20: { shark_skeleton: 35, whirlpool: 55 },
-  25: { shark_skeleton: 22 },
-  26: { shark_skeleton: 40 },
-  27: { whirlpool: 65 },
-  30: { shark_skeleton: 38, whirlpool: 60 },
-  31: { shark_skeleton: 28, whirlpool: 38 },
-  33: { shark_skeleton: 35, whirlpool: 42 },
-  35: { shark_skeleton: 35, whirlpool: 45 },
-  36: { shark_skeleton: 38, whirlpool: 48 },
-  37: { shark_skeleton: 35, whirlpool: 42 },
-  39: { shark_skeleton: 42, whirlpool: 55 },
-  40: { shark_skeleton: 45, whirlpool: 65 },
-  41: { shark_skeleton: 42, whirlpool: 55 },
-  42: { shark_skeleton: 55 },
-  43: { shark_skeleton: 45, whirlpool: 55 },
-  45: { shark_skeleton: 45, whirlpool: 60 },
-  46: { shark_skeleton: 50, whirlpool: 62 },
-  47: { shark_skeleton: 42, whirlpool: 55 },
-  48: { shark_skeleton: 48, whirlpool: 65 },
-  49: { shark_skeleton: 52, whirlpool: 68 },
-  50: { shark_skeleton: 55, whirlpool: 75 },
-  51: { shark_skeleton: 50, whirlpool: 65 },
-  52: { shark_skeleton: 52, whirlpool: 67 },
-  54: { shark_skeleton: 52, whirlpool: 68 },
-  55: { shark_skeleton: 48, whirlpool: 60 },
-  56: { shark_skeleton: 50, whirlpool: 70 },
-  57: { shark_skeleton: 54, whirlpool: 70 },
-  58: { shark_skeleton: 55, whirlpool: 72 },
-  59: { shark_skeleton: 57, whirlpool: 74 },
-  60: { shark_skeleton: 60, whirlpool: 80 },
-  61: { shark_skeleton: 55, whirlpool: 72 },
-  62: { shark_skeleton: 55, whirlpool: 72 },
-  63: { shark_skeleton: 55, whirlpool: 72 },
-  65: { shark_skeleton: 58, whirlpool: 75 },
-  66: { shark_skeleton: 58, whirlpool: 75 },
-  67: { shark_skeleton: 60, whirlpool: 76 },
-  69: { shark_skeleton: 60, whirlpool: 76 },
-  70: { shark_skeleton: 65, whirlpool: 85 },
-  71: { shark_skeleton: 60, whirlpool: 78 },
-  72: { shark_skeleton: 62, whirlpool: 78 },
-  73: { shark_skeleton: 62, whirlpool: 78 },
-  75: { shark_skeleton: 63, whirlpool: 80 },
-  76: { shark_skeleton: 63, whirlpool: 80 },
-  77: { shark_skeleton: 80, whirlpool: 78 },
-  78: { shark_skeleton: 30, whirlpool: 40 },
-  79: { shark_skeleton: 65, whirlpool: 82 },
-  80: { shark_skeleton: 68, whirlpool: 88 },
-  81: { shark_skeleton: 65, whirlpool: 82 },
-  82: { shark_skeleton: 65, whirlpool: 83 },
-  85: { shark_skeleton: 65, whirlpool: 83 },
-  87: { shark_skeleton: 67, whirlpool: 84 },
-  88: { shark_skeleton: 35, whirlpool: 45 },
-  89: { shark_skeleton: 70, whirlpool: 86 },
-  90: { shark_skeleton: 72, whirlpool: 90 },
-  91: { shark_skeleton: 70, whirlpool: 86 },
-  93: { shark_skeleton: 72, whirlpool: 87 },
-  95: { shark_skeleton: 73, whirlpool: 88 },
-  97: { shark_skeleton: 75, whirlpool: 90 },
-  98: { shark_skeleton: 76, whirlpool: 90 },
-  99: { shark_skeleton: 77, whirlpool: 91 },
-  100: { shark_skeleton: 80, whirlpool: 95 }
-};
+        17: { shark_skeleton: 25 },
+        18: { shark_skeleton: 20, whirlpool: 35 },
+        19: { shark_skeleton: 30, whirlpool: 45 },
+        20: { shark_skeleton: 35, whirlpool: 55 },
+        25: { shark_skeleton: 22 },
+        26: { shark_skeleton: 40 },
+        27: { whirlpool: 65 },
+        30: { shark_skeleton: 38, whirlpool: 60 },
+        31: { shark_skeleton: 28, whirlpool: 38 },
+        33: { shark_skeleton: 35, whirlpool: 42 },
+        35: { shark_skeleton: 35, whirlpool: 45 },
+        36: { shark_skeleton: 38, whirlpool: 48 },
+        37: { shark_skeleton: 35, whirlpool: 42 },
+        39: { shark_skeleton: 42, whirlpool: 55 },
+        40: { shark_skeleton: 45, whirlpool: 65 },
+        41: { shark_skeleton: 42, whirlpool: 55 },
+        42: { shark_skeleton: 55 },
+        43: { shark_skeleton: 45, whirlpool: 55 },
+        45: { shark_skeleton: 45, whirlpool: 60 },
+        46: { shark_skeleton: 50, whirlpool: 62 },
+        47: { shark_skeleton: 42, whirlpool: 55 },
+        48: { shark_skeleton: 48, whirlpool: 65 },
+        49: { shark_skeleton: 52, whirlpool: 68 },
+        50: { shark_skeleton: 55, whirlpool: 75 },
+        51: { shark_skeleton: 50, whirlpool: 65 },
+        52: { shark_skeleton: 52, whirlpool: 67 },
+        54: { shark_skeleton: 52, whirlpool: 68 },
+        55: { shark_skeleton: 48, whirlpool: 60 },
+        56: { shark_skeleton: 50, whirlpool: 70 },
+        57: { shark_skeleton: 54, whirlpool: 70 },
+        58: { shark_skeleton: 55, whirlpool: 72 },
+        59: { shark_skeleton: 57, whirlpool: 74 },
+        60: { shark_skeleton: 60, whirlpool: 80 },
+        61: { shark_skeleton: 55, whirlpool: 72 },
+        62: { shark_skeleton: 55, whirlpool: 72 },
+        63: { shark_skeleton: 55, whirlpool: 72 },
+        65: { shark_skeleton: 58, whirlpool: 75 },
+        66: { shark_skeleton: 58, whirlpool: 75 },
+        67: { shark_skeleton: 60, whirlpool: 76 },
+        69: { shark_skeleton: 60, whirlpool: 76 },
+        70: { shark_skeleton: 65, whirlpool: 85 },
+        71: { shark_skeleton: 60, whirlpool: 78 },
+        72: { shark_skeleton: 62, whirlpool: 78 },
+        73: { shark_skeleton: 62, whirlpool: 78 },
+        75: { shark_skeleton: 63, whirlpool: 80 },
+        76: { shark_skeleton: 63, whirlpool: 80 },
+        77: { shark_skeleton: 80, whirlpool: 78 },
+        78: { shark_skeleton: 30, whirlpool: 40 },
+        79: { shark_skeleton: 65, whirlpool: 82 },
+        80: { shark_skeleton: 68, whirlpool: 88 },
+        81: { shark_skeleton: 65, whirlpool: 82 },
+        82: { shark_skeleton: 65, whirlpool: 83 },
+        85: { shark_skeleton: 65, whirlpool: 83 },
+        87: { shark_skeleton: 67, whirlpool: 84 },
+        88: { shark_skeleton: 35, whirlpool: 45 },
+        89: { shark_skeleton: 70, whirlpool: 86 },
+        90: { shark_skeleton: 72, whirlpool: 90 },
+        91: { shark_skeleton: 70, whirlpool: 86 },
+        93: { shark_skeleton: 72, whirlpool: 87 },
+        95: { shark_skeleton: 73, whirlpool: 88 },
+        97: { shark_skeleton: 75, whirlpool: 90 },
+        98: { shark_skeleton: 76, whirlpool: 90 },
+        99: { shark_skeleton: 77, whirlpool: 91 },
+        100: { shark_skeleton: 80, whirlpool: 95 }
+      };
 
       const spawnWeights = LEVEL_SPAWN_WEIGHTS[this.state.level] ?? {};
       const isLucky = this.state.boosters?.lucky;
@@ -1949,9 +2109,87 @@ export class GameEngine {
     }
   }
 
+  private buildTutorialEntity(type: FishClass, x: number, y: number): Entity {
+    const assetConfig = OBJECT_MATRIX[type];
+    const name = assetConfig.names[0];
+    const color = assetConfig.colors[0];
+    const direction: 1 | -1 = -1;
+    const speed = Math.max(assetConfig.speedMultiplier, 1.1);
+    return {
+      id: Math.random(),
+      type,
+      name,
+      x,
+      y,
+      startY: y,
+      animationOffset: Math.random() * 1000,
+      speed,
+      value: assetConfig.value,
+      weight: assetConfig.weightMultiplier,
+      color,
+      radius: assetConfig.radius,
+      direction
+    };
+  }
 
+  private getTutorialSpawnY(type: FishClass) {
+    const waterDepth = CANVAS_HEIGHT - FISH_ZONE_TOP - 60;
+    if (type === 'coral' || type === 'sunken_boat' || type === 'anchor' || type === 'gold_doubloon' || type === 'shell' || type === 'sea_kelp') {
+      return CANVAS_HEIGHT - 20;
+    }
+    if (type === 'sea_rock') {
+      return Math.random() < 0.5 ? CANVAS_HEIGHT - 20 : FISH_ZONE_TOP + 100 + Math.random() * 200;
+    }
+    if (type === 'whirlpool') {
+      return FISH_ZONE_TOP + waterDepth * 0.2 + Math.random() * waterDepth * 0.4;
+    }
+    if (type === 'bubble') {
+      return FISH_ZONE_TOP + Math.random() * waterDepth * 0.25;
+    }
+    if (type === 'sakura') {
+      return FISH_ZONE_TOP + Math.random() * waterDepth * 0.4;
+    }
+    if (type === 'zap') {
+      return FISH_ZONE_TOP + Math.random() * waterDepth * 0.9;
+    }
+    if (type === 'candy') {
+      return FISH_ZONE_TOP + waterDepth * 0.2 + Math.random() * waterDepth * 0.4;
+    }
+    if (type === 'moon') {
+      return FISH_ZONE_TOP + waterDepth * 0.4 + Math.random() * waterDepth * 0.4;
+    }
+    if (type === 'lava') {
+      return FISH_ZONE_TOP + waterDepth * 0.6 + Math.random() * waterDepth * 0.35;
+    }
+    if (type === 'crystal') {
+      return FISH_ZONE_TOP + waterDepth * 0.55 + Math.random() * waterDepth * 0.35;
+    }
+    if (type === 'tide') {
+      return FISH_ZONE_TOP + Math.random() * waterDepth * 0.5;
+    }
+    if (type === 'mushroom') {
+      return FISH_ZONE_TOP + waterDepth * 0.35 + Math.random() * waterDepth * 0.5;
+    }
+    if (type === 'king') {
+      return FISH_ZONE_TOP + waterDepth * 0.3 + Math.random() * waterDepth * 0.4;
+    }
+    if (type === 'leaf' || type === 'galaxy') {
+      return FISH_ZONE_TOP + Math.random() * waterDepth * 0.95;
+    }
+    return FISH_ZONE_TOP + 50 + Math.random() * (CANVAS_HEIGHT - FISH_ZONE_TOP - 150);
+  }
+
+  private getTutorialTargetCenter() {
+    const tutorial = this.tutorialManager?.getState();
+    if (!tutorial || tutorial.targetFishIds.length === 0) return null;
+    const targets = this.state.fishes.filter(fish => tutorial.targetFishIds.includes(fish.id));
+    if (targets.length === 0) return null;
+    const sum = targets.reduce((acc, fish) => ({ x: acc.x + fish.x, y: acc.y + fish.y }), { x: 0, y: 0 });
+    return { x: sum.x / targets.length, y: sum.y / targets.length };
+  }
 
   private ensureAmbientBubbles() {
+
     // game_design Bölüm 3: Baloncuk sayısı level'e göre azalır
     // L1-2: 3, L3-8: 2, L9-12: 1-2, L13-14: 1 (nadir), L15-16: 0-1, L17+: 0
     const lv = this.state.level;
@@ -2050,6 +2288,10 @@ export class GameEngine {
       this.effects.shakeScreen(5, 5);
       this.effects.spawnSplash(caught.x, caught.y);
       return; // Fish escaped, do not add to inventory
+    }
+
+    if (this.state.level === 1 && this.tutorialManager?.isActive()) {
+      markTutorialCatch(caught.type);
     }
 
     if (storeCatch) {
@@ -2214,6 +2456,10 @@ export class GameEngine {
   }
 
   private handleSunkenBoat(caught: Entity, storeCatch: boolean = true) {
+    if (this.state.level === 1 && this.tutorialManager?.isActive()) {
+      markTutorialCatch('sunken_boat');
+    }
+
     if (storeCatch) {
       this.addInventoryItem({
         id: Math.random().toString(),
@@ -2281,6 +2527,9 @@ export class GameEngine {
   private handleShell(caught: Entity, storeCatch: boolean = true) {
     // Shell game_design Bölüm 3.4: Direk 20 coin verir, inventory'ye girmez
     this.earnCoins(20);
+    if (this.state.level === 1 && this.tutorialManager?.isActive()) {
+      markTutorialCatch('shell');
+    }
 
     if (storeCatch && Math.random() < 0.25) {
       const type: FishClass = Math.random() < 0.5 ? 'bubble' : 'sakura';
@@ -2452,7 +2701,7 @@ export class GameEngine {
   private drawImageCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const targetRatio = w / h;
-    
+
     let sourceX = 0;
     let sourceY = 0;
     let sourceW = img.naturalWidth;
@@ -2581,38 +2830,40 @@ export class GameEngine {
     const pivotY = hookPivot.y;
 
     if (this.state.hook.state === 'tnt_aiming' && this.state.hook.targetX !== undefined && this.state.hook.targetY !== undefined) {
-      // Draw 3x3 Red Grid
+      const isTutorialTnt = this.state.level === 1 && this.tutorialManager?.getState().step === 'tnt_action';
       const gridSize = 240; // 120 radius Explosion area = 240px width/height
       const cellSize = gridSize / 3;
       const tntX = this.state.hook.targetX - gridSize / 2;
       const tntY = this.state.hook.targetY - gridSize / 2;
 
-      this.ctx.fillStyle = 'rgba(255, 50, 50, 0.2)';
-      this.ctx.fillRect(tntX, tntY, gridSize, gridSize);
+      if (!isTutorialTnt) {
+        this.ctx.fillStyle = 'rgba(255, 50, 50, 0.2)';
+        this.ctx.fillRect(tntX, tntY, gridSize, gridSize);
 
-      this.ctx.strokeStyle = 'rgba(255, 50, 50, 0.5)';
-      this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle = 'rgba(255, 50, 50, 0.5)';
+        this.ctx.lineWidth = 2;
 
-      this.ctx.beginPath();
-      // Verticals
-      this.ctx.moveTo(tntX + cellSize, tntY);
-      this.ctx.lineTo(tntX + cellSize, tntY + gridSize);
-      this.ctx.moveTo(tntX + cellSize * 2, tntY);
-      this.ctx.lineTo(tntX + cellSize * 2, tntY + gridSize);
+        this.ctx.beginPath();
+        // Verticals
+        this.ctx.moveTo(tntX + cellSize, tntY);
+        this.ctx.lineTo(tntX + cellSize, tntY + gridSize);
+        this.ctx.moveTo(tntX + cellSize * 2, tntY);
+        this.ctx.lineTo(tntX + cellSize * 2, tntY + gridSize);
 
-      // Horizontals
-      this.ctx.moveTo(tntX, tntY + cellSize);
-      this.ctx.lineTo(tntX + gridSize, tntY + cellSize);
-      this.ctx.moveTo(tntX, tntY + cellSize * 2);
-      this.ctx.lineTo(tntX + gridSize, tntY + cellSize * 2);
+        // Horizontals
+        this.ctx.moveTo(tntX, tntY + cellSize);
+        this.ctx.lineTo(tntX + gridSize, tntY + cellSize);
+        this.ctx.moveTo(tntX, tntY + cellSize * 2);
+        this.ctx.lineTo(tntX + gridSize, tntY + cellSize * 2);
 
-      // Outer Border
-      this.ctx.rect(tntX, tntY, gridSize, gridSize);
-      this.ctx.stroke();
+        // Outer Border
+        this.ctx.rect(tntX, tntY, gridSize, gridSize);
+        this.ctx.stroke();
+      }
 
       // TNT Icon in center
       const iconSize = 40;
-      this.ctx.fillStyle = '#444'; // simple bomb icon
+      this.ctx.fillStyle = isTutorialTnt ? '#666' : '#444';
       this.ctx.beginPath();
       this.ctx.arc(this.state.hook.targetX, this.state.hook.targetY, iconSize / 2, 0, Math.PI * 2);
       this.ctx.fill();
@@ -2787,21 +3038,21 @@ export class GameEngine {
 
     }
 
-    
+
   }
 
   private drawLevelStartOverlay(bx: CanvasRenderingContext2D) {
-    const config = LEVEL_CONFIG[this.state.level];
-    const totalDuration = config?.duration ?? 60;
-    const elapsed = totalDuration - this.state.timeRemaining;
-    const displayDuration = 1.6;
-    if (elapsed > displayDuration) return;
+    // Show overlay during the initial startTimerMs (0.75 seconds)
+    if (this.state.startTimerMs <= 0) return;
+
+    const elapsed = 750 - this.state.startTimerMs;
+    const totalDuration = 750;
 
     let alpha = 1;
-    if (elapsed < 0.25) {
-      alpha = elapsed / 0.25;
-    } else if (elapsed > 1.35) {
-      alpha = 1 - (elapsed - 1.35) / 0.25;
+    if (elapsed < 200) {
+      alpha = elapsed / 200;
+    } else if (elapsed > 550) {
+      alpha = 1 - (elapsed - 550) / 200;
     }
     if (alpha <= 0) return;
 
