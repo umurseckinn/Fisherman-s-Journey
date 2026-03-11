@@ -54,8 +54,8 @@ export default function LevelSelect() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-md bg-white/95 rounded-[28px] shadow-2xl border-4 border-white p-5">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 pt-safe pb-safe">
+      <div className="relative w-full max-w-md bg-white/95 rounded-[28px] shadow-2xl border-4 border-white p-5 overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <Link href="/garage">
             <button className="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
@@ -102,8 +102,8 @@ export default function LevelSelect() {
                     {LEVEL_NAMES[level] ?? `Level ${level}`}
                   </div>
                   {isCheckpoint && (
-                    <div className="mt-1 inline-flex rounded-md bg-yellow-300/90 px-1.5 py-0.5 text-[8px] font-bold text-slate-900">
-                      CHECKPOINT
+                    <div className="mt-1 inline-flex rounded-md bg-yellow-300/90 px-1 py-0.5 text-[7px] font-bold text-slate-900 leading-none uppercase tracking-tighter shadow-sm w-fit max-w-full">
+                      CHKPNT
                     </div>
                   )}
                 </div>

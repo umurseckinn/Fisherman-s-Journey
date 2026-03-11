@@ -819,29 +819,29 @@ export default function Game() {
         {/* Playable Area */}
         {gameState === "playing" && (
           <>
-            <div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-start pointer-events-none">
-              <div className="flex gap-2 items-center pointer-events-auto">
+            <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10 flex justify-between items-start pointer-events-none">
+              <div className="flex flex-wrap gap-2 items-center pointer-events-auto max-w-[65%]">
                 <div
-                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-3 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors"
+                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors shrink-0"
                   onClick={() => setShowDoubloonShop(true)}
                   title="Buy Gold Doubloons"
                 >
-                  <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-6 h-6 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
-                  <span className="text-xl font-display font-bold text-slate-700">{score}</span>
+                  <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
+                  <span className="text-lg font-display font-bold text-slate-700">{score}</span>
                 </div>
                 {currentLevel !== 1 && (
-                  <div className={`border-2 border-white rounded-2xl px-3 py-1.5 shadow-md flex items-center gap-2 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
-                    <Clock className={`w-5 h-5 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
-                    <span className="text-xl font-display font-bold text-white">
+                  <div className={`border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1.5 shrink-0 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
+                    <Clock className={`w-4 h-4 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
+                    <span className="text-lg font-display font-bold text-white whitespace-nowrap">
                       {anchorEffectTimer > 0
                         ? formatTime(Math.ceil(anchorEffectTimer / 1000))
-                        : currentLevel === 1 ? "Tutorial" : `Level ${currentLevel - 1}`}
+                        : currentLevel === 1 ? "Tutorial" : `L${currentLevel - 1}`}
                     </span>
                   </div>
                 )}
                 <button
                   onClick={togglePause}
-                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95"
+                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
                 >
                   <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
                 </button>
