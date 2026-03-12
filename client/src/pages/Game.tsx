@@ -15,9 +15,11 @@ import {
   getAdminMode,
   updateUserUnlockedLevel,
   getPermanentCoins,
-  setPermanentCoins,
   isTutorialCompleted,
-  setTutorialCompleted
+  setTutorialCompleted,
+  hasTutorialCaught,
+  markTutorialCatch,
+  setPermanentCoins
 } from "@/game/storage";
 import { type GameState, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
 import { GameOverModal } from "@/components/GameOverModal";
@@ -29,6 +31,7 @@ import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
 import { RegionIntroCard } from "@/components/RegionIntroCard";
 import { WelcomeGiftModal } from "@/components/WelcomeGiftModal";
 import { MarketTutorialOverlay, MarketTutorialStep } from "@/components/MarketTutorialOverlay";
+import { InfoCard } from "@/components/InfoCard";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 
@@ -77,6 +80,7 @@ export default function Game() {
   const [showWelcomeGift, setShowWelcomeGift] = useState(false);
   const [showMarketTutorial, setShowMarketTutorial] = useState(false);
   const [marketTutorialStep, setMarketTutorialStep] = useState<MarketTutorialStep>('completed');
+  const [discoveryCard, setDiscoveryCard] = useState<FishClass | null>(null);
   const [isGameOverFading, setIsGameOverFading] = useState(false);
   const [perfStats, setPerfStats] = useState<{
     enabled: boolean;
@@ -333,6 +337,15 @@ export default function Game() {
       onFishCaught: (fish) => {
         if (fish.type === 'king') {
           runStats.current.kingFishCount++;
+        }
+        // Discovery Card: Only for non-tutorial levels and if not seen before
+        if (currentLevel > 1 && !hasTutorialCaught(fish.type)) {
+          markTutorialCatch(fish.type);
+          setDiscoveryCard(fish.type);
+          if (engineRef.current) {
+            engineRef.current.pause();
+            setIsPaused(true);
+          }
         }
       },
       onBoosterUsed: (type: 'harpoon' | 'net' | 'tnt' | 'anchor') => {
@@ -666,16 +679,17 @@ export default function Game() {
 
   const buyFuel = () => {
     if (upgrades.hasFuel) return;
-    if (score < fuelCost) {
+    const effectiveCost = currentLevel === 1 ? score : fuelCost;
+    if (score < effectiveCost) {
       setShowFuelModal(true);
       return;
     }
 
-    setScore(prev => prev - fuelCost);
+    setScore(prev => prev - effectiveCost);
     setUpgrades(prev => ({ ...prev, hasFuel: true }));
 
     if (engineRef.current) {
-      engineRef.current.getState().score -= fuelCost;
+      engineRef.current.getState().score -= effectiveCost;
       engineRef.current.getState().upgrades.hasFuel = true;
     }
 
@@ -823,34 +837,24 @@ export default function Game() {
         {gameState === "playing" && (
           <>
             <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10 flex justify-between items-start pointer-events-none px-safe">
-              {currentLevel !== 1 && (
-                <div className="flex flex-col gap-1.5 items-start pointer-events-auto max-w-[65%]">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors shrink-0"
-                      onClick={() => setShowDoubloonShop(true)}
-                      title="Buy Gold Doubloons"
-                    >
-                      <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
-                      <span className="text-lg font-display font-bold text-slate-700">{score}</span>
-                    </div>
-                    <button
-                      onClick={togglePause}
-                      className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
-                    >
-                      <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
-                    </button>
-                  </div>
+              <div className="flex items-center gap-2 pointer-events-auto">
+                {currentLevel !== 1 && (
                   <div className={`border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1.5 shrink-0 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
                     <Clock className={`w-4 h-4 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
                     <span className="text-lg font-display font-bold text-white whitespace-nowrap">
                       {anchorEffectTimer > 0
                         ? formatTime(Math.ceil(anchorEffectTimer / 1000))
-                        : currentLevel === 1 ? "Tutorial" : `L${currentLevel - 1}`}
+                        : formatTime(timeLeft)}
                     </span>
                   </div>
-                </div>
-              )}
+                )}
+                <button
+                  onClick={togglePause}
+                  className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
+                >
+                  <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
+                </button>
+              </div>
 
               {currentLevel !== 1 && (
                 <div className="flex flex-col gap-2 items-end">
@@ -900,6 +904,19 @@ export default function Game() {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
                 const y = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+
+                // 1. Check for catch card clicks FIRST
+                if (engineRef.current) {
+                  const clickedType = engineRef.current.getCaughtItemAt(x, y);
+                  if (clickedType) {
+                    setDiscoveryCard(clickedType);
+                    engineRef.current.pause();
+                    setIsPaused(true);
+                    return; // Stop here, don't cast!
+                  }
+                }
+
+                // 2. Otherwise proceed with normal input
                 if (isTntAction && tutorialAction === 'drag_tnt') {
                   setTntAim({ x, y });
                   setTntDragStart({ x, y });
@@ -1277,7 +1294,7 @@ export default function Game() {
                 <div className="flex items-center justify-center gap-2 text-sm font-bold">
                   <Fuel className="w-4 h-4" />
                   <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain" />
-                  Buy Fuel ({fuelCost})
+                  Buy Fuel {currentLevel !== 1 && `(${fuelCost})`}
                 </div>
               </Button>
             </div>
@@ -1365,8 +1382,19 @@ export default function Game() {
         {/* Pause Menu Overlay */}
         {isPaused && !curseCard && !regionCardStartLevel && (
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center animate-in fade-in duration-300 px-8">
-            <div className="bg-white rounded-[32px] w-full max-w-xs p-8 shadow-2xl flex flex-col gap-4 border-4 border-white">
-              <h2 className="text-3xl font-display font-bold text-slate-800 text-center mb-4">PAUSED</h2>
+            <div className="bg-white rounded-[32px] w-full max-w-xs p-8 shadow-2xl flex flex-col gap-4 border-4 border-white items-center">
+              <div className="text-center mb-4">
+                <div className="text-slate-500 text-xs uppercase font-black tracking-widest leading-none mb-1">
+                  {currentLevel === 1 ? "Tutorial" : `Level ${currentLevel - 1}`}
+                </div>
+                <h2 className="text-2xl font-display font-bold text-blue-600 leading-none mb-3">
+                  {currentLevel === 1 ? "Training Bay" : (LEVEL_NAMES[currentLevel] ?? "Deep Voyage")}
+                </h2>
+                <div className="flex items-center justify-center gap-1.5 bg-yellow-50 px-4 py-2 rounded-2xl border border-yellow-100">
+                   <img src="/assets/environment/gold_doubloon.png" alt="Gold" className="w-5 h-5 object-contain" />
+                   <span className="text-xl font-bold text-yellow-700">{score}</span>
+                </div>
+              </div>
 
               <Button
                 onClick={togglePause}
@@ -1376,24 +1404,26 @@ export default function Game() {
                 Resume
               </Button>
 
-              <Button
-                onClick={() => window.location.reload()}
-                variant="outline"
-                className="w-full py-6 text-lg font-bold border-2 border-slate-100 text-slate-600 hover:bg-slate-50 rounded-2xl flex items-center justify-center gap-3"
-              >
-                <RotateCcw className="w-5 h-5" />
-                Restart
-              </Button>
-
-              <Link href="/">
+              <div className="grid grid-cols-2 gap-3 w-full">
                 <Button
-                  variant="ghost"
-                  className="w-full py-6 text-lg font-bold text-slate-400 hover:text-slate-600 hover:bg-transparent rounded-2xl flex items-center justify-center gap-3"
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  className="py-4 text-xs font-bold border-2 border-slate-100 text-slate-600 hover:bg-slate-50 rounded-2xl flex items-center justify-center gap-2"
                 >
-                  <HomeIcon className="w-5 h-5" />
-                  Main Menu
+                  <RotateCcw className="w-4 h-4" />
+                  Restart
                 </Button>
-              </Link>
+
+                <Link href="/">
+                  <Button
+                    variant="outline"
+                    className="w-full py-4 text-xs font-bold border-2 border-slate-100 text-slate-600 hover:bg-slate-50 rounded-2xl flex items-center justify-center gap-2"
+                  >
+                    <HomeIcon className="w-4 h-4" />
+                    Menu
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -1525,6 +1555,19 @@ export default function Game() {
 
         {showMarketTutorial && (
           <MarketTutorialOverlay step={marketTutorialStep} />
+        )}
+
+        {discoveryCard && (
+          <InfoCard
+            entityKey={discoveryCard}
+            onClose={() => {
+              setDiscoveryCard(null);
+              if (engineRef.current) {
+                engineRef.current.resume();
+                setIsPaused(false);
+              }
+            }}
+          />
         )}
       </div>
       {/* Game Over Fade Overlay */}

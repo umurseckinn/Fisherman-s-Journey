@@ -314,6 +314,25 @@ export class GameEffects {
         this.hookBreakMs = 650;
     }
 
+    /** Bubbles for sinking animation */
+    spawnSinkingBubbles(x: number, y: number): void {
+        const count = 1 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < count; i++) {
+            const rx = (Math.random() - 0.5) * 60;
+            const size = 3 + Math.random() * 8;
+            this.addParticle({
+                x: x + rx, 
+                y: y + 10, 
+                vx: (Math.random() - 0.5) * 1.5, 
+                vy: -2 - Math.random() * 3, // Rise faster than boat
+                size, 
+                color: 'rgba(255, 255, 255, 0.4)', 
+                type: 'circle', 
+                duration: 1500 + Math.random() * 1000
+            });
+        }
+    }
+
     // ─── Screen shake ─────────────────────────────────────────────────────────
     shakeScreen(magnitude: number, frames = 4): void {
         this.shakeMag = magnitude;

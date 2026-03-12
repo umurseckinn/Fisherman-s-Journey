@@ -128,7 +128,7 @@ export class GarageTutorialManager {
             // Position text relative to target
             const rect = this.targetElement.getBoundingClientRect();
             const isTop = rect.top > window.innerHeight / 2;
-            this.textElement.style.top = isTop ? `${rect.top - 140}px` : `${rect.bottom + 40}px`;
+            this.textElement.style.top = isTop ? `${rect.top - 180}px` : `${rect.bottom + 40}px`;
             this.textElement.innerText = text;
         } else {
             // If target not found (e.g. sliding animation), wait and retry
