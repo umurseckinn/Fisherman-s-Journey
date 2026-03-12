@@ -14,6 +14,9 @@ const K = {
   userUnlockedLevel: 'fj_userUnlockedLevel',
   adminMode: 'fj_adminMode',
   tutorialCompleted: 'fj_tutorialCompleted',
+  rodTutorial: 'fj_rodTutorial',
+  storageTutorial: 'fj_storageTutorial',
+  boatTutorial: 'fj_boatTutorial',
   vehicleOwned: (id: string) => `fj_vehicle_${id}_owned`,
   vehicleSto: (id: string, n: 1 | 2 | 3 | 4 | 5) => `fj_vehicle_${id}_sto_${n}`,
   vehicleRod: (id: string, n: 1 | 2 | 3 | 4 | 5) => `fj_vehicle_${id}_rod_${n}`,
@@ -160,7 +163,16 @@ export function getStartLevelForMode(): number {
   }
   const unlocked = getUserUnlockedLevel();
   const selected = getUserSelectedStartLevel();
-  return Math.min(unlocked, selected);
+  const tutorialDone = isTutorialCompleted();
+
+  if (!tutorialDone) return 1;
+
+  // If tutorial done, we should be at least at level 2
+  // We prefer the user's last selection if valid, otherwise the highest unlocked
+  if (selected > 1 && selected <= unlocked) {
+    return selected;
+  }
+  return unlocked;
 }
 
 // ── Vehicle Ownership ─────────────────────────────────────────────────────────
@@ -215,8 +227,13 @@ export function resetProfile(vehicleIds: string[]) {
   localStorage.removeItem(K.adminMode);
 
   // Clear boosters and tutorials
-  localStorage.removeItem('global_boosters');
-  localStorage.removeItem('market_tutorial_v10'); // Market tutorial
+  localStorage.removeItem('global_boosters'); // Legacy
+  localStorage.removeItem('fj_global_boosters');
+  localStorage.removeItem('market_tutorial_v10'); // Legacy Market tutorial
+  localStorage.removeItem('fj_market_tutorial');
+  localStorage.removeItem(K.rodTutorial);
+  localStorage.removeItem(K.storageTutorial);
+  localStorage.removeItem(K.boatTutorial);
   localStorage.removeItem(TUTORIAL_CAUGHT_KEY);   // 'fj_tutorial_caught'
 
   // Clear vehicle-specific upgrades

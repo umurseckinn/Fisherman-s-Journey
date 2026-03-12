@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Home as HomeIcon, ArrowLeft, Play } from "lucide-react";
 import { LEVEL_CONFIG } from "@/game/GameEngine";
 import { LEVEL_NAMES } from "@/game/levelNames";
-import { getAdminMode, getSelectedStartLevel, getUserSelectedStartLevel, getUserUnlockedLevel, setSelectedStartLevel, setUserSelectedStartLevel } from "@/game/storage";
+import { getAdminMode, getSelectedStartLevel, getUserSelectedStartLevel, getUserUnlockedLevel, setSelectedStartLevel, setUserSelectedStartLevel, isTutorialCompleted, getStartLevelForMode } from "@/game/storage";
 
 const parseHex = (value: string) => {
   const raw = value.replace("#", "");
@@ -34,15 +34,27 @@ const brighten = (color: string, amount: number) => {
 export default function LevelSelect() {
   const [, setLocation] = useLocation();
   const isAdminMode = getAdminMode();
-  const selectedFromHome = getSelectedStartLevel();
+  const initialLevel = getStartLevelForMode();
   const userUnlockedLevel = getUserUnlockedLevel();
-  const userSelectedLevel = getUserSelectedStartLevel();
-  const unlockStart = 1;
-  const unlockEnd = isAdminMode ? 100 : userUnlockedLevel;
-  const defaultSelected = Math.min(isAdminMode ? selectedFromHome : userSelectedLevel, unlockEnd);
-  const [selectedLevel, setSelectedLevel] = useState(defaultSelected);
+  const [selectedLevel, setSelectedLevel] = useState(initialLevel);
 
-  const levels = useMemo(() => Array.from({ length: 100 }, (_, i) => i + 1), []);
+  const isTutorialDone = isTutorialCompleted();
+  const levels = useMemo(() => {
+    let all = Array.from({ length: 100 }, (_, i) => i + 1);
+    // If tutorial is done and not admin, hide level 1
+    if (isTutorialDone && !isAdminMode) {
+      all = all.filter(l => l > 1);
+    }
+    return all;
+  }, [isAdminMode, isTutorialDone]);
+
+  // Checkpoint logic: 
+  // 1. Any level which is a multiple of 5 AND <= userUnlockedLevel
+  // 2. The level immediately after the last completed multiple of 5? 
+  // No, user said: "mesela 5. bölüm bir defa geçilmişse ... 1'den 5'e kadar tümünü seçebilsin"
+  // This means if userUnlockedLevel > 5, then 1,2,3,4,5 are selectable.
+  // And the CURRENT progress (userUnlockedLevel) is always selectable.
+  const lastCompletedCheckpoint = Math.floor((userUnlockedLevel - 1) / 5) * 5;
 
   const startLevel = () => {
     if (isAdminMode) {
@@ -64,7 +76,7 @@ export default function LevelSelect() {
           </Link>
           <div className="text-center">
             <div className="text-xl font-bold text-slate-800">Select Level</div>
-            <div className="text-xs text-slate-500">{isAdminMode ? "Admin mode selection" : "User mode unlocked levels"}</div>
+            <div className="text-xs text-slate-500">{isAdminMode ? "Admin mode selection" : "Milestones and current progress"}</div>
           </div>
           <Link href="/">
             <button className="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
@@ -80,7 +92,17 @@ export default function LevelSelect() {
             const sea = config?.seaColor ?? "#29B6F6";
             const mid = mix(sky, sea, 0.5);
             const isCheckpoint = level % 5 === 0;
-            const isUnlocked = level >= unlockStart && level <= unlockEnd;
+
+            // Selection Logic:
+            // - If Admin: all levels selectable
+            // - If User: 
+            //    - Level is <= lastCompletedCheckpoint (passed a block of 5)
+            //    - OR Level is the current unlocked progress
+            const isSelectable = isAdminMode ||
+              level === userUnlockedLevel ||
+              level <= lastCompletedCheckpoint;
+            const isUnlocked = level <= userUnlockedLevel;
+
             const isSelected = selectedLevel === level;
             const vibrantSky = brighten(sky, 0.12);
             const vibrantSea = brighten(sea, 0.18);
@@ -90,16 +112,19 @@ export default function LevelSelect() {
             return (
               <button
                 key={level}
-                onClick={() => isUnlocked && setSelectedLevel(level)}
-                className={`relative rounded-xl px-2 py-3 text-left transition-all border ${isUnlocked ? "border-white/50" : "border-slate-200"} ${isSelected ? "ring-2 ring-yellow-400 border-yellow-300 scale-[1.02]" : ""} ${isUnlocked ? "shadow-[0_8px_18px_rgba(15,23,42,0.25)]" : "opacity-70"}`}
-                style={{ backgroundImage: gradient, backgroundColor: vibrantSea, boxShadow: isUnlocked ? glow : undefined }}
+                onClick={() => isSelectable && setSelectedLevel(level)}
+                className={`relative rounded-xl px-2 py-3 text-left transition-all border 
+                  ${isUnlocked ? "border-white/50" : "border-slate-200"} 
+                  ${isSelected ? "border-[4px] border-amber-700 shadow-xl scale-[1.05] z-20" : ""} 
+                  ${isSelectable ? "shadow-[0_8px_18px_rgba(15,23,42,0.25)]" : "opacity-40 grayscale-[0.5]"}`}
+                style={{ backgroundImage: gradient, backgroundColor: vibrantSea, boxShadow: (isSelectable && isSelected) ? glow : undefined }}
               >
                 <div className="relative z-10 flex flex-col h-full">
                   <div className="inline-flex items-center rounded-md bg-black/45 px-1.5 py-0.5 text-[10px] font-bold text-yellow-200 w-fit">
-                    L{level}
+                    {level === 1 ? "Tut" : `L${level - 1}`}
                   </div>
                   <div className="mt-1 rounded-md bg-black/45 px-1.5 py-1 text-[9px] font-semibold text-yellow-200 leading-tight truncate">
-                    {LEVEL_NAMES[level] ?? `Level ${level}`}
+                    {LEVEL_NAMES[level] ?? `Level ${level - 1}`}
                   </div>
                   {isCheckpoint && (
                     <div className="mt-auto pt-1 inline-flex rounded-md bg-yellow-300/90 px-1 py-0.5 text-[7px] font-bold text-slate-900 leading-none uppercase tracking-tighter shadow-sm w-fit max-w-full">
@@ -123,7 +148,7 @@ export default function LevelSelect() {
           className="mt-4 w-full bg-blue-600 text-white py-3 rounded-2xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           <Play className="w-5 h-5 fill-current" />
-          Start Level {selectedLevel}
+          Start Level {selectedLevel === 1 ? "Tutorial" : (isAdminMode ? selectedLevel : selectedLevel - 1)}
         </button>
       </div>
     </div>

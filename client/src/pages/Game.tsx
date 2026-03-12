@@ -1208,7 +1208,7 @@ export default function Game() {
               </div>
               {activeCurse !== 'none' && (
                 <div className="mt-1 text-red-600 font-bold text-[11px] bg-red-50 p-2 rounded-lg border border-red-200">
-                  L{currentLevel} CURSE ACTIVE: {activeCurse.toUpperCase()}
+                  {currentLevel === 1 ? "TUTORIAL" : `L${currentLevel - 1}`} CURSE ACTIVE: {activeCurse.toUpperCase()}
                 </div>
               )}
             </div>
@@ -1327,7 +1327,7 @@ export default function Game() {
               disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
               className={`w-full py-4 text-base font-display font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 ${upgrades.hasFuel ? 'animate-pulse ring-4 ring-blue-300' : ''}`}
             >
-              {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? `Level ${currentLevel}`}!` : "Buy Fuel to Continue"}
+              {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? (currentLevel === 0 ? "Level 1" : `Level ${currentLevel}`)}!` : "Buy Fuel to Continue"}
             </Button>
 
             <Button

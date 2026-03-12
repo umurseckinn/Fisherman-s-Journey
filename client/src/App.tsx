@@ -10,12 +10,20 @@ import LevelSelect from "@/pages/LevelSelect";
 import Leaderboard from "@/pages/Leaderboard";
 import { useLocation } from "wouter";
 
+import { getAdminMode } from "./game/storage";
+
 function GarageWrapper() {
   const [, setLocation] = useLocation();
+  const isAdminMode = getAdminMode();
+
   return (
     <Garage
       onStartFishing={(vehicleId) => {
-        setLocation(`/levels?vehicle=${vehicleId}`);
+        if (isAdminMode) {
+          setLocation(`/game?vehicle=${vehicleId}`);
+        } else {
+          setLocation(`/levels?vehicle=${vehicleId}`);
+        }
       }}
     />
   );
