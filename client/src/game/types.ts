@@ -64,6 +64,7 @@ export interface Hook {
   x: number;
   y: number;
   caughtEntity: Entity | null;
+  caughtEntities: Entity[]; // Multiple catches for Premium Harpoon
   targetX?: number; // Target for Harpoon/TNT
   targetY?: number;
 }
@@ -112,6 +113,7 @@ export interface GameState {
   activeCurse: CurseType;   // Active curse
   curseTimerMs: number;     // Periodic counter for countdowns / bombs
   isPaused: boolean;        // Game pause state
+  isTimeFrozen: boolean;    // For Harpoon/Tutorial freeze effects
   boosters: {
     speed: boolean;
     lucky: boolean;

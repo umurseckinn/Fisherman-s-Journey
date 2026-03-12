@@ -231,6 +231,7 @@ export default function Game() {
         x: CANVAS_WIDTH / 2,
         y: SEA_LEVEL_Y,
         caughtEntity: null,
+        caughtEntities: [],
       },
       fishes: [],
       inventory,
@@ -258,7 +259,8 @@ export default function Game() {
       activeBooster: selectedBooster,
       anchorEffectTimerMs: 0,
       startTimerMs: 750,
-      isPaused: shouldShowRegion || shouldShowCurse
+      isPaused: shouldShowRegion || shouldShowCurse,
+      isTimeFrozen: false
     };
 
     const engine = new GameEngine(ctx, bgCtx, whirlpoolImgRef.current, initialState, {
@@ -821,24 +823,24 @@ export default function Game() {
         {gameState === "playing" && (
           <>
             <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10 flex justify-between items-start pointer-events-none px-safe">
-              <div className="flex flex-col gap-1.5 items-start pointer-events-auto max-w-[65%]">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors shrink-0"
-                    onClick={() => setShowDoubloonShop(true)}
-                    title="Buy Gold Doubloons"
-                  >
-                    <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
-                    <span className="text-lg font-display font-bold text-slate-700">{score}</span>
+              {currentLevel !== 1 && (
+                <div className="flex flex-col gap-1.5 items-start pointer-events-auto max-w-[65%]">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1 cursor-pointer hover:bg-white transition-colors shrink-0"
+                      onClick={() => setShowDoubloonShop(true)}
+                      title="Buy Gold Doubloons"
+                    >
+                      <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))' }} />
+                      <span className="text-lg font-display font-bold text-slate-700">{score}</span>
+                    </div>
+                    <button
+                      onClick={togglePause}
+                      className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
+                    >
+                      <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
+                    </button>
                   </div>
-                  <button
-                    onClick={togglePause}
-                    className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md hover:scale-105 transition-transform active:scale-95 shrink-0"
-                  >
-                    <Pause className="w-5 h-5 text-slate-600 fill-slate-600" />
-                  </button>
-                </div>
-                {currentLevel !== 1 && (
                   <div className={`border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1.5 shrink-0 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
                     <Clock className={`w-4 h-4 text-white ${anchorEffectTimer > 0 ? 'fill-green-700' : 'fill-[#FFB347]'}`} />
                     <span className="text-lg font-display font-bold text-white whitespace-nowrap">
@@ -847,37 +849,39 @@ export default function Game() {
                         : currentLevel === 1 ? "Tutorial" : `L${currentLevel - 1}`}
                     </span>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <div className="flex flex-col gap-2 items-end">
-                {/* Storage Bar */}
-                <div className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex flex-col gap-1 transition-all">
-                  <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-                    <span className="flex items-center gap-1"><Anchor className="w-3 h-3" /> Storage</span>
-                    <span className={storageRatio >= 0.96 ? 'text-red-500 animate-pulse' : storageRatio >= 0.81 ? 'text-orange-500' : storageRatio >= 0.61 ? 'text-yellow-600' : 'text-slate-500'}>
-                      {displayWeight.toFixed(1)} / {upgrades.storageCapacity} kg
+              {currentLevel !== 1 && (
+                <div className="flex flex-col gap-2 items-end">
+                  {/* Storage Bar */}
+                  <div className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex flex-col gap-1 transition-all">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                      <span className="flex items-center gap-1"><Anchor className="w-3 h-3" /> Storage</span>
+                      <span className={storageRatio >= 0.96 ? 'text-red-500 animate-pulse' : storageRatio >= 0.81 ? 'text-orange-500' : storageRatio >= 0.61 ? 'text-yellow-600' : 'text-slate-500'}>
+                        {displayWeight.toFixed(1)} / {upgrades.storageCapacity} kg
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${storageColor}`}
+                        style={{ width: `${storagePercent}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex items-center justify-between text-xs font-bold text-slate-700">
+                    <span>Hook</span>
+                    <span className={hookAttempts === 0 ? 'text-red-500 animate-pulse' : 'text-slate-600'}>
+                      {hookAttempts} / {maxHookAttempts}
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${storageColor}`}
-                      style={{ width: `${storagePercent}%` }}
-                    />
-                  </div>
+                  {activeCurse !== 'none' && (
+                    <div className="bg-red-500 text-white text-[10px] px-2 py-1 rounded-full font-bold animate-bounce shadow-lg">
+                      CURSE: {activeCurse.toUpperCase()}
+                    </div>
+                  )}
                 </div>
-                <div className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex items-center justify-between text-xs font-bold text-slate-700">
-                  <span>Hook</span>
-                  <span className={hookAttempts === 0 ? 'text-red-500 animate-pulse' : 'text-slate-600'}>
-                    {hookAttempts} / {maxHookAttempts}
-                  </span>
-                </div>
-                {activeCurse !== 'none' && (
-                  <div className="bg-red-500 text-white text-[10px] px-2 py-1 rounded-full font-bold animate-bounce shadow-lg">
-                    CURSE: {activeCurse.toUpperCase()}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
             <canvas ref={bgCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="absolute inset-0 w-full h-full block" style={{ zIndex: 0 }} />
             <canvas
@@ -1145,9 +1149,11 @@ export default function Game() {
               />
             )}
             {tutorialState?.overlayText && (
-              <div className="absolute inset-x-0 top-20 z-50 flex justify-center pointer-events-none">
-                <div className="text-lg font-display font-bold text-yellow-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] text-center px-6">
-                  {tutorialState.overlayText}
+              <div className="absolute inset-x-0 top-8 z-50 flex justify-center pointer-events-none px-6">
+                <div className="bg-black/85 backdrop-blur-md border-4 border-yellow-400 rounded-[24px] px-8 py-4 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                  <div className="text-xl font-display font-black text-yellow-400 text-center uppercase tracking-wide">
+                    {tutorialState.overlayText}
+                  </div>
                 </div>
               </div>
             )}

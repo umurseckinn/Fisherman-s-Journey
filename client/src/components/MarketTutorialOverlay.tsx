@@ -136,12 +136,14 @@ export const MarketTutorialOverlay: React.FC<MarketTutorialOverlayProps> = ({ st
                     className="absolute text-center z-[9999] flex flex-col items-center"
                     style={textStyle}
                 >
-                    <p
-                        className="text-lg sm:text-xl md:text-2xl font-black text-white drop-shadow-[0_2px_8px_rgba(0,0,0,1)] leading-tight px-2"
-                        style={{ textWrap: 'balance' } as any}
-                    >
-                        {currentConfig.text}
-                    </p>
+                    <div className="bg-black/90 backdrop-blur-md border-4 border-yellow-400 rounded-[24px] px-8 py-4 shadow-[0_0_30px_rgba(0,0,0,0.6)]">
+                      <p
+                          className="text-lg sm:text-xl md:text-2xl font-black text-yellow-400 leading-tight uppercase tracking-tight"
+                          style={{ textWrap: 'balance' } as any}
+                      >
+                          {currentConfig.text}
+                      </p>
+                    </div>
                     <motion.div
                         animate={{ y: [0, 10, 0] }}
                         transition={{ repeat: Infinity, duration: 1.5 }}
