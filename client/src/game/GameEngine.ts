@@ -636,7 +636,7 @@ export class GameEngine {
           const dy = target.y - pivot.y;
           let targetAngle = Math.atan2(dy, dx);
           const angleDiff = Math.abs(this.state.hook.angle - targetAngle);
-          if (angleDiff > 0.28) {
+          if (angleDiff > 0.45) {
             return;
           }
         }
@@ -2898,7 +2898,7 @@ export class GameEngine {
 
       // Harpoon arrow
       const aimLength = 120;
-      const arrX = pivotX - Math.cos(this.state.hook.angle) * aimLength;
+      const arrX = pivotX + Math.cos(this.state.hook.angle) * aimLength;
       const arrY = pivotY + Math.sin(this.state.hook.angle) * aimLength;
 
       this.ctx.strokeStyle = '#4169E1';
@@ -2911,8 +2911,8 @@ export class GameEngine {
       // Arrow head
       this.ctx.beginPath();
       this.ctx.moveTo(arrX, arrY);
-      this.ctx.lineTo(arrX + Math.cos(this.state.hook.angle - 0.15) * 20, arrY - Math.sin(this.state.hook.angle - 0.15) * 20);
-      this.ctx.lineTo(arrX + Math.cos(this.state.hook.angle + 0.15) * 20, arrY - Math.sin(this.state.hook.angle + 0.15) * 20);
+      this.ctx.lineTo(arrX - Math.cos(this.state.hook.angle - 0.15) * 20, arrY - Math.sin(this.state.hook.angle - 0.15) * 20);
+      this.ctx.lineTo(arrX - Math.cos(this.state.hook.angle + 0.15) * 20, arrY - Math.sin(this.state.hook.angle + 0.15) * 20);
       this.ctx.closePath();
       this.ctx.fillStyle = '#4169E1';
       this.ctx.fill();
