@@ -59,7 +59,7 @@ export interface Entity {
 export interface Hook {
   angle: number;
   length: number;
-  state: 'idle' | 'shooting' | 'retracting' | 'whirlpool' | 'snagged' | 'harpoon' | 'tnt' | 'net' | 'aiming' | 'tnt_aiming';
+  state: 'idle' | 'shooting' | 'retracting' | 'whirlpool' | 'snagged' | 'harpoon' | 'harpoon_retracting' | 'tnt' | 'net' | 'aiming' | 'tnt_aiming';
   direction: 1 | -1;
   x: number;
   y: number;

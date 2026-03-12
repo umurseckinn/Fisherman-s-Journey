@@ -268,6 +268,7 @@ export class GameEngine {
   private perfAccumDraw = 0;
   private perfFrames = 0;
   private perfLastReport = 0;
+  private preventNextCast: boolean = false;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -568,6 +569,7 @@ export class GameEngine {
     if (booster === 'harpoon' && isIdle) {
       this.state.hook.state = 'aiming';
       this.handlePointerMove(cx, cy);
+      this.preventNextCast = true; // Block cast on fire
       return;
     }
 
@@ -575,6 +577,7 @@ export class GameEngine {
       this.state.hook.state = 'tnt_aiming';
       this.state.hook.targetX = Math.max(0, Math.min(CANVAS_WIDTH, cx));
       this.state.hook.targetY = Math.max(SEA_LEVEL_Y, Math.min(CANVAS_HEIGHT, cy));
+      this.preventNextCast = true; // Block cast on fire
       return;
     }
 
@@ -588,8 +591,9 @@ export class GameEngine {
         const pivot = this.getHookPivotPosition();
         const dx = cx - pivot.x;
         const dy = cy - pivot.y;
-        this.state.hook.angle = Math.atan2(dy, -dx);
+        this.state.hook.angle = Math.atan2(dy, dx);
         this.onBoosterUsed(booster);
+        this.preventNextCast = true; // Block immediate cast
         return;
       }
     }
@@ -604,13 +608,12 @@ export class GameEngine {
       const dx = cx - pivot.x;
       const dy = cy - pivot.y;
 
-      // Clamp angle downwards (between 0 and PI)
-      let angle = Math.atan2(dy, -dx);
-      if (angle < 0) {
-        // If pointing up-right, clamp to 0 (right)
-        // If pointing up-left, clamp to PI (left)
-        angle = dx > 0 ? 0 : Math.PI;
-      }
+      // Use standard atan2(dy, dx)
+      let angle = Math.atan2(dy, dx);
+      // Allow slight over-reach into the upper hemisphere for better feel (e.g. -0.2 to PI + 0.2)
+      if (angle < -0.2 && angle > -Math.PI / 2) angle = -0.2;
+      if (angle > Math.PI + 0.2 || angle < -Math.PI / 2) angle = Math.PI + 0.2;
+
       this.state.hook.angle = angle;
     } else if (this.state.hook.state === 'tnt_aiming') {
       this.state.hook.targetX = Math.max(0, Math.min(CANVAS_WIDTH, cx));
@@ -631,10 +634,7 @@ export class GameEngine {
           const pivot = this.getHookPivotPosition();
           const dx = target.x - pivot.x;
           const dy = target.y - pivot.y;
-          let targetAngle = Math.atan2(dy, -dx);
-          if (targetAngle < 0) {
-            targetAngle = dx > 0 ? 0 : Math.PI;
-          }
+          let targetAngle = Math.atan2(dy, dx);
           const angleDiff = Math.abs(this.state.hook.angle - targetAngle);
           if (angleDiff > 0.28) {
             return;
@@ -662,6 +662,11 @@ export class GameEngine {
       this.handleTntExplosion(this.state.hook.targetX, this.state.hook.targetY);
       this.state.hook.state = 'idle';
       this.onBoosterUsed('tnt');
+      return;
+    }
+
+    if (this.preventNextCast) {
+      this.preventNextCast = false;
       return;
     }
 
@@ -720,6 +725,7 @@ export class GameEngine {
   public activateAnchor() {
     this.state.anchorEffectTimerMs = 20000;
     this.onBoosterUsed('anchor');
+    this.preventNextCast = true; // Prevent cast when anchor is activated from UI
     if (this.state.level === 1 && this.tutorialManager?.isActive()) {
       this.tutorialAnchorUsed = true;
     }
@@ -735,50 +741,20 @@ export class GameEngine {
     if (this.state.startTimerMs > 0) {
       this.state.startTimerMs -= deltaTime;
       if (this.state.startTimerMs < 0) this.state.startTimerMs = 0;
-      return;
     }
     if (!this.state.isPlaying || this.state.isPaused) return;
+
+    this.backgroundManager.update(this.state.level, deltaTime);
+    this.updateTimers(deltaTime);
+    this.updateAnchorVisual(deltaTime);
 
     if (this.tutorialManager) {
       this.tutorialManager.update(deltaTime);
     }
-    this.backgroundManager.update(this.state.level, deltaTime);
 
-    if (this.tutorialFrozen || this.state.hook.state === 'aiming' || this.state.hook.state === 'tnt_aiming') {
-      // Partial update during tutorial freeze or aiming: allow hook aiming/movement
-      this.updateHook(deltaTime);
-      return;
-    }
     const tutorialActive = this.state.level === 1 && this.tutorialManager?.isActive();
 
-    if (this.isSinking) {
-      this.sinkProgress += deltaTime / 2000;
-      if (this.sinkProgress >= 1) {
-        this.sinkProgress = 1;
-        this.state.isPlaying = false;
-        // Trigger game over with generic message
-        this.onGameOver(this.state.score, this.state.level, "The boat sank! It was crushed under heavy load.");
-      }
-      return;
-    }
-
-    this.updateTimers(deltaTime);
-    this.updateAnchorVisual(deltaTime);
-
-    if (this.isArriving) {
-      this.arrivalProgress += deltaTime / 2000;
-      if (this.arrivalProgress >= 1) {
-        this.arrivalProgress = 1;
-        this.state.isPlaying = false;
-        // Small delay to let the animation settle
-        setTimeout(() => {
-          this.onLevelComplete(this.state.level);
-        }, 100);
-      }
-      // ONLY return and freeze logic when completely arrived
-      if (!this.state.isPlaying) return;
-    }
-
+    // Handle time countdown (mostly blocked for tutorial)
     if (!tutorialActive) {
       if (this.state.timeRemaining > 0) {
         if (this.state.anchorEffectTimerMs <= 0) {
@@ -787,9 +763,47 @@ export class GameEngine {
       } else if (!this.isArriving) {
         this.isArriving = true;
         this.state.hook.state = 'idle';
-        // Reset arrival progress to ensure a clean animation start
         this.arrivalProgress = 0;
       }
+    }
+
+    // Block physics/interaction during start freeze
+    if (this.state.startTimerMs > 0) {
+      // Dynamic start: Allow fish movement/spawning and hook oscillation for all levels except Level 1
+      if (this.state.level !== 1) {
+        this.updateHook(deltaTime);
+        this.updateFishes(deltaTime);
+        this.spawnFishes(deltaTime);
+        this.ensureAmbientBubbles();
+      }
+      return;
+    }
+
+    if (this.tutorialFrozen || this.state.hook.state === 'aiming' || this.state.hook.state === 'tnt_aiming' || this.state.hook.state === 'harpoon') {
+      this.updateHook(deltaTime);
+      return;
+    }
+
+    if (this.isSinking) {
+      this.sinkProgress += deltaTime / 2000;
+      if (this.sinkProgress >= 1) {
+        this.sinkProgress = 1;
+        this.state.isPlaying = false;
+        this.onGameOver(this.state.score, this.state.level, "The boat sank! It was crushed under heavy load.");
+      }
+      return;
+    }
+
+    if (this.isArriving) {
+      this.arrivalProgress += deltaTime / 2000;
+      if (this.arrivalProgress >= 1) {
+        this.arrivalProgress = 1;
+        this.state.isPlaying = false;
+        setTimeout(() => {
+          this.onLevelComplete(this.state.level);
+        }, 100);
+      }
+      if (!this.state.isPlaying) return;
     }
 
     this.updateHook(deltaTime);
@@ -1047,9 +1061,10 @@ export class GameEngine {
       hook.x = pivotX - Math.cos(hook.angle) * aimLength;
       hook.y = pivotY + Math.sin(hook.angle) * aimLength;
       hook.length = 0;
-    } else if (hook.state === 'retracting' || hook.state === 'snagged' || hook.state === 'whirlpool') {
-      if (hook.state === 'retracting') {
-        let vBase = baseSpeed * 1.5 * rod.returnMultiplier;
+    } else if (hook.state === 'retracting' || hook.state === 'harpoon_retracting' || hook.state === 'snagged' || hook.state === 'whirlpool') {
+      if (hook.state === 'retracting' || hook.state === 'harpoon_retracting') {
+        const isHarpoonRetract = hook.state === 'harpoon_retracting';
+        let vBase = baseSpeed * (isHarpoonRetract ? 20.0 : 1.5) * rod.returnMultiplier;
         if (this.state.anchorSnagMs > 0 && this.lastSnagType === 'anchor') {
           vBase *= 0.3;
         }
@@ -1114,14 +1129,14 @@ export class GameEngine {
           const outcome = Math.random();
           if (outcome < 0.4) {
             // New coordinate system: angle = PI - atan2(dy, dx)
-            const angle = Math.PI - Math.atan2(hook.y - pivotY, hook.x - pivotX);
+            const angle = Math.atan2(hook.y - pivotY, hook.x - pivotX);
             hook.angle = angle;
             hook.length = Math.hypot(hook.x - pivotX, hook.y - pivotY);
             hook.state = 'shooting';
           } else if (outcome < 0.75) {
-            const angle = Math.PI - Math.atan2(pivotY - pivotY, hook.x - pivotX);
+            const angle = Math.atan2(0, hook.x - pivotX);
             hook.angle = angle;
-            hook.length = Math.hypot(hook.x - pivotX, pivotY - pivotY);
+            hook.length = Math.abs(hook.x - pivotX);
             hook.y = pivotY;
             hook.state = 'retracting';
             this.state.timeRemaining = Math.max(0, this.state.timeRemaining - 3);
@@ -1147,17 +1162,20 @@ export class GameEngine {
         }
       }
     } else if (hook.state === 'shooting' || hook.state === 'harpoon') {
-      const speedMult = hook.state === 'harpoon' ? 4.0 : 1.5;
+      const isHarpoonShot = hook.state === 'harpoon';
+      const speedMult = isHarpoonShot ? 20.0 : 1.5;
       hook.length += throwSpeed * speedMult * deltaTime;
 
       // Harpoon uses fixed angle (set in handleCoordinateInput)
       // Normal shooting uses oscillating angle (handled by engine state)
 
-      hook.x = pivotX - Math.cos(hook.angle) * hook.length;
+      hook.x = pivotX + Math.cos(hook.angle) * hook.length;
       hook.y = pivotY + Math.sin(hook.angle) * hook.length;
 
-      if (hook.x < 0 || hook.x > CANVAS_WIDTH || hook.y > maxDepth) {
-        hook.state = 'retracting';
+      // Depth limit check (Harpoon ignores rod depth limits)
+      const currentMaxDepth = isHarpoonShot ? CANVAS_HEIGHT : maxDepth;
+      if (hook.x < 0 || hook.x > CANVAS_WIDTH || hook.y > currentMaxDepth) {
+        hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
         if (this.tutorialManager?.getState().step === 'harpoon_action') {
           this.handleTutorialInteraction('aim_harpoon_complete');
         }
@@ -1231,7 +1249,7 @@ export class GameEngine {
         }
 
         if (fish.type === 'coral') {
-          hook.state = 'retracting';
+          hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.effects.spawnCoralHit(hook.x, hook.y);
           if (rod.coralProtection === 0 || Math.random() > rod.coralProtection) {
@@ -1244,7 +1262,7 @@ export class GameEngine {
         }
 
         if (fish.type === 'sea_kelp' || fish.type === 'sea_kelp_horizontal') {
-          hook.state = 'retracting';
+          hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.effects.spawnKelpHit(hook.x, hook.y);
           this.state.anchorSnagMs = 200;
@@ -1255,7 +1273,7 @@ export class GameEngine {
         }
 
         if (fish.type === 'sea_rock') {
-          hook.state = 'retracting';
+          hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.effects.spawnRockHit(hook.x, hook.y);
           this.state.anchorSnagMs = 200;
@@ -1266,7 +1284,7 @@ export class GameEngine {
         }
 
         if (fish.type === 'anchor') {
-          hook.state = 'retracting';
+          hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.state.anchorSnagMs = 2000;
           this.lastSnagType = 'anchor';
@@ -1275,7 +1293,7 @@ export class GameEngine {
         }
 
         if (fish.type === 'sunken_boat') {
-          hook.state = 'retracting';
+          hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.effects.spawnRockHit(hook.x, hook.y);
           this.updateHookAttempts(-1);
@@ -1299,7 +1317,7 @@ export class GameEngine {
         }
 
         if (fish.type === 'shark_skeleton') {
-          hook.state = 'retracting';
+          hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           const skeletonPenalty = this.activeVehicleId === 't6' ? Math.round(-10 * 0.75) : -10;
           this.earnCoins(skeletonPenalty);
@@ -1310,7 +1328,7 @@ export class GameEngine {
         }
 
         if (fish.type === 'env_bubbles') {
-          hook.state = 'retracting';
+          hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.applyBubbleEffect();
           this.state.fishes.splice(i, 1);
@@ -1318,7 +1336,7 @@ export class GameEngine {
         }
 
         // Standard catch
-        hook.state = 'retracting';
+        hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
         if (this.tutorialManager?.getState().step === 'harpoon_action') {
           this.handleTutorialInteraction('aim_harpoon_complete');
         }
@@ -1343,7 +1361,7 @@ export class GameEngine {
         hook.y += (dy / dist) * Math.min(dist, moveDist);
         const hookPivot = this.getHookPivotPosition();
         hook.length = Math.hypot(hook.x - hookPivot.x, hook.y - hookPivot.y);
-        hook.angle = Math.atan2(hook.y - hookPivot.y, -(hook.x - hookPivot.x));
+        hook.angle = Math.atan2(hook.y - hookPivot.y, hook.x - hookPivot.x);
       }
     }
   }
@@ -2908,17 +2926,22 @@ export class GameEngine {
       this.ctx.lineTo(midX, midY);
       this.ctx.stroke();
     } else if (this.state.hook.state !== 'tnt_aiming') {
-      const isHarpoon = this.state.hook.state === 'harpoon';
+      const isHarpoon = this.state.hook.state === 'harpoon' || this.state.hook.state === 'harpoon_retracting';
       const isNet = this.state.hook.state === 'net';
 
-      this.ctx.strokeStyle = isHarpoon ? '#888' : (isNet ? '#fff' : '#D64545');
-      this.ctx.lineWidth = isHarpoon ? 5 : (isNet ? 2 : rod.lineWidth);
-
+      // 1. Draw Rod Segment (Always default color)
+      this.ctx.strokeStyle = isNet ? '#fff' : '#D64545';
+      this.ctx.lineWidth = isNet ? 2 : rod.lineWidth;
       this.ctx.beginPath();
       this.ctx.moveTo(tipX, tipY);
       this.ctx.lineTo(pivotX, pivotY);
       this.ctx.stroke();
 
+      // 2. Draw Hook/Harpoon Line Segment
+      this.ctx.strokeStyle = isHarpoon ? '#3B82F6' : (isNet ? '#fff' : '#D64545');
+      this.ctx.lineWidth = isHarpoon ? 8 : (isNet ? 2 : rod.lineWidth);
+      this.ctx.beginPath();
+      this.ctx.moveTo(pivotX, pivotY);
       this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
       this.ctx.stroke();
 
@@ -3226,8 +3249,8 @@ export class GameEngine {
 
     if (hookState === 'harpoon') {
       // Draw Harpoon Tip
-      this.ctx.fillStyle = '#AAA';
-      this.ctx.strokeStyle = '#555';
+      this.ctx.fillStyle = '#3B82F6';
+      this.ctx.strokeStyle = '#2563EB';
       this.ctx.lineWidth = 2;
       this.ctx.beginPath();
       this.ctx.moveTo(x, y - 15);

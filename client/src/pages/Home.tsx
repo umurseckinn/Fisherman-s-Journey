@@ -65,7 +65,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-start py-10 px-4 pt-safe pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
+    <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-start py-10 pt-20 px-4 pt-safe pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
       {/* Decorative Background Elements */}
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-yellow-200 rounded-full blur-3xl opacity-50" />
       <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-blue-300 rounded-full blur-3xl opacity-50" />
@@ -443,13 +443,15 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => {
-                if (!tutorialDone && !isAdminMode) return;
+                if (!isAdminMode) return;
                 setShowLevelPicker(true);
               }}
-              className={`w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors ${!tutorialDone && !isAdminMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors ${!isAdminMode ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Anchor className="w-4 h-4" />
-              LEVELS {isAdminMode ? `L${adminSelectedStartLevel}` : tutorialDone ? `L${effectiveUserStartLevel - 1}` : 'L1'}
+              LEVELS {isAdminMode
+                ? (adminSelectedStartLevel === 1 ? "Tut" : `L${adminSelectedStartLevel - 1}`)
+                : (tutorialDone ? `L${effectiveUserStartLevel - 1}` : 'Tut')}
             </button>
             <button
               onClick={() => {
@@ -502,18 +504,28 @@ export default function Home() {
               <div className="text-xs text-slate-500 mt-1">{isAdminMode ? "Admin mode selection" : `Unlocked up to L${userUnlockedLevel}`}</div>
             </div>
             <div className="grid grid-cols-5 gap-2 max-h-[420px] overflow-y-auto pr-1">
-              {Array.from({ length: isAdminMode ? 100 : 99 }, (_, i) => i + (isAdminMode ? 1 : 1)).map(num => {
-                const internalLevel = isAdminMode ? num : num + 1;
-                const isSelected = isAdminMode ? num === adminSelectedStartLevel : internalLevel === effectiveUserStartLevel;
+              {Array.from({ length: 100 }, (_, i) => i + 1).map(num => {
+                // Internal level mapping:
+                // num 1 -> Internal 1 (Tutorial)
+                // num 2 -> Internal 2 (Level 1)
+                // ...
+                const internalLevel = num;
+                const isSelected = isAdminMode
+                  ? internalLevel === adminSelectedStartLevel
+                  : internalLevel === effectiveUserStartLevel;
                 const isLocked = !isAdminMode && internalLevel > userUnlockedLevel;
+                const isTutorial = internalLevel === 1;
+
+                // Hide tutorial in User Mode if completed
+                if (!isAdminMode && isTutorial && tutorialDone) return null;
 
                 return (
                   <button
                     key={num}
                     onClick={() => {
                       if (isAdminMode) {
-                        setSelectedStartLevel(num);
-                        setAdminSelectedStartLevelState(num);
+                        setSelectedStartLevel(internalLevel);
+                        setAdminSelectedStartLevelState(internalLevel);
                         setShowLevelPicker(false);
                       } else if (!isLocked) {
                         setUserSelectedStartLevel(internalLevel);
@@ -526,7 +538,7 @@ export default function Home() {
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                       }`}
                   >
-                    {num}{isLocked ? " 🔒" : ""}
+                    {isTutorial ? "Tut" : internalLevel - 1}{isLocked ? " 🔒" : ""}
                   </button>
                 );
               })}

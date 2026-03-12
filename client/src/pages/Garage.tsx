@@ -21,6 +21,7 @@ import {
   getRodFlags,
 } from "@/game/storage";
 import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
+import { GarageTutorialManager } from "@/game/GarageTutorialManager";
 
 interface GarageProps {
   onStartFishing: (vehicleId: string) => void;
@@ -187,6 +188,25 @@ export default function Garage({ onStartFishing }: GarageProps) {
     setShowIap(true);
   };
 
+  // ── Garage Spotlight Tutorial ──
+  useEffect(() => {
+    // Only t2 exists for t1 next boat purchase
+    const skiff = VEHICLES.find(v => v.id === 't2');
+    const rodCost = nextRodUpgrade?.cost || 0;
+    const stoCost = nextStoUpgrade?.cost || 0;
+    const boatCost = skiff?.unlockCost || 0;
+
+    const manager = new GarageTutorialManager(
+      pCoins,
+      rodCost,
+      stoCost,
+      boatCost,
+      vehicle.id
+    );
+
+    return () => manager.cleanup();
+  }, [pCoins, vehicle.id, nextRodIndex, nextStoIndex]);
+
   return (
     <div
       className="relative w-full h-screen flex items-center justify-center overflow-hidden"
@@ -209,7 +229,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
         }}
       />
 
-      <div className="relative w-full h-full max-w-[450px] max-h-[800px] overflow-y-auto flex flex-col z-10">
+      <div className="relative w-full h-full max-w-[450px] max-h-[800px] overflow-y-auto flex flex-col">
 
         {/* ── Top bar: permanent coins ── */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
@@ -253,7 +273,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
             <div className="text-white font-display text-xl tracking-wide leading-tight">{vehicle.name}</div>
             <div className="text-cyan-300 text-sm font-display tracking-wider">{vehicle.captain}</div>
           </div>
-          <button onClick={() => navigate('right')} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+          <button id="next-boat-btn" onClick={() => navigate('right')} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors">
             <ChevronRight className="w-6 h-6 text-white" />
           </button>
         </div>
@@ -300,6 +320,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
               ? 'bg-blue-700/30 border-blue-500/40 hover:bg-blue-600/40 hover:scale-[1.01] active:scale-[0.99]'
               : 'bg-green-800/20 border-green-600/30 text-green-300'
               }`}
+            id="storage-upgrade-btn"
           >
             <div className="text-white text-sm font-bold">{nextStoLevel ? `Storage Lv${nextStoLevel}` : 'Storage MAX'}</div>
             <div className="text-xs text-cyan-200 mt-1 flex items-center gap-1">{nextStoLevel && nextStoUpgrade ? <><img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain inline" />{formatCoins(nextStoUpgrade.cost)}</> : 'Owned'}</div>
@@ -314,6 +335,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
               ? 'bg-purple-700/30 border-purple-500/40 hover:bg-purple-600/40 hover:scale-[1.01] active:scale-[0.99]'
               : 'bg-green-800/20 border-green-600/30 text-green-300'
               }`}
+            id="rod-upgrade-btn"
           >
             <div className="text-white text-sm font-bold">{nextRodLevel ? `Rod Lv${nextRodLevel}` : 'Rod MAX'}</div>
             <div className="text-xs text-cyan-200 mt-1 flex items-center gap-1">{nextRodLevel && nextRodUpgrade ? <><img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain inline" />{formatCoins(nextRodUpgrade.cost)}</> : 'Owned'}</div>
@@ -333,6 +355,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
             }}
             costLabel={`${formatCoins(vehicle.unlockCost)}`}
             showDoubloonIcon={true}
+            id="buy-boat-btn"
           />
         </div>
 
@@ -434,6 +457,7 @@ function VehicleStatusButton({
   onBuy,
   costLabel,
   showDoubloonIcon,
+  id,
 }: {
   vehicle: VehicleData;
   owned: boolean;
@@ -441,6 +465,7 @@ function VehicleStatusButton({
   onBuy: () => void;
   costLabel: string;
   showDoubloonIcon?: boolean;
+  id?: string;
 }) {
   if (owned) {
     return (
@@ -451,6 +476,7 @@ function VehicleStatusButton({
   }
   return (
     <button
+      id={id}
       onClick={onBuy}
       className={`w-full rounded-xl py-3 flex items-center justify-center gap-2 font-bold text-sm transition-all ${'bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:scale-[1.02] active:scale-[0.98] shadow-md'
         }`}
