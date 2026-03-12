@@ -1052,13 +1052,13 @@ export class GameEngine {
       // 180 derece su altı salınımı: 0 = SOL, PI = SAĞ
       const idleLength = 120; // Daha görünür salınım için 120px
 
-      hook.x = pivotX - Math.cos(hook.angle) * idleLength;
+      hook.x = pivotX + Math.cos(hook.angle) * idleLength;
       hook.y = pivotY + Math.sin(hook.angle) * idleLength;
       hook.length = 0;
     } else if (hook.state === 'aiming') {
       const aimLength = 120;
 
-      hook.x = pivotX - Math.cos(hook.angle) * aimLength;
+      hook.x = pivotX + Math.cos(hook.angle) * aimLength;
       hook.y = pivotY + Math.sin(hook.angle) * aimLength;
       hook.length = 0;
     } else if (hook.state === 'retracting' || hook.state === 'harpoon_retracting' || hook.state === 'snagged' || hook.state === 'whirlpool') {
@@ -1111,7 +1111,7 @@ export class GameEngine {
             hook.caughtEntity = null;
           }
         } else {
-          hook.x = pivotX - Math.cos(hook.angle) * hook.length;
+          hook.x = pivotX + Math.cos(hook.angle) * hook.length;
           hook.y = pivotY + Math.sin(hook.angle) * hook.length;
         }
       } else if (hook.state === 'whirlpool' && this.whirlpoolCenter) {
