@@ -32,6 +32,9 @@ jobs:
     - name: Sync iOS Project
       run: npx cap sync ios
 
+    - name: Reset SPM Cache
+      run: rm -rf ~/Library/Caches/org.swift.swiftpm/artifacts
+
     - name: Build iOS App
       run: |
         cd ios/App
