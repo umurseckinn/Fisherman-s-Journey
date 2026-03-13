@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowLeft, Clock, Fuel, Anchor, Pause, RotateCcw, Home as HomeIcon, Play, Bomb, X } from "lucide-react";
 import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y, LEVEL_CONFIG } from "@/game/GameEngine";
 import { type TutorialState } from "@/game/TutorialManager";
@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 
 export default function Game() {
+  const [, setLocation] = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const whirlpoolImgRef = useRef<HTMLImageElement>(null);
@@ -193,7 +194,11 @@ export default function Game() {
         const kingBonus = runStats.current.kingFishCount * 500;
         const totalFinalScore = baseScore + depthBonus + kingBonus;
 
-        const isNewRecord = submitPersonalBest(totalFinalScore);
+        // Personal best and record logic only for non-admin mode
+        let isNewRecord = false;
+        if (!getAdminMode()) {
+          isNewRecord = submitPersonalBest(totalFinalScore);
+        }
 
         setScoreBreakdown({
           baseScore,
@@ -276,8 +281,8 @@ export default function Game() {
         runStats.current.totalCoins += amount;
       },
       onLevelComplete: (level) => {
-        runStats.current.maxLevel = Math.max(runStats.current.maxLevel, level);
         if (!getAdminMode()) {
+          runStats.current.maxLevel = Math.max(runStats.current.maxLevel, level);
           updateUserUnlockedLevel(level + 1);
         }
         const state = engineRef.current?.getState();
@@ -338,8 +343,8 @@ export default function Game() {
         if (fish.type === 'king') {
           runStats.current.kingFishCount++;
         }
-        // Discovery Card: Only for non-tutorial levels and if not seen before
-        if (currentLevel > 1 && !hasTutorialCaught(fish.type)) {
+        // Discovery Card: Only for non-tutorial levels, if not seen before, and NOT in admin mode
+        if (currentLevel > 1 && !getAdminMode() && !hasTutorialCaught(fish.type)) {
           markTutorialCatch(fish.type);
           setDiscoveryCard(fish.type);
           if (engineRef.current) {
@@ -443,10 +448,11 @@ export default function Game() {
   const tutorialFrozen = Boolean(tutorialState?.isFrozen);
   const isTntAction = tutorialState?.step === 'tnt_action';
   const isHarpoonAction = tutorialState?.step === 'harpoon_action';
-  const allowPointerDown = !tutorialFrozen || tutorialAction === 'drag_tnt' || tutorialAction === 'tap_sea' || tutorialAction === 'aim_harpoon';
+  const allowPointerDown = !tutorialFrozen || tutorialAction === 'drag_tnt' || tutorialAction === 'tap_sea' || tutorialAction === 'aim_harpoon' || tutorialAction === 'tap_anywhere';
   const allowPointerMove = !tutorialFrozen || tutorialAction === 'drag_tnt' || tutorialAction === 'aim_harpoon';
-  const overlayBlocksInput = tutorialFrozen && (tutorialAction === 'tap_tnt' || tutorialAction === 'tap_net' || tutorialAction === 'tap_harpoon' || tutorialAction === 'tap_anchor');
+  const overlayBlocksInput = tutorialFrozen && (tutorialAction === 'tap_tnt' || tutorialAction === 'tap_net' || tutorialAction === 'tap_harpoon' || tutorialAction === 'tap_anchor' || tutorialAction === 'tap_anywhere');
   const overlayOpacity = tutorialState?.overlayOpacity ?? 0.75;
+  const isLevel2Tutorial = currentLevel === 2 && tutorialFrozen;
   const tntGridSize = 240;
 
   const tutorialTarget = (() => {
@@ -519,9 +525,21 @@ export default function Game() {
   const overlayBackground = tutorialFrozen && !isHarpoonAction && !isTntAction && tutorialAction !== 'tap_sea'
     ? spotlightFish
       ? `radial-gradient(circle ${spotlightFish.radius}px at ${spotlightFish.x}px ${spotlightFish.y}px, rgba(0,0,0,0) 0, rgba(0,0,0,0) ${spotlightFish.radius}px, rgba(0,0,0,${overlayOpacity}) ${spotlightFish.radius + 40}px)`
-      : `rgba(0,0,0,${overlayOpacity})`
+      : (tutorialState?.spotlightTarget === 'character'
+        ? `radial-gradient(circle 120px at 50% ${SEA_LEVEL_Y}px, rgba(0,0,0,0) 0, rgba(0,0,0,0) 80px, rgba(0,10,30,${overlayOpacity}) 120px)`
+        : (isLevel2Tutorial ? `rgba(0,10,30,${overlayOpacity})` : `rgba(0,0,0,${overlayOpacity})`))
     : undefined;
   const blurOverlayEnabled = Boolean(overlayBackground);
+  const spotlightMask = (() => {
+    if (!tutorialFrozen) return undefined;
+    if (tutorialState?.spotlightTarget === 'character') {
+      return `radial-gradient(circle 120px at 50% ${SEA_LEVEL_Y}px, transparent 80px, black 120px)`;
+    }
+    if (spotlightFish) {
+      return `radial-gradient(circle ${spotlightFish.radius}px at ${spotlightFish.x}px ${spotlightFish.y}px, transparent 0px, transparent ${spotlightFish.radius}px, black ${spotlightFish.radius + 40}px)`;
+    }
+    return undefined;
+  })();
 
   const boosterItems = [
     { id: 'harpoon', imageSrc: '/assets/boosters/harpoon.png', label: 'Harpoon', count: activeBoosters.harpoon },
@@ -836,7 +854,7 @@ export default function Game() {
         {/* Playable Area */}
         {gameState === "playing" && (
           <>
-            <div className="absolute top-0 left-0 right-0 p-4 pt-safe z-10 flex justify-between items-start pointer-events-none px-safe">
+            <div className={`absolute top-0 left-0 right-0 p-4 pt-safe flex justify-between items-start pointer-events-none px-safe transition-all ${isLevel2Tutorial && (tutorialState?.spotlightTarget === 'storage_panel' || tutorialState?.spotlightTarget === 'hook_panel') ? 'z-50' : 'z-10'}`}>
               <div className="flex items-center gap-2 pointer-events-auto">
                 {currentLevel !== 1 && (
                   <div className={`border-2 border-white rounded-xl px-2 py-1.5 shadow-md flex items-center gap-1.5 shrink-0 ${anchorEffectTimer > 0 ? 'bg-green-500 animate-pulse' : 'bg-[#99E5FF]'}`}>
@@ -859,7 +877,7 @@ export default function Game() {
               {currentLevel !== 1 && (
                 <div className="flex flex-col gap-2 items-end">
                   {/* Storage Bar */}
-                  <div className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex flex-col gap-1 transition-all">
+                  <div className={`bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex flex-col gap-1 transition-all ${tutorialState?.spotlightTarget === 'storage_panel' ? 'z-[60] relative animate-pulse ring-4 ring-yellow-400' : ''}`}>
                     <div className="flex justify-between items-center text-xs font-bold text-slate-700">
                       <span className="flex items-center gap-1"><Anchor className="w-3 h-3" /> Storage</span>
                       <span className={storageRatio >= 0.96 ? 'text-red-500 animate-pulse' : storageRatio >= 0.81 ? 'text-orange-500' : storageRatio >= 0.61 ? 'text-yellow-600' : 'text-slate-500'}>
@@ -873,7 +891,7 @@ export default function Game() {
                       />
                     </div>
                   </div>
-                  <div className="bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex items-center justify-between text-xs font-bold text-slate-700">
+                  <div className={`bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex items-center justify-between text-xs font-bold text-slate-700 ${tutorialState?.spotlightTarget === 'hook_panel' ? 'z-[60] relative animate-pulse ring-4 ring-yellow-400' : ''}`}>
                     <span>Hook</span>
                     <span className={hookAttempts === 0 ? 'text-red-500 animate-pulse' : 'text-slate-600'}>
                       {hookAttempts} / {maxHookAttempts}
@@ -980,12 +998,27 @@ export default function Game() {
             {tutorialFrozen && overlayBackground && blurOverlayEnabled && !isTntAction && (
               <div
                 className="absolute inset-0 z-40 backdrop-blur-sm"
-                style={{ background: overlayBackground, pointerEvents: overlayBlocksInput ? 'auto' : 'none' }}
+                onClick={() => {
+                  if (tutorialAction === 'tap_anywhere') {
+                    engineRef.current?.handleTutorialInteraction('tap_anywhere');
+                  }
+                }}
+                style={{
+                  background: overlayBackground,
+                  pointerEvents: overlayBlocksInput ? 'auto' : 'none',
+                  WebkitMaskImage: spotlightMask,
+                  maskImage: spotlightMask
+                }}
               />
             )}
             {tutorialFrozen && overlayBackground && !blurOverlayEnabled && !isTntAction && (
               <div
                 className="absolute inset-0 z-40"
+                onClick={() => {
+                  if (tutorialAction === 'tap_anywhere') {
+                    engineRef.current?.handleTutorialInteraction('tap_anywhere');
+                  }
+                }}
                 style={{ background: overlayBackground, pointerEvents: overlayBlocksInput ? 'auto' : 'none' }}
               />
             )}
@@ -1166,11 +1199,42 @@ export default function Game() {
               />
             )}
             {tutorialState?.overlayText && (
-              <div className="absolute inset-x-0 top-8 z-50 flex justify-center pointer-events-none px-6">
-                <div className="bg-black/85 backdrop-blur-md border-4 border-yellow-400 rounded-[24px] px-8 py-4 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                  <div className="text-xl font-display font-black text-yellow-400 text-center uppercase tracking-wide">
+              <div className={`absolute inset-x-0 z-50 flex justify-center pointer-events-none px-6 transition-all duration-500 ${tutorialState.step === 'l2_final' ? 'top-1/2 -translate-y-1/2' : (tutorialState.step === 'l2_storage' || tutorialState.step === 'l2_hook') ? 'top-[160px]' : 'top-8'}`}>
+                <div className="bg-black/85 backdrop-blur-md border-4 border-yellow-400 rounded-[24px] px-8 py-4 shadow-[0_0_30px_rgba(0,0,0,0.5)] max-w-xs relative flex flex-col gap-4">
+                  <div className="text-xl font-display font-black text-yellow-400 text-center uppercase tracking-wide leading-tight">
                     {tutorialState.overlayText}
                   </div>
+                  {isLevel2Tutorial && (
+                    <div className="flex items-center justify-between w-full pointer-events-auto mt-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          engineRef.current?.handleTutorialInteraction('prev_step');
+                        }}
+                        className={`text-xs font-bold text-white/70 hover:text-white transition-colors border border-white/20 rounded-xl px-4 py-1.5 hover:bg-white/5 active:scale-95 ${tutorialState.step === 'l2_storage' ? 'opacity-0 pointer-events-none' : ''}`}
+                      >
+                        ← Previous
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          engineRef.current?.handleTutorialInteraction('skip_tutorial');
+                        }}
+                        className="text-[10px] font-black text-white/30 hover:text-white/60 transition-colors uppercase tracking-[0.15em]"
+                      >
+                        Skip
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          engineRef.current?.handleTutorialInteraction('next_step');
+                        }}
+                        className="text-xs font-bold text-yellow-400 hover:text-yellow-300 transition-colors border border-yellow-400/40 rounded-xl px-5 py-1.5 hover:bg-yellow-400/5 active:scale-95 flex items-center gap-1 shadow-[0_0_15px_rgba(250,204,21,0.1)]"
+                      >
+                        {tutorialState.step === 'l2_final' ? 'Let\'s Go!' : 'Next →'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1367,7 +1431,9 @@ export default function Game() {
             score={scoreBreakdown ? scoreBreakdown.finalScore : score}
             island={currentLevel}
             reason={gameOverReason ?? undefined}
-            onRetry={() => window.location.reload()}
+            onRetry={() => {
+              setLocation("/levels");
+            }}
             scoreBreakdown={scoreBreakdown ?? undefined}
           />
         )}

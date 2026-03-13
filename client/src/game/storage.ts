@@ -14,6 +14,7 @@ const K = {
   userUnlockedLevel: 'fj_userUnlockedLevel',
   adminMode: 'fj_adminMode',
   tutorialCompleted: 'fj_tutorialCompleted',
+  level2TutorialCompleted: 'fj_level2TutorialCompleted',
   rodTutorial: 'fj_rodTutorial',
   storageTutorial: 'fj_storageTutorial',
   boatTutorial: 'fj_boatTutorial',
@@ -78,9 +79,23 @@ export function getMaxLevelReached(): number {
   return getNum(K.maxLevelReached, 1);
 }
 
+/** 
+ * Updates the maximum level passed by the user.
+ * Level 1 is Tutorial. Levels 2-100 are game levels 1-99.
+ * Only updates persistent storage if NOT in admin mode.
+ */
 export function updateMaxLevelReached(level: number) {
-  if (level > getMaxLevelReached()) {
+  // If we are in admin mode, do NOT update the user's permanent progress
+  if (getAdminMode()) {
+    console.log(`[AdminMode] Level ${level} passed, but user progress not updated.`);
+    return;
+  }
+
+  const currentMax = getMaxLevelReached();
+  if (level > currentMax) {
     setNum(K.maxLevelReached, level);
+    // When a level is passed, update the unlocked level for the checkpoint system
+    updateUserUnlockedLevel(level + 1);
   }
 }
 
@@ -155,6 +170,14 @@ export function isTutorialCompleted(): boolean {
 
 export function setTutorialCompleted(value: boolean) {
   setBool(K.tutorialCompleted, value);
+}
+
+export function isLevel2TutorialCompleted(): boolean {
+  return getBool(K.level2TutorialCompleted);
+}
+
+export function setLevel2TutorialCompleted(value: boolean) {
+  setBool(K.level2TutorialCompleted, value);
 }
 
 export function getStartLevelForMode(): number {

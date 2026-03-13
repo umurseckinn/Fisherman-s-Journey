@@ -1,6 +1,6 @@
 import { CANVAS_WIDTH, CANVAS_HEIGHT, SEA_LEVEL_Y } from "./GameEngine";
 
-interface BackgroundTheme {
+export interface BackgroundTheme {
     skyTop: string;
     skyBottom: string;
     seaTop: string;
@@ -12,7 +12,7 @@ interface BackgroundTheme {
     particleType: 'bubble' | 'dust' | 'tempest';
 }
 
-const THEMES: BackgroundTheme[] = [
+export const BACKGROUND_THEMES: BackgroundTheme[] = [
     { // 1. Dawnbreak Cove: Sığ sular. Üstte açık turkuaz ve güneş sarısı, altta canlı deniz mavisi.
         skyTop: "#4DD0E1", skyBottom: "#FFF176",
         seaTop: "#0288D1", seaBottom: "#01579B",
@@ -148,14 +148,14 @@ export class DynamicBackgroundManager {
 
     private getInterpolatedTheme(): BackgroundTheme {
         const progress = (this.level - 1) / 100;
-        const totalThemes = THEMES.length;
+        const totalThemes = BACKGROUND_THEMES.length;
         const scaledProgress = progress * (totalThemes - 1);
         const index1 = Math.floor(scaledProgress);
         const index2 = Math.min(index1 + 1, totalThemes - 1);
         const t = scaledProgress - index1;
 
-        const theme1 = THEMES[index1];
-        const theme2 = THEMES[index2];
+        const theme1 = BACKGROUND_THEMES[index1];
+        const theme2 = BACKGROUND_THEMES[index2];
 
         return {
             skyTop: this.interpolateColor(theme1.skyTop, theme2.skyTop, t),

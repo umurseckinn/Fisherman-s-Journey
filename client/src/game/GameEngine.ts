@@ -3,7 +3,18 @@ import { SpriteManager, ASSETS } from "./SpriteManager";
 import { TutorialLevelManager } from "./TutorialManager";
 import { GameEffects } from "./GameEffects";
 import { VEHICLES, getRodTipOnCanvas, getEffectiveStats, type VehicleData } from "./vehicles";
-import { addSessionEarning, updateMaxLevelReached, getStoFlags, getRodFlags, getActiveVehicleId, type RunScoreBreakdown, submitPersonalBest, markTutorialCatch } from "./storage";
+import {
+  addSessionEarning,
+  updateMaxLevelReached,
+  getStoFlags,
+  getRodFlags,
+  getActiveVehicleId,
+  type RunScoreBreakdown,
+  submitPersonalBest,
+  markTutorialCatch,
+  isLevel2TutorialCompleted,
+  setLevel2TutorialCompleted
+} from "./storage";
 import { LEVEL_NAMES } from "./levelNames";
 import { DynamicBackgroundManager } from "./DynamicBackgroundManager";
 import { HarpoonManager } from "./HarpoonManager";
@@ -346,7 +357,19 @@ export class GameEngine {
       this.backgroundManager.update(this.state.level, 0);
     }
     this.state.startTimerMs = 750;
+    
+    // CRITICAL: Explicitly reset all booster states to 0 at start of level
+    this.state.anchorEffectTimerMs = 0;
+    this.state.hookSpeedBoostMs = 0;
+    this.state.zapShockMs = 0;
+    this.state.moonSlowMs = 0;
+    this.anchorVisualState = 'inactive';
+    this.anchorVisualX = 0;
+    this.anchorVisualY = 0;
+    this.anchorDriftSpeed = 0;
+
     const storedVehicleId = getActiveVehicleId();
+    // ... rest of start()
     const activeVehicle = VEHICLES.find(vehicle => vehicle.id === storedVehicleId) ?? VEHICLES[0];
     this.activeVehicleId = activeVehicle.id;
     this.activeVehicleData = activeVehicle;
@@ -411,14 +434,30 @@ export class GameEngine {
       window.clearTimeout(this.tutorialArrivalTimeout);
       this.tutorialArrivalTimeout = null;
     }
-    this.tutorialManager = this.state.level === 1 ? new TutorialLevelManager(this) : null;
-    this.seedStaticObstacles();
+    const level2TutorialEnabled = this.state.level === 2 && !isLevel2TutorialCompleted();
+    this.tutorialManager = (this.state.level === 1 || level2TutorialEnabled)
+      ? new TutorialLevelManager(this, level2TutorialEnabled)
+      : null;
+    
+    // Seed obstacles removed — everything spawns from right (User request)
+    // this.seedStaticObstacles();
+    
+    // Reset Anchor visual state to prevent "ghost" anchors from previous levels
+    this.anchorVisualState = 'inactive';
+    this.anchorVisualX = 0;
+    this.anchorVisualY = 0;
+    this.anchorDropElapsed = 0;
+    this.anchorDriftSpeed = 0;
+
     this.lastFrameTime = performance.now();
     requestAnimationFrame(this.loop);
   }
 
   public stop() {
     this.state.isPlaying = false;
+    this.anchorVisualState = 'inactive';
+    this.anchorVisualX = 0;
+    this.anchorVisualY = 0;
   }
 
   public pause() {
@@ -682,18 +721,13 @@ export class GameEngine {
   private loop = (timestamp: number = 0) => {
     if (!this.state.isPlaying) return;
 
-    // 30fps throttle — sufficient for mobile performance
-    // 33ms = ~30fps; we cap to 30fps instead of 60fps if the device can't handle it
-    if (timestamp - this.lastFrameTime < 33 && !this.state.isPaused) {
-      requestAnimationFrame(this.loop);
-      return;
-    }
-
-    const deltaTime = Math.min(timestamp - this.lastFrameTime, 50); // 50ms cap
+    // Use a precise deltaTime based on the actual timestamp
+    if (!this.lastFrameTime) this.lastFrameTime = timestamp;
+    const deltaTime = Math.min(timestamp - this.lastFrameTime, 50); // Cap at 50ms to prevent huge jumps
     this.lastFrameTime = timestamp;
 
     if (this.state.isPaused) {
-      requestAnimationFrame(this.loop); // Keep requesting frames to check for unpause
+      requestAnimationFrame(this.loop);
       return;
     }
 
@@ -754,12 +788,21 @@ export class GameEngine {
       this.processMultiCatch();
     }
 
-    this.backgroundManager.update(this.state.level, deltaTime);
+    // Anchor safety: if the booster is not active, force state to inactive
+      // This prevents "ghost" anchors if start() wasn't called for some reason
+      if (this.state.anchorEffectTimerMs <= 0 && (this.anchorVisualState === 'dropping' || this.anchorVisualState === 'resting')) {
+        this.anchorVisualState = 'drifting';
+      }
+
+      this.backgroundManager.update(this.state.level, deltaTime);
     this.updateTimers(deltaTime);
     this.updateAnchorVisual(deltaTime);
 
     if (this.tutorialManager) {
       this.tutorialManager.update(deltaTime);
+      if (this.state.level === 2 && !this.tutorialManager.isActive() && !isLevel2TutorialCompleted()) {
+        setLevel2TutorialCompleted(true);
+      }
     }
 
     const tutorialActive = this.state.level === 1 && this.tutorialManager?.isActive();
@@ -779,8 +822,9 @@ export class GameEngine {
 
     // Block physics/interaction during start freeze
     if (this.state.startTimerMs > 0) {
-      // Dynamic start: Allow fish movement/spawning and hook oscillation for all levels except Level 1
-      if (this.state.level !== 1) {
+      // Dynamic start: Allow fish movement/spawning and hook oscillation for all levels except Level 1 (and Level 2 tutorial)
+      const isTutoring = this.tutorialManager?.isActive();
+      if (this.state.level !== 1 && !(this.state.level === 2 && isTutoring)) {
         this.updateHook(deltaTime);
         this.updateFishes(deltaTime);
         this.spawnFishes(deltaTime);
@@ -918,50 +962,7 @@ export class GameEngine {
   }
 
   private seedStaticObstacles() {
-    const config = LEVEL_CONFIG[this.state.level];
-    if (!config) return;
-    const spawnStatic = (type: FishClass, count: number) => {
-      for (let i = 0; i < count; i++) {
-        const configEntry = OBJECT_MATRIX[type];
-        const isBottom = ['sea_rock_large', 'sea_kelp', 'anchor', 'coral', 'gold_doubloon', 'shell', 'sunken_boat'].includes(type);
-        let y = isBottom ? CANVAS_HEIGHT - 20 : CANVAS_HEIGHT - 60 + Math.random() * 20;
-        let x = 40 + Math.random() * (CANVAS_WIDTH - 80);
-
-        if (type === 'sea_rock' && !isBottom) {
-          y = SEA_LEVEL_Y + 150 + Math.random() * (CANVAS_HEIGHT - SEA_LEVEL_Y - 250);
-        } else if (type === 'sea_kelp_horizontal') {
-          y = SEA_LEVEL_Y + 100 + Math.random() * 150;
-        }
-
-        this.state.fishes.push({
-          id: Math.random(),
-          type,
-          name: configEntry.names[0],
-          x,
-          y,
-          startY: y,
-          animationOffset: Math.random() * 1000,
-          speed: configEntry.speedMultiplier,
-          value: configEntry.value,
-          weight: configEntry.weightMultiplier,
-          color: configEntry.colors[0],
-          radius: configEntry.radius,
-          direction: -1
-        });
-      }
-    };
-    spawnStatic('sea_kelp', config.obstacles.sea_kelp);
-    spawnStatic('sea_kelp_horizontal', Math.ceil(config.obstacles.sea_kelp * 1.2));
-    spawnStatic('sea_rock_large', config.obstacles.sea_rock);
-    spawnStatic('sea_rock', Math.ceil(config.obstacles.sea_rock * 0.6));
-    spawnStatic('coral', config.obstacles.coral);
-    spawnStatic('anchor', config.obstacles.anchor);
-
-    config.dynamic?.forEach(type => {
-      if (['gold_doubloon', 'shell', 'sunken_boat'].includes(type)) {
-        spawnStatic(type, type === 'shell' ? 2 : 1);
-      }
-    });
+    // Seeding disabled — objects now spawn from right periodically (User request)
   }
 
   public earnCoins(amount: number) {
@@ -1596,9 +1597,10 @@ export class GameEngine {
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 10;
         this.activeWhirlpool = fish;
       } else if (fish.type === 'anchor') {
-        const pendulum = Math.sin(time * (Math.PI * 2 / 4) + (fish.animationOffset || 0)) * 15;
         fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
-        fish.x = (fish.startY !== undefined ? fish.x : fish.x) + pendulum * (deltaTime / 500) * holdSlowFactor;
+        // Subtle sway instead of cumulative pendulum
+        const sway = Math.sin(time * 1.5 + (fish.animationOffset || 0)) * 2;
+        fish.x += sway * dtFactor;
       } else if (fish.type === 'sea_kelp') {
         fish.x -= baseSpeed(fish) * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 3;
@@ -1733,6 +1735,15 @@ export class GameEngine {
 
     if (Math.random() < spawnChance) {
       const pool: Array<{ type: FishClass; weight: number }> = [];
+
+      // Dynamic obstacle weights based on Level Config
+      const obstacleWeights: Partial<Record<FishClass, number>> = {
+        sea_kelp: (levelConfig.obstacles.sea_kelp || 0) * 8,
+        sea_rock: (levelConfig.obstacles.sea_rock || 0) * 8,
+        coral: (levelConfig.obstacles.coral || 0) * 8,
+        anchor: (levelConfig.obstacles.anchor || 0) * 8,
+        sea_kelp_horizontal: (levelConfig.obstacles.sea_kelp || 0) * 4
+      };
 
       if (!this.levelSpawnWeights) {
         this.levelSpawnWeights = {
@@ -2051,6 +2062,13 @@ export class GameEngine {
           skChance += 80;
         }
         pool.push({ type: 'shark_skeleton', weight: skChance });
+      }
+
+      // Add dynamic obstacles from level config (User request: spawn from right)
+      for (const [type, weight] of Object.entries(obstacleWeights) as Array<[FishClass, number]>) {
+        if (weight > 0) {
+          pool.push({ type, weight });
+        }
       }
 
       const total = pool.reduce((sum, item) => sum + item.weight, 0);
@@ -2866,7 +2884,7 @@ export class GameEngine {
     if (this.recentlyCaught.length > 0) {
       this.ctx.save();
       const startX = 20; // Top-left area
-      const startY = 100; // Moved down to avoid overlap with HUD (timer/pause)
+      const startY = 75; // Positioned just below the timer HUD (formatTime)
       
       for (let i = 0; i < this.recentlyCaught.length; i++) {
         const item = this.recentlyCaught[i];
@@ -2908,23 +2926,21 @@ export class GameEngine {
         // Draw premium card
         const cardW = 85;
         const cardH = 110;
-        const cardY = startY + i * 125; // Stack downwards from top
-        const cardX = startX; 
+        const cardY = (startY + i * 125) | 0; // Stack downwards from top
+        const cardX = startX | 0; 
         
-        this.ctx.shadowBlur = 10;
-        this.ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        // Removed shadows for performance
         this.ctx.fillStyle = config.color;
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 3;
         this.roundRect(this.ctx, cardX, cardY, cardW, cardH, 18, true, true);
-        this.ctx.shadowBlur = 0;
         
         // Draw icon using correct SpriteManager key
         const assetKey = `fish_${item.type}`;
         const img = this.spriteManager.getImage(assetKey);
         if (img && img.complete) {
           const imgSize = 55;
-          this.ctx.drawImage(img, cardX + (cardW - imgSize) / 2, cardY + 10, imgSize, imgSize);
+          this.ctx.drawImage(img, (cardX + (cardW - imgSize) / 2) | 0, (cardY + 10) | 0, imgSize, imgSize);
         }
 
         // Draw Name
@@ -3116,24 +3132,24 @@ export class GameEngine {
         this.ctx.strokeStyle = '#1a1a1a';
         this.ctx.lineWidth = 10;
         this.ctx.beginPath();
-        this.ctx.moveTo(pivotX, pivotY);
-        this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
+        this.ctx.moveTo(pivotX | 0, pivotY | 0);
+        this.ctx.lineTo(this.state.hook.x | 0, this.state.hook.y | 0);
         this.ctx.stroke();
 
         // Pass 2: Main Metallic Body (Forged Steel)
         this.ctx.strokeStyle = '#5c5c5c';
         this.ctx.lineWidth = 7;
         this.ctx.beginPath();
-        this.ctx.moveTo(pivotX, pivotY);
-        this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
+        this.ctx.moveTo(pivotX | 0, pivotY | 0);
+        this.ctx.lineTo(this.state.hook.x | 0, this.state.hook.y | 0);
         this.ctx.stroke();
 
         // Pass 3: Center Highlight (Metallic Glint / Light Reflection)
         this.ctx.strokeStyle = '#e0e0e0';
         this.ctx.lineWidth = 2.5;
         this.ctx.beginPath();
-        this.ctx.moveTo(pivotX, pivotY);
-        this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
+        this.ctx.moveTo(pivotX | 0, pivotY | 0);
+        this.ctx.lineTo(this.state.hook.x | 0, this.state.hook.y | 0);
         this.ctx.stroke();
 
         // Pass 4: Braided Texture (Suggested via subtle dash)
@@ -3196,7 +3212,7 @@ export class GameEngine {
     }
 
     const anchorSprite = this.spriteManager.getImage('booster_anchor');
-    if (this.anchorVisualState !== 'inactive' && anchorSprite && anchorSprite.complete && anchorSprite.naturalWidth > 0) {
+    if (this.anchorVisualState !== 'inactive' && this.state.startTimerMs <= 0 && anchorSprite && anchorSprite.complete && anchorSprite.naturalWidth > 0) {
       const { x: attachX, y: attachY } = this.getAnchorAttachPoint();
       const width = 120;
       const height = width * (anchorSprite.naturalHeight / anchorSprite.naturalWidth);
@@ -3319,8 +3335,8 @@ export class GameEngine {
     bx.globalAlpha = alpha;
 
     const levelName = LEVEL_NAMES[this.state.level] ?? `Level ${this.state.level}`;
-    const x = CANVAS_WIDTH / 2;
-    const y = CANVAS_HEIGHT / 2;
+    const x = (CANVAS_WIDTH / 2) | 0;
+    const y = (CANVAS_HEIGHT / 2) | 0;
     const maxWidth = CANVAS_WIDTH * 0.9;
 
     let fontSize = 52;
@@ -3335,8 +3351,7 @@ export class GameEngine {
     bx.textAlign = 'center';
     bx.textBaseline = 'middle';
     bx.fillStyle = '#FFD700';
-    bx.shadowColor = '#FF8C00';
-    bx.shadowBlur = 20;
+    // Removed shadow for performance
     bx.fillText(levelName, x, y);
 
     bx.restore();
@@ -3415,9 +3430,8 @@ export class GameEngine {
     }
 
     this.ctx.save();
-    // PNG transparanlığını kullanmak için source-over (varsayılan) kullanılır.
-    this.ctx.globalCompositeOperation = 'source-over';
-    this.ctx.drawImage(sprite, drawX, drawY, displayWidth, displayHeight);
+    // Use bitwise for integer coordinates
+    this.ctx.drawImage(sprite, drawX | 0, drawY | 0, displayWidth | 0, displayHeight | 0);
     this.ctx.restore();
   }
 
@@ -3586,19 +3600,31 @@ export class GameEngine {
     // Static objects shouldn't wobble and should be pivoted at bottom
     const isStatic = type === 'coral' || type === 'sea_kelp' || type === 'sea_rock' || type === 'sea_rock_large' || type === 'anchor' || type === 'shell' || type === 'gold_doubloon' || type === 'sunken_boat';
 
-    if (isStatic) {
-      this.ctx.translate(x, y);
-    } else if (type === 'sea_kelp_horizontal') {
-      this.ctx.translate(x, y);
+    // AAA Optimization: Integer coordinates for faster rendering
+    const renderX = (x) | 0;
+    const renderY = (y + (isStatic ? 0 : wobble)) | 0;
+
+    this.ctx.translate(renderX, renderY);
+
+    if (type === 'sea_kelp_horizontal') {
       this.ctx.rotate(-Math.PI / 2); // 90 degree left rotate
-    } else {
-      this.ctx.translate(x, y + wobble);
     }
 
     if (customRotation !== undefined) {
       this.ctx.rotate(customRotation);
     } else if (isCaught && type !== 'shell') {
       this.ctx.rotate(Math.PI / 2);
+    }
+
+    // Squash & Stretch Optimization (Fake Motion Blur)
+    if (fish && !isCaught && !isStatic && fish.speed > 1.5) {
+      const velocityX = fish.speed * (fish.direction || -1);
+      const absVX = Math.abs(velocityX);
+      if (absVX > 2) {
+        const stretch = 1 + Math.min(0.2, (absVX - 2) * 0.05);
+        const squash = 1 / stretch;
+        this.ctx.scale(stretch, squash);
+      }
     }
 
     // Try to draw sprite if available
@@ -3633,12 +3659,10 @@ export class GameEngine {
         offsetX = -width / 2;
         offsetY = -height / 2;
 
-        // Particle effect
+        // Particle effect (Simplified for performance)
         if (!isCaught && Math.random() < 0.05) {
           this.ctx.fillStyle = '#FFB7C5';
-          this.ctx.beginPath();
-          this.ctx.arc(-10 + Math.random() * 20, -10 + Math.random() * 20, 2, 0, Math.PI * 2);
-          this.ctx.fill();
+          this.ctx.fillRect(((-10 + Math.random() * 20) | 0), ((-10 + Math.random() * 20) | 0), 3, 3);
         }
 
       } else if (type === 'zap' || type === 'candy' || type === 'moon' || type === 'lava' || type === 'crystal' || type === 'leaf' || type === 'tide' || type === 'mushroom' || type === 'king' || type === 'galaxy') {
@@ -3707,6 +3731,9 @@ export class GameEngine {
         width = height * ratio;
         offsetX = -width / 2;
         offsetY = -height; // Pivot bottom
+        
+        // If it's a "Rusty Anchor" (entity), use the fish_anchor sprite.
+        // If for some reason it's trying to use booster_anchor, it will be wrong.
       } else if (type === 'shell') {
         height = 80;
         width = height * ratio;
@@ -3717,9 +3744,7 @@ export class GameEngine {
       if (type === 'candy' && !isCaught && Math.random() < 0.08) {
         const colors = ['#FFB3C6', '#FFD6A5', '#BDE0FE'];
         this.ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-        this.ctx.beginPath();
-        this.ctx.arc(-10 + Math.random() * 20, -10 + Math.random() * 20, 2, 0, Math.PI * 2);
-        this.ctx.fill();
+        this.ctx.fillRect(((-10 + Math.random() * 20) | 0), ((-10 + Math.random() * 20) | 0), 3, 3);
       }
 
       if (type === 'gold_doubloon') {
@@ -3728,11 +3753,9 @@ export class GameEngine {
         const popScale = spawnAlpha < 1 ? (Math.sin(spawnAlpha * Math.PI) * 0.2 + spawnAlpha) : 1;
 
         this.ctx.scale(popScale, popScale);
-        this.ctx.drawImage(sprite, offsetX, offsetY, width, height);
-
-        // Removed glow effect upon user request
+        this.ctx.drawImage(sprite, offsetX | 0, offsetY | 0, width | 0, height | 0);
       } else {
-        this.ctx.drawImage(sprite, offsetX, offsetY, width, height);
+        this.ctx.drawImage(sprite, offsetX | 0, offsetY | 0, width | 0, height | 0);
       }
     } else {
       // Fallback to procedural drawing
@@ -3807,9 +3830,17 @@ export class GameEngine {
 
   private updateAnchorVisual(deltaTime: number) {
     const { x: attachX, y: attachY } = this.getAnchorAttachPoint();
+    
+    // Safety check: if no booster is active and we are not already drifting, ensure state is inactive
+    if (this.state.anchorEffectTimerMs <= 0 && this.anchorVisualState === 'dropping') {
+      this.anchorVisualState = 'drifting';
+    }
+
     if (this.state.anchorEffectTimerMs > 0) {
       if (this.anchorVisualState === 'inactive' || this.anchorVisualState === 'drifting') {
         this.anchorDropElapsed = 0;
+        this.anchorVisualX = attachX;
+        this.anchorVisualY = attachY;
         this.anchorVisualState = 'dropping';
       }
       this.anchorDropElapsed += deltaTime;
@@ -3835,9 +3866,18 @@ export class GameEngine {
     if (this.anchorVisualState === 'drifting') {
       this.anchorVisualX -= this.anchorDriftSpeed * (deltaTime / 16);
       this.anchorVisualY += Math.sin(performance.now() * 0.004) * 0.2;
-      if (this.anchorVisualX < -200) {
+      
+      // If it's already far left or we are at the start of a level, hide it
+      if (this.anchorVisualX < -200 || this.state.startTimerMs > 0) {
         this.anchorVisualState = 'inactive';
+        this.anchorVisualX = 0;
+        this.anchorVisualY = 0;
       }
+    } else {
+        // Force inactive if no booster and not drifting
+        this.anchorVisualState = 'inactive';
+        this.anchorVisualX = 0;
+        this.anchorVisualY = 0;
     }
   }
 
