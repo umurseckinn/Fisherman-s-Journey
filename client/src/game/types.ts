@@ -67,6 +67,8 @@ export interface Hook {
   caughtEntities: Entity[]; // Multiple catches for Premium Harpoon
   targetX?: number; // Target for Harpoon/TNT
   targetY?: number;
+  tipX?: number; // Precise golden tip X
+  tipY?: number; // Precise golden tip Y
 }
 
 export interface GameState {

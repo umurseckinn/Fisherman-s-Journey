@@ -1,4 +1,4 @@
-import { Play, Anchor, RotateCcw, X, Lock, Trophy, Crown, Gift, Star } from "lucide-react";
+import { Play, Anchor, RotateCcw, X, Lock, Trophy, Crown, Gift, Star, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { InfoCard } from "../components/InfoCard";
 import { PassCardPurchaseModal } from "../components/PassCardPurchaseModal";
@@ -35,6 +35,7 @@ export default function Home() {
   const [adminSelectedStartLevel, setAdminSelectedStartLevelState] = useState(() => getSelectedStartLevel());
   const [userSelectedStartLevel, setUserSelectedStartLevelState] = useState(() => getUserSelectedStartLevel());
   const [userUnlockedLevel, setUserUnlockedLevelState] = useState(() => getUserUnlockedLevel());
+  const [showSettings, setShowSettings] = useState(false);
   const tutorialDone = isTutorialCompleted();
   const effectiveUserStartLevel = Math.min(userSelectedStartLevel, userUnlockedLevel);
 
@@ -98,6 +99,13 @@ export default function Home() {
 
       {/* Main Card */}
       <div className="max-w-sm w-full bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl px-6 py-4 border-4 border-white relative z-10 flex flex-col items-center text-center">
+        {/* Settings Button - Moved inside the card */}
+        <button 
+          onClick={() => setShowSettings(true)}
+          className="absolute top-4 right-4 z-[20] p-2 rounded-xl bg-slate-100/50 backdrop-blur-sm text-blue-500 hover:bg-slate-200/50 active:scale-95 transition-all"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
         
         {/* Logo / Icon Area */}
         <div className="flex items-center justify-center -mt-2 -mb-4 transform -rotate-6 hover:rotate-0 transition-transform duration-500 z-0">
@@ -444,59 +452,6 @@ export default function Home() {
               </div>
             </button>
           </Link>
-          <div className="flex items-center justify-between rounded-2xl border-2 border-slate-200 bg-white/70 px-4 py-3 text-sm font-bold text-slate-600">
-            <span>MODE</span>
-            <button
-              onClick={() => {
-                const next = !isAdminMode;
-                setAdminMode(next);
-                setIsAdminMode(next);
-                if (!next) {
-                  const clamped = Math.min(userSelectedStartLevel, userUnlockedLevel);
-                  setUserSelectedStartLevel(clamped);
-                  setUserSelectedStartLevelState(clamped);
-                }
-              }}
-              className={`relative h-8 w-24 rounded-full transition-colors ${isAdminMode ? "bg-yellow-300" : "bg-slate-200"}`}
-            >
-              <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all ${isAdminMode ? "left-[3.25rem]" : "left-1"}`} />
-              <span className="absolute inset-0 flex items-center justify-between px-2 text-[10px] font-extrabold text-slate-700">
-                <span className={isAdminMode ? "opacity-100" : "opacity-40"}>ADMIN</span>
-                <span className={!isAdminMode ? "opacity-100" : "opacity-40"}>USER</span>
-              </span>
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => {
-                if (!isAdminMode) return;
-                setShowLevelPicker(true);
-              }}
-              className={`w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors ${!isAdminMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <Anchor className="w-4 h-4" />
-              LEVELS {isAdminMode
-                ? (adminSelectedStartLevel === 1 ? "Tut" : `L${adminSelectedStartLevel - 1}`)
-                : (tutorialDone ? `L${effectiveUserStartLevel - 1}` : 'Tut')}
-            </button>
-            <button
-              onClick={() => {
-                resetProfile(VEHICLES.map(v => v.id));
-                setSelectedStartLevel(1);
-                setAdminSelectedStartLevelState(1);
-                setUserSelectedStartLevel(1);
-                setUserSelectedStartLevelState(1);
-                setUserUnlockedLevelState(1);
-                setAdminMode(false);
-                setIsAdminMode(false);
-                window.location.reload();
-              }}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white/70 py-3 text-sm font-bold text-slate-600 hover:bg-white transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              RESET PROFILE
-            </button>
-          </div>
         </div>
       </div>
 
@@ -517,7 +472,7 @@ export default function Home() {
       )}
 
       {showLevelPicker && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-md bg-white rounded-[28px] shadow-2xl border-4 border-slate-100 p-6 relative">
             <button
               onClick={() => setShowLevelPicker(false)}
@@ -572,6 +527,95 @@ export default function Home() {
           onClose={() => setShowPassCardPurchase(false)}
           onPurchase={(amount) => handlePassCardPurchase(amount)}
         />
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-white rounded-[32px] shadow-2xl border-4 border-slate-100 p-6 relative animate-in zoom-in duration-200">
+            <button
+              onClick={() => setShowSettings(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="text-center mb-6">
+              <div className="text-2xl font-black text-slate-800 tracking-tight">SETTINGS</div>
+              <div className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Game Configurations</div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Admin Mode Toggle */}
+              <div className="flex items-center justify-between rounded-2xl border-2 border-slate-100 bg-slate-50/50 px-4 py-3 text-sm font-bold text-slate-600">
+                <span className="flex items-center gap-2 italic uppercase">
+                  <Lock className="w-4 h-4 opacity-50" />
+                  Admin Mode
+                </span>
+                <button
+                  onClick={() => {
+                    const next = !isAdminMode;
+                    setAdminMode(next);
+                    setIsAdminMode(next);
+                    if (!next) {
+                      const clamped = Math.min(userSelectedStartLevel, userUnlockedLevel);
+                      setUserSelectedStartLevel(clamped);
+                      setUserSelectedStartLevelState(clamped);
+                    }
+                  }}
+                  className={`relative h-8 w-24 rounded-full transition-colors ${isAdminMode ? "bg-yellow-400" : "bg-slate-200"}`}
+                >
+                  <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-sm transition-all ${isAdminMode ? "left-[3.25rem]" : "left-1"}`} />
+                  <span className="absolute inset-0 flex items-center justify-between px-2 text-[10px] font-black text-slate-800">
+                    <span className={isAdminMode ? "opacity-100" : "opacity-30"}>ADM</span>
+                    <span className={!isAdminMode ? "opacity-100" : "opacity-30"}>USR</span>
+                  </span>
+                </button>
+              </div>
+
+              {/* Levels Selector (Only if Admin or Unlocked) */}
+              <button
+                onClick={() => {
+                  setShowLevelPicker(true);
+                  // Keeps settings open behind it for convenience
+                }}
+                className={`w-full flex items-center justify-between rounded-2xl border-2 border-slate-100 bg-slate-50/50 px-4 py-4 text-sm font-bold text-slate-600 hover:bg-white hover:border-primary/20 transition-all`}
+              >
+                <span className="flex items-center gap-2 italic uppercase">
+                  <Anchor className="w-4 h-4 opacity-50" />
+                  Select Level
+                </span>
+                <span className="text-primary font-black bg-blue-50 px-3 py-1 rounded-lg">
+                  {isAdminMode
+                    ? (adminSelectedStartLevel === 1 ? "Tutorial" : `Level ${adminSelectedStartLevel - 1}`)
+                    : (tutorialDone ? `Level ${effectiveUserStartLevel - 1}` : 'Tutorial')}
+                </span>
+              </button>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    if (confirm("Are you sure you want to RESET ALL PROGRESS? This cannot be undone.")) {
+                      resetProfile(VEHICLES.map(v => v.id));
+                      setSelectedStartLevel(1);
+                      setAdminSelectedStartLevelState(1);
+                      setUserSelectedStartLevel(1);
+                      setUserSelectedStartLevelState(1);
+                      setUserUnlockedLevelState(1);
+                      setAdminMode(false);
+                      setIsAdminMode(false);
+                      window.location.reload();
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-red-50 bg-red-50/30 py-4 text-xs font-black text-red-500 hover:bg-red-50 transition-colors uppercase tracking-tight"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset Profile Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

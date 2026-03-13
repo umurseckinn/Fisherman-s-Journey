@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { Home as HomeIcon, ArrowLeft, Play, Lock, Crown, Star, Gift, Anchor } from "lucide-react";
 import { LEVEL_CONFIG } from "@/game/GameEngine";
@@ -59,6 +59,84 @@ const getLevelNodeStyle = (levelId: number) => {
   };
 };
 
+// --- Level Node Component (Memoized for performance) ---
+const LevelNode = React.memo(({ 
+  level, 
+  gameLevelNum, 
+  isSelected, 
+  isSelectable, 
+  isPassed, 
+  isCheckpoint, 
+  isBoss, 
+  onClick 
+}: {
+  level: number;
+  gameLevelNum: number;
+  isSelected: boolean;
+  isSelectable: boolean;
+  isPassed: boolean;
+  isCheckpoint: boolean;
+  isBoss: boolean;
+  onClick: () => void;
+}) => {
+  const nodeStyle = getLevelNodeStyle(level);
+
+  return (
+    <button
+      onClick={onClick}
+      id={`level-node-${level}`}
+      className={`
+        relative aspect-square rounded-[24px] flex items-center justify-center text-2xl font-display font-black transition-[transform,opacity] duration-300 will-change-transform
+        ${!isSelectable 
+          ? "opacity-80 grayscale-[0.4] cursor-not-allowed border-2 border-white/5 shadow-inner" 
+          : isSelected
+            ? "shadow-[0_0_25px_rgba(255,165,0,0.7)] border-b-8 border-orange-700 -translate-y-1 animate-slow-pulse scale-110 z-20"
+            : isPassed
+              ? "border-b-4 border-black/20 hover:scale-105 active:scale-95 shadow-lg border-2 border-white/10"
+              : "border-b-4 border-white/10 hover:scale-105 active:scale-95 border-2 border-white/20"
+        }
+      `}
+    >
+      <div 
+        className="absolute inset-0 rounded-[22px] overflow-hidden transition-opacity duration-500 will-change-[filter,opacity]"
+        style={{ 
+          background: nodeStyle.gradient,
+          filter: !isSelectable ? `${nodeStyle.filter} blur(4px)` : isSelected ? '' : nodeStyle.filter,
+          opacity: !isSelectable ? 0.6 : 1,
+          transform: 'translateZ(0)'
+        }}
+      />
+
+      <div className="relative z-10 flex items-center justify-center w-full h-full">
+        {!isSelectable ? (
+          <Lock className="w-6 h-6 text-white/90 drop-shadow-md" />
+        ) : (
+          <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-white">
+            {gameLevelNum}
+          </span>
+        )}
+      </div>
+
+      {isCheckpoint && (
+        <div className={`absolute -top-3 -left-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-full px-2.5 py-1.5 shadow-2xl border-2 border-white z-50 flex items-center gap-1 animate-bounce`}>
+          <Anchor className="w-3.5 h-3.5 text-white fill-white drop-shadow-sm" />
+          <span className="text-[10px] font-display font-black text-white leading-none tracking-tight drop-shadow-md">CHECKPOINT</span>
+        </div>
+      )}
+
+      {isBoss && isSelectable && (
+        <div className={`absolute -top-2 -right-2 rounded-full p-1.5 shadow-xl border-2 border-white z-50 animate-bounce bg-yellow-400`}>
+          <Crown className="w-3.5 h-3.5 text-orange-700 fill-orange-700" />
+        </div>
+      )}
+      
+      {isSelected && isSelectable && (
+        <div className="absolute -inset-2 border-4 border-yellow-300 rounded-[30px] animate-[ping_6s_infinite] opacity-30 z-40" />
+      )}
+    </button>
+  );
+});
+
 export default function LevelSelect() {
   const [, setLocation] = useLocation();
   const isAdminMode = getAdminMode();
@@ -71,6 +149,18 @@ export default function LevelSelect() {
 
   const initialLevel = isAdminMode ? getStartLevelForMode() : highestSelectableInternalId;
   const [selectedLevel, setSelectedLevel] = useState(initialLevel);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to selected level on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const selectedElement = document.getElementById(`level-node-${selectedLevel}`);
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const levels = useMemo(() => {
     return Array.from({ length: 99 }, (_, i) => i + 2);
@@ -91,7 +181,7 @@ export default function LevelSelect() {
     <div className="min-h-screen relative flex items-center justify-center p-4 pt-safe pb-safe overflow-hidden font-sans">
       {/* 1. Oceanic Gradient Background - Dynamic based on Selected Level */}
       <div 
-        className="absolute inset-0 transition-all duration-1000 opacity-90" 
+        className="absolute inset-0 transition-all duration-1000 opacity-90 pointer-events-none" 
         style={{ 
           background: `linear-gradient(to bottom, ${getInterpolatedColors(selectedLevel).skyTop}, ${getInterpolatedColors(selectedLevel).skyBottom}, ${getInterpolatedColors(selectedLevel).seaTop}, ${getInterpolatedColors(selectedLevel).seaBottom})` 
         }} 
@@ -141,78 +231,28 @@ export default function LevelSelect() {
         </div>
 
         {/* 3. Level Grid (Bubbles/Squircles) */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar relative z-10">
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar relative z-10"
+        >
           <div className="grid grid-cols-4 gap-4 pb-8">
             {levels.map(level => {
               const gameLevelNum = level - 1;
-              const isCheckpoint = gameLevelNum % 5 === 0;
-              const isBoss = gameLevelNum % 10 === 0;
-
-              const isSelectable = isAdminMode || gameLevelNum <= highestSelectableGameLevel;
-              const isUnlocked = isAdminMode || gameLevelNum <= maxGameLevelPassed + 1;
-              const isSelected = selectedLevel === level;
-              const isPassed = !isAdminMode && gameLevelNum <= maxGameLevelPassed;
-              
-              const nodeStyle = getLevelNodeStyle(level);
-
               return (
-                <button
+                <LevelNode
                   key={level}
-                  onClick={() => isSelectable && setSelectedLevel(level)}
-                  className={`
-                    relative aspect-square rounded-[24px] flex items-center justify-center text-2xl font-display font-black transition-[transform,opacity] duration-300 will-change-transform
-                    ${!isSelectable 
-                      ? "opacity-80 grayscale-[0.4] cursor-not-allowed border-2 border-white/5 shadow-inner" 
-                      : isSelected
-                        ? "shadow-[0_0_25px_rgba(255,165,0,0.7)] border-b-8 border-orange-700 -translate-y-1 animate-slow-pulse scale-110 z-20"
-                        : isPassed
-                          ? "border-b-4 border-black/20 hover:scale-105 active:scale-95 shadow-lg border-2 border-white/10"
-                          : "border-b-4 border-white/10 hover:scale-105 active:scale-95 border-2 border-white/20"
-                    }
-                  `}
-                >
-                  {/* Background Layer (Internal Blur/Filter) - Optimized for performance */}
-                  <div 
-                    className="absolute inset-0 rounded-[22px] overflow-hidden transition-opacity duration-500 will-change-[filter,opacity]"
-                    style={{ 
-                      background: nodeStyle.gradient,
-                      filter: !isSelectable ? `${nodeStyle.filter} blur(4px)` : isSelected ? '' : nodeStyle.filter,
-                      opacity: !isSelectable ? 0.6 : 1,
-                      transform: 'translateZ(0)' // Trigger hardware acceleration
-                    }}
-                  />
-
-                  {/* Sharp Content Layer */}
-                  <div className="relative z-10 flex items-center justify-center w-full h-full">
-                    {!isSelectable ? (
-                      <Lock className="w-6 h-6 text-white/90 drop-shadow-md" />
-                    ) : (
-                      <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-white">
-                        {gameLevelNum}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Checkpoint Badge (Always Sharp & Above Button) */}
-                  {isCheckpoint && (
-                    <div className={`absolute -top-3 -left-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-full px-2.5 py-1.5 shadow-2xl border-2 border-white z-50 flex items-center gap-1 animate-bounce`}>
-                      <Anchor className="w-3.5 h-3.5 text-white fill-white drop-shadow-sm" />
-                      <span className="text-[10px] font-display font-black text-white leading-none tracking-tight drop-shadow-md">CHECKPOINT</span>
-                    </div>
-                  )}
-
-                  {/* Boss Icon (Always Sharp) */}
-                  {isBoss && isSelectable && (
-                    <div className={`absolute -top-2 -right-2 rounded-full p-1.5 shadow-xl border-2 border-white z-50 animate-bounce bg-yellow-400`}>
-                      <Crown className="w-3.5 h-3.5 text-orange-700 fill-orange-700" />
-                    </div>
-                  )}
-                  
-                  {/* Selection Ring (Always Sharp) */}
-                  {isSelected && isSelectable && (
-                    <div className="absolute -inset-2 border-4 border-yellow-300 rounded-[30px] animate-[ping_6s_infinite] opacity-30 z-40" />
-                  )}
-                </button>
+                  level={level}
+                  gameLevelNum={gameLevelNum}
+                  isSelected={selectedLevel === level}
+                  isSelectable={isAdminMode || gameLevelNum <= highestSelectableGameLevel}
+                  isPassed={!isAdminMode && gameLevelNum <= maxGameLevelPassed}
+                  isCheckpoint={gameLevelNum % 5 === 0}
+                  isBoss={gameLevelNum % 10 === 0}
+                  onClick={() => {
+                    const isSelectable = isAdminMode || gameLevelNum <= highestSelectableGameLevel;
+                    if (isSelectable) setSelectedLevel(level);
+                  }}
+                />
               );
             })}
           </div>

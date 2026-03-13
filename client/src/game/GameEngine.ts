@@ -615,6 +615,12 @@ export class GameEngine {
     }
     this.isPointerDown = true;
 
+    // 0. End-of-level protection: No booster activation in last 1 second
+    if (this.state.timeRemaining <= 1) {
+      this.isPointerDown = true;
+      return;
+    }
+
     const booster = this.state.activeBooster;
     const isIdle = this.state.hook.state === 'idle';
 
@@ -757,6 +763,9 @@ export class GameEngine {
   };
 
   public activateAnchor() {
+    // End-of-level protection
+    if (this.state.timeRemaining <= 1) return;
+
     this.state.anchorEffectTimerMs = 20000;
     this.onBoosterUsed('anchor');
     this.preventNextCast = true; // Prevent cast when anchor is activated from UI
@@ -811,9 +820,41 @@ export class GameEngine {
     if (!tutorialActive) {
       if (this.state.timeRemaining > 0) {
         if (this.state.anchorEffectTimerMs <= 0) {
+          const prevTime = this.state.timeRemaining;
           this.state.timeRemaining -= deltaTime / 1000;
+          
+          // RULE: All entities (fish & objects) fast-exit at 1 second remaining
+          if (prevTime > 1.0 && this.state.timeRemaining <= 1.0) {
+            this.state.fishes.forEach(ent => {
+              ent.direction = -1; // Face left
+              // Set a base speed for stationary objects (rocks, etc) so they actually move
+              if (ent.speed === 0) ent.speed = 0.5; 
+              ent.speed *= 4; // 4x speed for everything
+              ent.fleeVelocityX = -15; // Aggressive left move
+            });
+          }
         }
       } else if (!this.isArriving) {
+        // RULE: Timeout — Stop fishing, drop caught fish, and make them swim left
+        const hook = this.state.hook;
+        
+        const dropEntity = (entity: Entity) => {
+          entity.direction = -1; // Face left
+          entity.speed = 1.5; // Fast swim away
+          entity.fleeVelocityX = -5; // Aggressive left move
+          this.state.fishes.push(entity);
+        };
+
+        if (hook.caughtEntity) {
+          dropEntity(hook.caughtEntity);
+          hook.caughtEntity = null;
+        }
+
+        if (hook.caughtEntities && hook.caughtEntities.length > 0) {
+          hook.caughtEntities.forEach(e => dropEntity(e));
+          hook.caughtEntities = [];
+        }
+
         this.isArriving = true;
         this.state.hook.state = 'idle';
         this.arrivalProgress = 0;
@@ -868,7 +909,9 @@ export class GameEngine {
 
     this.updateHook(deltaTime);
     this.updateFishes(deltaTime);
-    this.spawnFishes(deltaTime);
+    if (this.state.timeRemaining > 1) {
+      this.spawnFishes(deltaTime);
+    }
     this.ensureAmbientBubbles();
   }
 
@@ -1031,11 +1074,11 @@ export class GameEngine {
       }
       this.wasSubmerged = isCurrentlySubmerged;
     }
-    const baseSpeed = 0.45 * (this.state.hookSpeedBoostMs > 0 ? 1.3 : 1);
+    const baseSpeed = 0.22 * (this.state.hookSpeedBoostMs > 0 ? 1.3 : 1);
     const throwSpeed = baseSpeed * rod.throwMultiplier;
     const catchMultiplier = rod.catchMultiplier;
     const depthPercent = Math.max(0.1, Math.min(1, (this.state.upgrades.hookDepth || 50) / 100));
-    const waterDepth = CANVAS_HEIGHT - SEA_LEVEL_Y - (this.state.weather === 'stormy' ? 10 : 0);
+    const waterDepth = (CANVAS_HEIGHT - SEA_LEVEL_Y - (this.state.weather === 'stormy' ? 10 : 0)) * 0.5; // Depth reduction: 1/2 submerged length
     const maxDepth = SEA_LEVEL_Y + waterDepth * depthPercent;
 
     if (hook.state === 'idle') {
@@ -1067,13 +1110,13 @@ export class GameEngine {
       }
 
       // 180 derece su altı salınımı: 0 = SOL, PI = SAĞ
-      const idleLength = 120; // Daha görünür salınım için 120px
+      const idleLength = 30; // Further reduced from 60 to 30
 
       hook.x = pivotX + Math.cos(hook.angle) * idleLength;
       hook.y = pivotY + Math.sin(hook.angle) * idleLength;
       hook.length = 0;
     } else if (hook.state === 'aiming') {
-      const aimLength = 120;
+      const aimLength = 30; // Further reduced from 60 to 30
 
       hook.x = pivotX + Math.cos(hook.angle) * aimLength;
       hook.y = pivotY + Math.sin(hook.angle) * aimLength;
@@ -1198,6 +1241,14 @@ export class GameEngine {
         }
       }
 
+      // Magical Hook Logic: Calculate precise collision tip (Bottom sharp edge)
+      let collisionX = hook.x;
+      let collisionY = hook.y;
+
+      this.syncHookTip();
+      collisionX = hook.tipX!;
+      collisionY = hook.tipY!;
+
       for (let i = 0; i < this.state.fishes.length; i++) {
         const fish = this.state.fishes[i];
 
@@ -1214,10 +1265,10 @@ export class GameEngine {
         const expandedX = rect.x - (expandedW - rect.width) / 2;
         const expandedY = rect.y - (expandedH - rect.height) / 2;
 
-        const isCollision = hook.x >= expandedX &&
-          hook.x <= expandedX + expandedW &&
-          hook.y >= expandedY &&
-          hook.y <= expandedY + expandedH;
+        const isCollision = collisionX >= expandedX &&
+          collisionX <= expandedX + expandedW &&
+          collisionY >= expandedY &&
+          collisionY <= expandedY + expandedH;
 
         if (!isCollision) continue;
 
@@ -1249,13 +1300,13 @@ export class GameEngine {
             const skeletonPenalty = this.activeVehicleId === 't6' ? Math.round(-10 * 0.75) : -10;
             this.earnCoins(skeletonPenalty);
             this.state.fishPanicMs = 5000;
-            this.effects.spawnRockHit(hook.x, hook.y);
+            this.effects.spawnRockHit(collisionX, collisionY);
             this.state.fishes.splice(i, 1);
             i -= 1;
             continue;
           }
           if (fish.type === 'coral' || fish.type === 'sea_kelp' || fish.type === 'sea_kelp_horizontal' || fish.type === 'sea_rock' || fish.type === 'anchor') {
-            this.effects.spawnRockHit(hook.x, hook.y);
+            this.effects.spawnRockHit(collisionX, collisionY);
             continue;
           }
 
@@ -1268,7 +1319,7 @@ export class GameEngine {
         if (fish.type === 'coral') {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
-          this.effects.spawnCoralHit(hook.x, hook.y);
+          this.effects.spawnCoralHit(collisionX, collisionY);
           if (rod.coralProtection === 0 || Math.random() > rod.coralProtection) {
             const curse = this.state.activeCurse;
             const damage = (curse === 'double_damage' || curse === 'combo_2' || curse === 'final_1') ? -2 : -1;
@@ -1281,7 +1332,7 @@ export class GameEngine {
         if (fish.type === 'sea_kelp' || fish.type === 'sea_kelp_horizontal') {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
-          this.effects.spawnKelpHit(hook.x, hook.y);
+          this.effects.spawnKelpHit(collisionX, collisionY);
           this.state.anchorSnagMs = 200;
           this.lastSnagType = 'kelp';
           this.updateHookAttempts(-1);
@@ -1292,7 +1343,7 @@ export class GameEngine {
         if (fish.type === 'sea_rock') {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
-          this.effects.spawnRockHit(hook.x, hook.y);
+          this.effects.spawnRockHit(collisionX, collisionY);
           this.state.anchorSnagMs = 200;
           this.lastSnagType = 'rock';
           this.updateHookAttempts(-1);
@@ -1312,7 +1363,7 @@ export class GameEngine {
         if (fish.type === 'sunken_boat') {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
-          this.effects.spawnRockHit(hook.x, hook.y);
+          this.effects.spawnRockHit(collisionX, collisionY);
           this.updateHookAttempts(-1);
           this.triggerHookBreak();
           break;
@@ -1381,6 +1432,72 @@ export class GameEngine {
         hook.angle = Math.atan2(hook.y - hookPivot.y, hook.x - hookPivot.x);
       }
     }
+    this.syncHookTip();
+  }
+
+  private getRodLineLayers() {
+    const level = this.state.upgrades.rodLevel || 1;
+    // Constant thicknesses across all levels: Core 2, Mid 4, Glow 6-10 (glow is naturally wider for effect)
+    switch (level) {
+      case 1:
+        return [
+          { width: 2, color: '#A9A9A9' } 
+        ];
+      case 2:
+        return [
+          { width: 6, color: 'rgba(200, 220, 255, 0.4)' }, 
+          { width: 2, color: '#FFFFFF' } 
+        ];
+      case 3:
+        return [
+          { width: 6, color: 'rgba(255, 165, 0, 0.5)' }, 
+          { width: 2, color: '#FFF8DC' } 
+        ];
+      case 4:
+        return [
+          { width: 8, color: 'rgba(0, 255, 255, 0.4)' }, 
+          { width: 4, color: 'rgba(0, 200, 255, 0.8)' }, 
+          { width: 2, color: '#E0FFFF' } 
+        ];
+      case 5:
+        return [
+          { width: 10, color: 'rgba(138, 43, 226, 0.4)' }, 
+          { width: 5, color: 'rgba(255, 0, 255, 0.6)' }, 
+          { width: 2, color: '#FFFFFF' } 
+        ];
+      default:
+        return [{ width: 2, color: '#FFFFFF' }];
+    }
+  }
+
+  private syncHookTip() {
+    const hook = this.state.hook;
+    const rodLevel = this.state.upgrades.rodLevel || 1;
+    const spriteKey = `rod_l${rodLevel}`;
+    const hookSprite = this.spriteManager.getImage(spriteKey);
+    const isHarpoonActive = hook.state === 'harpoon' || hook.state === 'harpoon_retracting';
+
+    if (hookSprite && hookSprite.complete && hookSprite.naturalWidth > 0 && !isHarpoonActive) {
+      const baseScale = 0.05; 
+      const scaleMultiplier = 1 + (rodLevel - 1) * 0.15;
+      const scale = baseScale * scaleMultiplier;
+      
+      const w = (hookSprite.naturalWidth * scale) | 0;
+      const h = (hookSprite.naturalHeight * scale) | 0;
+      
+      const assetAngle = hook.angle - Math.PI / 2;
+      const localBoxCenterX = -w / 2 + (w * 0.15) + (w * 0.30) / 2; // Center of the %15-width box
+      const localBoxCenterY = -5 + (h * 0.70) + (h * 0.20) / 2; // Center of the %70-height box
+
+      const cosA = Math.cos(assetAngle);
+      const sinA = Math.sin(assetAngle);
+
+      hook.tipX = (hook.x + localBoxCenterX * cosA - localBoxCenterY * sinA) | 0;
+      hook.tipY = (hook.y + localBoxCenterX * sinA + localBoxCenterY * cosA) | 0;
+    } else {
+      hook.tipX = hook.x;
+      hook.tipY = hook.y + 15;
+    }
   }
 
   private updateFishes(deltaTime: number) {
@@ -1408,6 +1525,9 @@ export class GameEngine {
       this.state.hook.state !== 'retracting' &&
       this.state.hook.state !== 'snagged' &&
       this.state.hook.state !== 'whirlpool';
+
+
+
 
     for (let i = this.state.fishes.length - 1; i >= 0; i--) {
       const fish = this.state.fishes[i];
@@ -2021,7 +2141,7 @@ export class GameEngine {
         97: { shark_skeleton: 75, whirlpool: 90 },
         98: { shark_skeleton: 76, whirlpool: 90 },
         99: { shark_skeleton: 77, whirlpool: 91 },
-        100: { shark_skeleton: 80, whirlpool: 95 }
+          100: { shark_skeleton: 80, whirlpool: 95 }
       };
 
       const spawnWeights = LEVEL_SPAWN_WEIGHTS[this.state.level] ?? {};
@@ -3093,18 +3213,45 @@ export class GameEngine {
         this.ctx.stroke();
       }
 
-      // TNT Icon in center
-      const iconSize = 40;
-      this.ctx.fillStyle = isTutorialTnt ? '#666' : '#444';
-      this.ctx.beginPath();
-      this.ctx.arc(this.state.hook.targetX, this.state.hook.targetY, iconSize / 2, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.fillStyle = '#FF5555';
-      this.ctx.fillRect(this.state.hook.targetX - 4, this.state.hook.targetY - iconSize / 2 - 8, 8, 8);
+      // TNT Icon in center - Ultra scale & Perfect Aspect Ratio
+      const tntImg = this.spriteManager.getImage('booster_tnt');
+      if (tntImg) {
+        // Calculate dimensions based on original aspect ratio
+        const maxSide = 200; // Even larger for impact
+        const ratio = tntImg.width / tntImg.height;
+        let drawW, drawH;
+        if (ratio > 1) {
+          drawW = maxSide;
+          drawH = maxSide / ratio;
+        } else {
+          drawH = maxSide;
+          drawW = maxSide * ratio;
+        }
+
+        this.ctx.save();
+        this.ctx.shadowBlur = 25;
+        this.ctx.shadowColor = 'rgba(255, 100, 0, 0.6)';
+        this.ctx.drawImage(
+          tntImg,
+          this.state.hook.targetX - drawW / 2,
+          this.state.hook.targetY - drawH / 1.8, // Center-weighted alignment
+          drawW,
+          drawH
+        );
+        this.ctx.restore();
+      } else {
+        // Fallback for missing asset
+        const fallbackSize = 80;
+        this.ctx.fillStyle = isTutorialTnt ? '#666' : '#444';
+        this.ctx.beginPath();
+        this.ctx.arc(this.state.hook.targetX, this.state.hook.targetY, fallbackSize / 2, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
     }
 
     if (this.state.hook.state === 'aiming') {
       this.harpoonManager.drawTrajectory(this.ctx, hookPivot);
+      // No return here - let the function reach ctx.restore() at the end
     } else if (this.state.hookBrokenMs > 0) {
       const midX = tipX + Math.cos(this.state.hook.angle) * 30;
       const midY = tipY + Math.sin(this.state.hook.angle) * 30;
@@ -3118,64 +3265,36 @@ export class GameEngine {
       const isHarpoon = this.state.hook.state === 'harpoon' || this.state.hook.state === 'harpoon_retracting';
       const isNet = this.state.hook.state === 'net';
 
-      // 1. Draw Rod Segment (Always default color)
-      this.ctx.strokeStyle = isNet ? '#fff' : '#D64545';
-      this.ctx.lineWidth = isNet ? 2 : rod.lineWidth;
-      this.ctx.beginPath();
-      this.ctx.moveTo(tipX, tipY);
-      this.ctx.lineTo(pivotX, pivotY);
-      this.ctx.stroke();
-
-      // 2. Draw Hook/Harpoon Line Segment
-      if (isHarpoon) {
-        // PREMIUM METALLIC CABLE RENDERING
-        this.ctx.save();
+      // 1. Draw Rod/Hook Line (ONLY if not harpoon)
+      if (!isHarpoon) {
+        const lineLayers = this.getRodLineLayers();
         
-        // Pass 1: Outer Shadow / Dark Base (Gives volume)
-        this.ctx.strokeStyle = '#1a1a1a';
-        this.ctx.lineWidth = 10;
-        this.ctx.beginPath();
-        this.ctx.moveTo(pivotX | 0, pivotY | 0);
-        this.ctx.lineTo(this.state.hook.x | 0, this.state.hook.y | 0);
-        this.ctx.stroke();
+        // 1a. Draw Rod to Pivot Line
+        for (const layer of lineLayers) {
+          this.ctx.strokeStyle = isNet ? '#fff' : layer.color;
+          this.ctx.lineWidth = isNet ? 2 : layer.width;
+          this.ctx.beginPath();
+          this.ctx.moveTo(tipX, tipY);
+          this.ctx.lineTo(pivotX, pivotY);
+          this.ctx.stroke();
+        }
 
-        // Pass 2: Main Metallic Body (Forged Steel)
-        this.ctx.strokeStyle = '#5c5c5c';
-        this.ctx.lineWidth = 7;
-        this.ctx.beginPath();
-        this.ctx.moveTo(pivotX | 0, pivotY | 0);
-        this.ctx.lineTo(this.state.hook.x | 0, this.state.hook.y | 0);
-        this.ctx.stroke();
+        // 1b. Draw Pivot to Hook Line
+        for (const layer of lineLayers) {
+          this.ctx.strokeStyle = isNet ? '#fff' : layer.color;
+          this.ctx.lineWidth = isNet ? 2 : layer.width;
+          this.ctx.beginPath();
+          this.ctx.moveTo(pivotX, pivotY);
+          this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
+          this.ctx.stroke();
+        }
 
-        // Pass 3: Center Highlight (Metallic Glint / Light Reflection)
-        this.ctx.strokeStyle = '#e0e0e0';
-        this.ctx.lineWidth = 2.5;
-        this.ctx.beginPath();
-        this.ctx.moveTo(pivotX | 0, pivotY | 0);
-        this.ctx.lineTo(this.state.hook.x | 0, this.state.hook.y | 0);
-        this.ctx.stroke();
-
-        // Pass 4: Braided Texture (Suggested via subtle dash)
-        this.ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-        this.ctx.lineWidth = 7;
-        this.ctx.setLineDash([4, 4]);
-        this.ctx.beginPath();
-        this.ctx.moveTo(pivotX, pivotY);
-        this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
-        this.ctx.stroke();
-
-        this.ctx.restore();
+        // 1c. Draw Standard Hook Head
+        this.drawHookHead(this.state.hook.x, this.state.hook.y, Math.max(1.5, this.ctx.lineWidth));
       } else {
-        // Regular Hook or Net Line
-        this.ctx.strokeStyle = isNet ? '#fff' : '#D64545';
-        this.ctx.lineWidth = isNet ? 2 : rod.lineWidth;
-        this.ctx.beginPath();
-        this.ctx.moveTo(pivotX, pivotY);
-        this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
-        this.ctx.stroke();
+        // 2. Draw Harpoon (Handles its own shaft and head)
+        this.harpoonManager.draw(this.ctx, hookPivot);
       }
-
-      this.drawHookHead(this.state.hook.x, this.state.hook.y, Math.max(1.5, this.ctx.lineWidth));
     }
 
     if (this.state.hook.state !== 'tnt_aiming') {
@@ -3207,8 +3326,8 @@ export class GameEngine {
         if (entity.type === 'sunken_boat') {
           this.drawEntity(entity.x, entity.y, entity.radius, entity.color, entity.type, false, entity);
         } else {
-          entity.x = this.state.hook.x;
-          entity.y = this.state.hook.y + 15;
+          entity.x = this.state.hook.tipX ?? this.state.hook.x;
+          entity.y = this.state.hook.tipY ?? this.state.hook.y;
           this.drawEntity(entity.x, entity.y, entity.radius, entity.color, entity.type, true, entity);
         }
       }
@@ -3574,6 +3693,31 @@ export class GameEngine {
       return;
     }
 
+    const rodLevel = this.state.upgrades.rodLevel || 1;
+    const spriteKey = `rod_l${rodLevel}`;
+    const hookSprite = this.spriteManager.getImage(spriteKey);
+
+    if (hookSprite && hookSprite.complete && hookSprite.naturalWidth > 0) {
+      const baseScale = 0.05; 
+      const scaleMultiplier = 1 + (rodLevel - 1) * 0.15;
+      const scale = baseScale * scaleMultiplier;
+
+      const w = hookSprite.naturalWidth * scale;
+      const h = hookSprite.naturalHeight * scale;
+      
+      this.ctx.save();
+      this.ctx.translate(x | 0, y | 0);
+      
+      // ORIENTATION FIX: Gold side down (angle - PI/2)
+      const angle = this.state.hook.angle - Math.PI / 2;
+      this.ctx.rotate(angle);
+      
+      this.ctx.drawImage(hookSprite, -w / 2, -5, w, h); 
+      this.ctx.restore();
+      return;
+    }
+
+    // Fallback to vector hook if sprite fails
     this.ctx.strokeStyle = '#777';
     this.ctx.lineWidth = lineWidth;
     this.ctx.beginPath();

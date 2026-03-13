@@ -70,6 +70,7 @@ export const ASSETS = {
   'fish_anchor': '/assets/environment/anchor.png',
   'fish_shell': '/assets/environment/shell.png',
   'booster_anchor': '/assets/boosters/the_anchor.png',
+  'booster_tnt': '/assets/boosters/tnt.png',
 
   // Environment
   'boat': '/assets/environment/boat.svg',
@@ -90,4 +91,10 @@ export const ASSETS = {
     'boat_t8': '/assets/fisherman_and_boat/the_research_vessel.png',
     'boat_t9': '/assets/fisherman_and_boat/the_corsair.png',
     'boat_t10': '/assets/fisherman_and_boat/the_legend.png',
+    'magical_hook': '/assets/fisherman_and_boat/magical_hook.png?v=' + Date.now(),
+    'rod_l1': '/assets/hooks/rod_l1.png?v=' + Date.now(),
+    'rod_l2': '/assets/hooks/rod_l2.png?v=' + Date.now(),
+    'rod_l3': '/assets/hooks/rod_l3.png?v=' + Date.now(),
+    'rod_l4': '/assets/hooks/rod_l4.png?v=' + Date.now(),
+    'rod_l5': '/assets/hooks/rod_l5.png?v=' + Date.now(),
 };

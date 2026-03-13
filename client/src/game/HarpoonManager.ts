@@ -11,8 +11,10 @@ export class HarpoonManager {
     private readonly HARPOON_SPEED = 45; // Extremely fast firing
     private readonly RETURN_SPEED = 20;  // Quick return
     private readonly MAX_LENGTH = CANVAS_HEIGHT - SEA_LEVEL_Y - 50;
-    private readonly STACK_OFFSET = 24;  // Spacing for shish kebab
+    private readonly STACK_OFFSET = 110;  // Increased for ultra-massive 200px asset
     private readonly AIM_SENSITIVITY = 1.0;
+
+    private harpoonImage: HTMLImageElement;
 
     constructor(
         state: GameState, 
@@ -24,6 +26,9 @@ export class HarpoonManager {
         this.onBoosterUsed = onBoosterUsed;
         this.onCatch = onCatch;
         this.onActionComplete = onActionComplete;
+
+        this.harpoonImage = new Image();
+        this.harpoonImage.src = "/assets/boosters/in_game_harpoon.png?v=" + Date.now();
     }
 
     /**
@@ -80,16 +85,13 @@ export class HarpoonManager {
      * Clamp angle to bottom half-circle (0 to PI)
      */
     private updateAimAngle(cx: number, cy: number, pivot: { x: number; y: number }) {
-        const dx = cx - pivot.x;
-        const dy = cy - pivot.y;
+        // Linear mapping: Map horizontal touch position to the [0, PI] angle range
+        // Ratio of touch position across the full canvas width (clamped 0-1)
+        const ratio = Math.max(0, Math.min(1, cx / CANVAS_WIDTH));
         
-        let angle = Math.atan2(dy, dx);
-        
-        // Clamp to [0, PI] range (downwards half-circle)
-        if (angle < 0) {
-            // If dragging above sea level, clamp to edges
-            angle = dx > 0 ? 0 : Math.PI;
-        }
+        // Map ratio to angle: 0 (Left) -> PI (West), 1 (Right) -> 0 (East)
+        // This allows intuitive "V-shape" tracking to be replaced by a simple horizontal slide
+        const angle = Math.PI * (1 - ratio);
         
         this.state.hook.angle = angle;
     }
@@ -211,35 +213,23 @@ export class HarpoonManager {
 
         // 1. Draw Massive Radar Dome (Sonar Field)
         ctx.save();
-        const arcRadius = 210; // Adjusted to fit within 450px canvas width
-        const centerY = SEA_LEVEL_Y; // Align strictly to water surface
+        const arcRadius = 210; 
+        const centerY = SEA_LEVEL_Y | 0;
         
-        // High Intensity Glow for the outer perimeter
-        ctx.shadowBlur = 25;
-        ctx.shadowColor = '#FF5500';
-        
-        // PREMIUM: Radial gradient for depth and "illuminated" look
-        const arcGradient = ctx.createRadialGradient(pivot.x, centerY, 0, pivot.x, centerY, arcRadius);
-        arcGradient.addColorStop(0, 'rgba(255, 100, 0, 0.25)'); // Opak start at origin
-        arcGradient.addColorStop(0.5, 'rgba(255, 150, 0, 0.1)'); // Mid-glow
-        arcGradient.addColorStop(1, 'rgba(255, 50, 0, 0)');     // Transparent edge
-        
+        // RULE 3: Filled Sonar Arc UI (Low Z-index)
         ctx.beginPath();
-        ctx.moveTo(pivot.x, centerY);
-        ctx.arc(pivot.x, centerY, arcRadius, 0, Math.PI);
-        ctx.fillStyle = arcGradient;
+        ctx.moveTo(pivot.x | 0, centerY);
+        ctx.arc(pivot.x | 0, centerY, arcRadius, 0, Math.PI);
+        ctx.fillStyle = 'rgba(10, 20, 60, 0.5)'; // Solid dark blue fill
         ctx.fill();
 
-        // Neon Dash Border
-        ctx.beginPath();
-        ctx.arc(pivot.x, centerY, arcRadius, 0, Math.PI);
-        ctx.strokeStyle = 'rgba(255, 180, 0, 0.9)'; // Bright Amber/Neon
-        ctx.lineWidth = 5;
-        ctx.setLineDash([20, 10]); // Sophisticated radar look
-        ctx.stroke();
+        // REMOVED: High Intensity Glow (Dashed) - Clean minimalist sonar look
         ctx.restore();
 
         // 2. Draw Trajectory Laser (Pulsing Energy Beam)
+        // User says "yarım daire içinde kalan turuncu kesikli çizgileri sil"
+        const laserStartX = pivot.x + Math.cos(hook.angle) * arcRadius;
+        const laserStartY = pivot.y + Math.sin(hook.angle) * arcRadius;
         const targetX = pivot.x + Math.cos(hook.angle) * this.MAX_LENGTH;
         const targetY = pivot.y + Math.sin(hook.angle) * this.MAX_LENGTH;
 
@@ -248,20 +238,23 @@ export class HarpoonManager {
         ctx.shadowBlur = 20;
         ctx.shadowColor = '#FF8800';
         
-        const beamGradient = ctx.createLinearGradient(pivot.x, pivot.y, targetX, targetY);
+        const beamGradient = ctx.createLinearGradient(laserStartX, laserStartY, targetX, targetY);
         beamGradient.addColorStop(0, 'rgba(255, 230, 0, 1.0)'); // Brilliant Yellow
         beamGradient.addColorStop(0.6, 'rgba(255, 100, 0, 0.7)'); // Vibrant Orange
         beamGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');     // Red fade out
 
         ctx.beginPath();
-        ctx.moveTo(pivot.x, pivot.y);
-        ctx.lineTo(targetX, targetY);
+        ctx.moveTo(laserStartX | 0, laserStartY | 0);
+        ctx.lineTo(targetX | 0, targetY | 0);
         ctx.strokeStyle = beamGradient;
         ctx.lineWidth = 4;
         ctx.setLineDash([30, 15]); // Powerful pulses
         ctx.stroke();
         
         // High-intensity white core
+        ctx.beginPath();
+        ctx.moveTo(laserStartX | 0, laserStartY | 0);
+        ctx.lineTo(targetX | 0, targetY | 0);
         ctx.setLineDash([]);
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1.5;
@@ -269,45 +262,92 @@ export class HarpoonManager {
         ctx.stroke();
         ctx.restore();
 
-        // 3. Draw Heavy Iron Tip Preview
-        this.drawArrowHead(ctx, targetX, targetY, hook.angle);
+        // 3. RULE 2: Full Aiming Phase Visibility
+        // Draw the ENTIRE Harpoon on the boat's mount during aiming
+        this.renderFullHarpoonOnMount(ctx, pivot.x | 0, pivot.y | 0, hook.angle);
     }
 
-    private drawArrowHead(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number) {
+    private renderFullHarpoonOnMount(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number) {
+        if (!this.harpoonImage.complete) return;
+        
         ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(angle);
+        ctx.translate(x | 0, y | 0);
+        ctx.rotate(angle - Math.PI / 2);
         
-        // Deep shadow for massive metallic tip
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-        ctx.shadowOffsetY = 4;
+        const imgW = this.harpoonImage.naturalWidth;
+        const imgH = this.harpoonImage.naturalHeight;
+        
+        const arcRadius = 210;
 
-        // Premium Metallic Forge Gradient
-        const gradient = ctx.createLinearGradient(-25, -12, 0, 12);
-        gradient.addColorStop(0, '#2b2b2b'); // Dark Forged Iron
-        gradient.addColorStop(0.3, '#5c5c5c'); // Brushed Steel
-        gradient.addColorStop(0.5, '#7d7d7d'); // Highlight
-        gradient.addColorStop(1, '#1a1a1a'); // Sharp edge shadow
+        // Scale to fit exactly between pivot (0) and arc boundary (arcRadius)
+        const scale = arcRadius / imgH; 
+        const dw = imgW * scale;
+        const dh = arcRadius; 
 
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(-26, -15);
-        ctx.lineTo(-20, 0); // Aggressive Barb
-        ctx.lineTo(-26, 15);
-        ctx.closePath();
+        // Draw FULL image (Base at pivot [0], Tip at arc boundary [210])
+        ctx.drawImage(
+            this.harpoonImage,
+            0, 0, imgW, imgH,
+            (-dw / 2) | 0, 0, dw | 0, dh | 0
+        );
         
-        ctx.fillStyle = gradient;
-        ctx.fill();
+        ctx.restore();
+    }
+
+    /**
+     * @deprecated Use renderFullHarpoonOnMount
+     */
+    private drawArrowHead(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number) {
+        // Obsolete
+    }
+
+    /**
+     * RULE 2: Split-Render for Physical Harpoon (Firing & Retracting)
+     * Renders the actual PNG without distorting the metallic tip.
+     */
+    public draw(ctx: CanvasRenderingContext2D, pivot: { x: number; y: number }) {
+        const hook = this.state.hook;
+        const isHarpoonActive = hook.state === 'harpoon' || hook.state === 'harpoon_retracting';
+        if (!isHarpoonActive || !this.harpoonImage.complete) return;
+
+        const dx = hook.x - pivot.x;
+        const dy = hook.y - pivot.y;
+        const distance = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx);
+
+        ctx.save();
+        ctx.translate(pivot.x | 0, pivot.y | 0);
+        ctx.rotate(angle - Math.PI / 2); // Rotate so Y+ is the travel direction
+
+        const imgW = this.harpoonImage.naturalWidth;
+        const imgH = this.harpoonImage.naturalHeight;
         
-        // Edge Sharpness Highlight (Neon Glint)
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(-26, -15);
-        ctx.strokeStyle = 'rgba(255, 150, 0, 0.5)'; // Orange reflection
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        
+        // RULE 1: ULTRA-MASSIVE Active Scale (200px width for heavy feel)
+        const scale = 200 / imgW;
+        const dw = (imgW * scale) | 0;
+
+        const tipH = 600; // Source pixel height for the headsplit
+        const drawnTipH = (tipH * scale) | 0;
+        const cableH = imgH - tipH;
+
+        // 1. Draw SHAFT (Stretched portion)
+        // This appears as the harpoon "grows" from the boat
+        if (distance > drawnTipH) {
+            ctx.drawImage(
+                this.harpoonImage,
+                0, 0, imgW, cableH, // Source: Top part
+                -dw / 2, 0, dw, (distance - drawnTipH) | 0 // Destination: Stretched along Y+
+            );
+        }
+
+        // 2. Draw TIP (Fixed aspect portion)
+        // From end of cable to hooked position
+        ctx.drawImage(
+            this.harpoonImage,
+            0, imgH - tipH, imgW, tipH, // Source: Bottom part
+            -dw / 2, (distance - drawnTipH) | 0, dw, drawnTipH // Destination: Placed at tip
+        );
+
         ctx.restore();
     }
 

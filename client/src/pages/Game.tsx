@@ -584,6 +584,9 @@ export default function Game() {
   }, [tutorialState?.step]);
 
   const handleBoosterClick = (booster: { id: string; count: number }) => {
+    // End-of-level protection: No boosters in final second
+    if (timeLeft <= 1) return;
+
     const tutorial = engineRef.current?.getTutorialState();
     if (isTutorialActive) {
       const allowedMap: Record<string, string> = {
@@ -1277,192 +1280,228 @@ export default function Game() {
           </>
         )}
 
-        {/* Shop UI */}
+        {/* Shop UI (Market / Capacity Shock) */}
         {gameState === "shop" && (
-          <div className="absolute inset-0 bg-white/95 z-20 p-3 flex flex-col gap-2">
-            <div className="text-center relative">
+          <div className="absolute inset-0 z-20 p-3 flex flex-col gap-2 overflow-y-auto hide-scrollbar bg-gradient-to-b from-sky-50/50 to-white/95 backdrop-blur-xl animate-in fade-in duration-500">
+            <style>{`
+              .btn-3d {
+                position: relative;
+                transition: all 0.1s ease;
+                border-radius: 12px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+              }
+              .btn-3d:active {
+                transform: translateY(3px);
+                border-bottom-width: 0px !important;
+              }
+              .btn-green  { background: #2ECC71; border-bottom: 4px solid #27AE60; color: white; }
+              .btn-red    { background: #FF4757; border-bottom: 4px solid #D63031; color: white; }
+              .btn-blue   { background: #3498DB; border-bottom: 4px solid #2980B9; color: white; }
+              .btn-yellow { background: #F1C40F; border-bottom: 4px solid #D4AC0D; color: white; }
+              .btn-indigo { background: #5865F2; border-bottom: 4px solid #4752C4; color: white; }
+              .btn-disabled { background: #D1D5DB; border-bottom: 4px solid #9CA3AF; color: #6B7280; cursor: not-allowed; }
+
+              .ocean-card {
+                background: rgba(255, 255, 255, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.6);
+                border-radius: 20px;
+                padding: 12px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+              }
+              .section-header {
+                font-size: 10px;
+                font-weight: 900;
+                color: #94A3B8;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                margin-bottom: 8px;
+                padding-left: 2px;
+              }
+            `}</style>
+            
+            <div className="text-center relative pt-1">
               <Link href="/">
-                <button className="absolute left-0 top-0 p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                <button className="absolute left-0 top-1 w-10 h-10 bg-white/60 backdrop-blur-sm rounded-xl text-slate-500 hover:text-blue-600 transition-all border-b-2 border-slate-200 active:translate-y-0.5 active:border-b-0 flex items-center justify-center">
                   <HomeIcon className="w-5 h-5" />
                 </button>
               </Link>
-              <h2 className="text-xl font-display font-bold text-blue-600">
-                <div className="flex flex-col">
-                  <span className="text-slate-500 text-[10px] uppercase font-black tracking-widest leading-none mb-1">
-                    {currentLevel === 1 ? "Tutorial" : `Level ${currentLevel - 1}`}
-                  </span>
-                  <span className="text-blue-600 text-base font-display font-bold leading-none">
-                    {currentLevel === 1 ? "Training Bay" : (LEVEL_NAMES[currentLevel] ?? "Deep Voyage")}
-                  </span>
-                </div>
-              </h2>
-              <div className="text-lg font-bold text-green-600 flex items-center justify-center gap-1">
+              <div className="flex flex-col items-center">
+                <span className="text-slate-400 text-[9px] uppercase font-black tracking-widest leading-none mb-1 opacity-80">
+                  {currentLevel === 1 ? "Training Bay" : `Island Level ${currentLevel - 1}`}
+                </span>
+                <h2 className="text-xl font-display font-black text-slate-800 leading-tight">
+                  {currentLevel === 1 ? "Tutorial Harbor" : (LEVEL_NAMES[currentLevel] ?? "Deep Sea Market")}
+                </h2>
+              </div>
+              <div className="mt-1.5 text-xl font-black text-green-600 flex items-center justify-center gap-1.5 grayscale-[0.2]">
                 <img src="/assets/environment/gold_doubloon.png" alt="" className="w-5 h-5 object-contain" />
                 {score}
               </div>
-              {activeCurse !== 'none' && (
-                <div className="mt-1 text-red-600 font-bold text-[11px] bg-red-50 p-2 rounded-lg border border-red-200">
-                  {currentLevel === 1 ? "TUTORIAL" : `L${currentLevel - 1}`} CURSE ACTIVE: {activeCurse.toUpperCase()}
-                </div>
-              )}
             </div>
 
-            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-bold text-slate-700">Sell Fish</div>
-                <div className="text-xs text-slate-500">{inventory.length} fish</div>
+            {/* Sell Section */}
+            <div className="ocean-card">
+              <div className="flex justify-between items-center mb-2 px-1">
+                <div className="section-header !mb-0">Sell Your Haul</div>
+                <div className="text-[10px] font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">{inventory.length} Fish</div>
               </div>
-              <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+              
+              <div className="flex gap-2 overflow-x-auto py-1 hide-scrollbar mb-2">
                 {groupedInventory.length === 0 ? (
-                  <div className="text-xs text-slate-400 italic px-2 py-6">No fish yet</div>
+                  <div className="w-full text-center py-4 text-[11px] font-bold text-slate-400 italic bg-white/20 rounded-xl border border-dashed border-white/60">
+                    Empty nets...
+                  </div>
                 ) : (
                   groupedInventory.map(item => (
                     <div
                       key={item.id}
-                      className="flex-shrink-0 w-[120px] bg-[#F7FAFF] rounded-[16px] p-3 pt-4 flex flex-col items-center shadow-sm border border-slate-100"
+                      className="flex-shrink-0 w-24 bg-white/50 rounded-xl p-2 flex flex-col items-center shadow-sm border border-white"
                     >
-                      <div className="relative w-[72px] h-[72px] flex items-center justify-center mb-2">
+                      <div className="relative w-12 h-12 flex items-center justify-center mb-1">
                         <img
                           src={resolveInventoryImage(item.type)}
                           alt={item.name}
-                          className="w-[88px] h-[66px] object-contain"
+                          className="w-full h-full object-contain"
                         />
                         {item.count > 1 && (
-                          <div className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                            x{item.count}
+                          <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border border-white">
+                            {item.count}
                           </div>
                         )}
                       </div>
-                      <span className="text-[11px] font-bold text-slate-700 text-center">{item.name}</span>
-                      <span className="text-[11px] font-bold text-primary bg-white/60 px-2 py-0.5 rounded-full mt-1 flex items-center gap-0.5">
+                      <span className="text-[9px] font-black text-slate-700 text-center line-clamp-1">{item.name}</span>
+                      <span className="text-[10px] font-bold text-green-600 mt-0.5 flex items-center gap-0.5">
                         <img src="/assets/environment/gold_doubloon.png" alt="" className="w-3 h-3 object-contain" />{item.totalValue}
                       </span>
                     </div>
                   ))
                 )}
               </div>
-              <Button
+              
+              <button
                 id="market-sell-all"
                 onClick={handleSellAll}
                 disabled={inventory.length === 0 && (!showMarketTutorial || marketTutorialStep !== 'sell')}
-                className="w-full h-8 text-xs bg-green-500 hover:bg-green-600"
-                style={{ position: 'relative', zIndex: marketTutorialStep === 'sell' ? 9999 : undefined }}
+                className={`w-full h-11 btn-3d ${inventory.length === 0 ? 'btn-disabled' : 'btn-green'}`}
+                style={{ zIndex: marketTutorialStep === 'sell' ? 9999 : undefined }}
               >
                 Sell All
-              </Button>
+              </button>
             </div>
 
-            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
-              <div className="text-sm font-bold text-slate-700 mb-2">Buy Fuel</div>
-              <div className="flex flex-col gap-2">
-                <Button
+            {/* Services */}
+            <div className="ocean-card">
+              <div className="section-header">Boat Services</div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
                   id="market-buy-fuel"
                   onClick={buyFuel}
                   disabled={upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'fuel')}
-                  variant={upgrades.hasFuel ? "outline" : "default"}
-                  className="w-full h-10 bg-red-500 hover:bg-red-600 text-white"
-                  style={{ position: 'relative', zIndex: marketTutorialStep === 'fuel' ? 9999 : undefined }}
+                  className={`h-11 btn-3d flex flex-col !gap-0 !py-1 ${upgrades.hasFuel ? 'btn-disabled' : 'btn-red'}`}
+                  style={{ zIndex: marketTutorialStep === 'fuel' ? 9999 : undefined }}
                 >
-                  <div className="flex items-center justify-center gap-2 text-sm font-bold">
+                  <div className="flex items-center gap-1.5">
                     <Fuel className="w-4 h-4" />
-                    <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain" />
-                    Buy Fuel {currentLevel !== 1 && `(${fuelCost})`}
+                    <span className="text-[11px]">Refill Fuel</span>
                   </div>
-                </Button>
+                  <span className="text-[9px] opacity-80">{currentLevel === 1 ? "FREE" : `${fuelCost} 🪙`}</span>
+                </button>
 
-                {(!upgrades.hasFuel || (showMarketTutorial && marketTutorialStep === 'pass')) && (
-                  <Button
-                    id="market-use-pass"
-                    onClick={() => {
-                      if (showMarketTutorial && marketTutorialStep === 'pass' && passCards === 0) {
-                        setShowTutorialPassGift(true);
-                        return;
-                      }
-                      
-                      if (passCards > 0) {
-                        if (usePassCard()) {
-                          setPassCardsState(getPassCards());
-                          setUpgrades(prev => ({ ...prev, hasFuel: true }));
-                          if (showMarketTutorial && marketTutorialStep === 'pass') {
-                            setMarketTutorialStep('continue');
-                          }
+                <button
+                  onClick={() => repairHook(1)}
+                  disabled={hookAttempts >= maxHookAttempts}
+                  className={`h-11 btn-3d flex flex-col !gap-0 !py-1 ${hookAttempts >= maxHookAttempts ? 'btn-disabled' : 'btn-yellow'}`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Anchor className="w-4 h-4" />
+                    <span className="text-[11px]">Repair Rod</span>
+                  </div>
+                  <span className="text-[9px] opacity-80">{repairCost} 🪙</span>
+                </button>
+              </div>
+
+              {(!upgrades.hasFuel || (showMarketTutorial && marketTutorialStep === 'pass')) && (
+                <button
+                  id="market-use-pass"
+                  onClick={() => {
+                    if (showMarketTutorial && marketTutorialStep === 'pass' && passCards === 0) {
+                      setShowTutorialPassGift(true);
+                      return;
+                    }
+                    if (passCards > 0) {
+                      if (usePassCard()) {
+                        setPassCardsState(getPassCards());
+                        setUpgrades(prev => ({ ...prev, hasFuel: true }));
+                        if (showMarketTutorial && marketTutorialStep === 'pass') {
+                          setMarketTutorialStep('continue');
                         }
-                      } else {
-                        setShowPassCardPurchase(true);
                       }
-                    }}
-                    className="w-full h-10 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-b-4 border-blue-800"
-                    style={{ position: 'relative', zIndex: marketTutorialStep === 'pass' ? 9999 : undefined }}
+                    } else {
+                      setShowPassCardPurchase(true);
+                    }
+                  }}
+                  className="w-full h-11 mt-2 btn-3d btn-indigo text-[11px]"
+                  style={{ zIndex: marketTutorialStep === 'pass' ? 9999 : undefined }}
+                >
+                  <img src="/assets/pass_card.png" alt="" className="w-4 h-5 object-contain" />
+                  {passCards > 0 ? `Use Pass (${passCards})` : "Get Pass Card"}
+                </button>
+              )}
+            </div>
+
+            {/* Power-ups Section */}
+            <div className="flex flex-col items-center">
+              <div className="section-header !text-center !mb-1">Power-up Collection</div>
+              <div className="flex gap-1 items-center justify-center">
+                {[
+                  { id: 'harpoon', icon: '/assets/boosters/harpoon.png', count: activeBoosters.harpoon },
+                  { id: 'net', icon: '/assets/boosters/net.png', count: activeBoosters.net },
+                  { id: 'tnt', icon: '/assets/boosters/tnt.png', count: activeBoosters.tnt },
+                  { id: 'anchor', icon: '/assets/boosters/the_anchor.png', count: activeBoosters.anchor }
+                ].map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => { setPurchaseBoosterType(b.id as any); setPurchaseModalOpen(true); }}
+                    className="relative group hover:scale-110 active:scale-95 transition-all"
                   >
-                    <div className="flex items-center justify-center gap-2 text-sm font-bold">
-                      <img src="/assets/pass_card.png" alt="" className="w-5 h-6 object-contain" />
-                      {passCards > 0 ? `Use Pass Card (${passCards})` : "Get Pass Card"}
-                    </div>
-                  </Button>
-                )}
+                    <img src={b.icon} alt={b.id} className="w-24 h-24 object-contain drop-shadow-xl" />
+                    <span className="absolute top-2 right-1 bg-red-500 text-white text-[13px] font-black w-7 h-7 flex items-center justify-center rounded-full border-2 border-white shadow-md z-10">
+                      {b.count}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
 
+            {/* Final Actions */}
+            <div className="flex flex-col gap-2 mt-auto pt-2">
+              <button
+                id="market-next-level"
+                onClick={handleNextLevel}
+                disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
+                className={`w-full h-14 btn-3d !text-lg ${upgrades.hasFuel ? 'btn-green ring-4 ring-green-400/20' : 'btn-disabled opacity-60'}`}
+              >
+                {upgrades.hasFuel ? "Set Sail!" : "Needs Fuel"}
+              </button>
 
-
-            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-bold text-slate-700">Rod Repair</div>
-                <div className="text-xs text-slate-500">{hookAttempts}/{maxHookAttempts}</div>
-              </div>
-              <Button onClick={() => repairHook(1)} disabled={hookAttempts >= maxHookAttempts} className="w-full h-9 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold">
-                <span className="flex items-center gap-1">Repair +1 (<img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain inline" />60)</span>
-              </Button>
+              <button
+                onClick={() => {
+                  if (confirm("End current journey? All progress will be lost!")) {
+                    handleTriggerGameOver("Out of Fuel! Journey ended at the market.");
+                  }
+                }}
+                className="w-full h-11 btn-3d btn-red opacity-60 hover:opacity-100 !text-[11px]"
+              >
+                End Journey (Surrender)
+              </button>
             </div>
-
-            <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-2">
-              <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
-                <button
-                  onClick={() => { setPurchaseBoosterType('harpoon'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
-                >
-                  <img src="/assets/boosters/harpoon.png" alt="Harpoon" className="w-12 h-12 object-contain scale-110" />
-                  <span className="text-[9px] font-extrabold text-slate-700">Harpoon ({activeBoosters.harpoon})</span>
-                </button>
-                <button
-                  onClick={() => { setPurchaseBoosterType('net'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
-                >
-                  <img src="/assets/boosters/net.png" alt="Net" className="w-12 h-12 object-contain scale-110" />
-                  <span className="text-[9px] font-extrabold text-slate-700">Net ({activeBoosters.net})</span>
-                </button>
-                <button
-                  onClick={() => { setPurchaseBoosterType('tnt'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
-                >
-                  <img src="/assets/boosters/tnt.png" alt="TNT" className="w-12 h-12 object-contain scale-110" />
-                  <span className="text-[9px] font-extrabold text-slate-700">TNT ({activeBoosters.tnt})</span>
-                </button>
-                <button
-                  onClick={() => { setPurchaseBoosterType('anchor'); setPurchaseModalOpen(true); }}
-                  className="flex-1 flex flex-col items-center bg-white rounded-xl px-2 py-1 shadow-sm border border-slate-100 min-w-[70px] hover:scale-105 transition-all"
-                >
-                  <img src="/assets/boosters/the_anchor.png" alt="Anchor" className="w-12 h-12 object-contain scale-110" />
-                  <span className="text-[9px] font-extrabold text-slate-700">Anchor ({activeBoosters.anchor})</span>
-                </button>
-              </div>
-            </div>
-
-            <Button
-              id="market-next-level"
-              onClick={handleNextLevel}
-              disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
-              className={`w-full py-4 text-base font-display font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 ${upgrades.hasFuel ? 'animate-pulse ring-4 ring-blue-300' : ''}`}
-            >
-              {upgrades.hasFuel ? `Set Sail for ${LEVEL_NAMES[currentLevel + 1] ?? (currentLevel === 0 ? "Level 1" : `Level ${currentLevel}`)}!` : "Buy Fuel to Continue"}
-            </Button>
-
-            <Button
-              onClick={() => handleTriggerGameOver("Out of Fuel! Journey ended at the market.")}
-              className="w-full py-3 bg-red-500 hover:bg-red-600 text-white text-sm font-black rounded-2xl shadow-lg active:translate-y-1 transition-all"
-            >
-              GIVE UP (END JOURNEY)
-            </Button>
           </div>
         )}
 
