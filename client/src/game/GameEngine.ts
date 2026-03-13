@@ -218,6 +218,7 @@ export class GameEngine {
   // Active vehicle for rod tip + sprite
   private activeVehicleId: string = 't1';
   private activeVehicleData: VehicleData | null = null;
+  private recentlyCaught: Array<{ type: FishClass; life: number }> = [];
   // Run score tracking
   public totalCoinsEarned: number = 0;
   public maxLevelReachedThisRun: number = 1;
@@ -794,7 +795,13 @@ export class GameEngine {
     }
 
     if (this.isSinking) {
-      this.sinkProgress += deltaTime / 2000;
+      // 1. Constant slow sinking: y += slowSinkSpeed is handled by visual sinkProgress
+      // 2. Spawn Bubbles from boat center
+      const boatX = CANVAS_WIDTH / 2;
+      const boatY = SEA_LEVEL_Y + this.sinkProgress * 200;
+      this.effects.spawnSinkingBubbles(boatX, boatY);
+
+      this.sinkProgress += deltaTime / 2000; // 2 seconds sequence
       if (this.sinkProgress >= 1) {
         this.sinkProgress = 1;
         this.state.isPlaying = false;
@@ -1610,7 +1617,6 @@ export class GameEngine {
       const isStaticElement = fish.type === 'sea_kelp' || fish.type === 'sea_kelp_horizontal' ||
         fish.type === 'sea_rock' || fish.type === 'sea_rock_large' || fish.type === 'coral' ||
         fish.type === 'anchor' || fish.type === 'shell' || fish.type === 'gold_doubloon' || fish.type === 'sunken_boat';
-
       // Anchor direction override
       if (isAnchorActive && !isStaticElement && fish.type !== 'env_bubbles') {
         const dx = fish.x - prevX;
@@ -1655,20 +1661,32 @@ export class GameEngine {
   }
 
   private handleTntExplosion(tx: number, ty: number) {
-    this.effects.spawnExplosion(tx, ty); // Need to add this to GameEffects
+    this.effects.spawnExplosion(tx, ty);
     this.effects.shakeScreen(15, 10);
+    const radius = 120;
+    const storeCatch = this.state.anchorEffectTimerMs <= 0;
 
-    const explosionRadius = 120; // 3x3 grid size representation and hit area
+    let mostValuable: Entity | null = null;
+    let maxValue = -Infinity;
 
-    // Collect all fish in radius
     for (let i = this.state.fishes.length - 1; i >= 0; i--) {
       const fish = this.state.fishes[i];
       const dist = Math.hypot(fish.x - tx, fish.y - ty);
-      if (dist < explosionRadius && !OBJECT_MATRIX[fish.type].isObstacle) {
-        // TNT Catch muafiyeti: isBoosterCatch = true
-        this.handleStandardCatch(fish, false, false, true);
-        this.state.fishes.splice(i, 1);
+      if (dist < radius) {
+        if (!OBJECT_MATRIX[fish.type].isObstacle) {
+          const val = OBJECT_MATRIX[fish.type].value;
+          if (val > maxValue) {
+            maxValue = val;
+            mostValuable = fish;
+          }
+          this.handleStandardCatch(fish, true, storeCatch, true, false); // No individual card
+          this.state.fishes.splice(i, 1);
+        }
       }
+    }
+
+    if (mostValuable && !this.isSinking) {
+      this.recentlyCaught = [{ type: mostValuable.type, life: 2000 }];
     }
   }
 
@@ -1676,13 +1694,26 @@ export class GameEngine {
     this.effects.shakeScreen(5, 5);
     // Collect ALL fish on screen
     const storeCatch = this.state.anchorEffectTimerMs <= 0;
+
+    let mostValuable: Entity | null = null;
+    let maxValue = -Infinity;
+
     for (let i = this.state.fishes.length - 1; i >= 0; i--) {
       const fish = this.state.fishes[i];
       if (!OBJECT_MATRIX[fish.type].isObstacle) {
+        const val = OBJECT_MATRIX[fish.type].value;
+        if (val > maxValue) {
+          maxValue = val;
+          mostValuable = fish;
+        }
         // Net Catch muafiyeti: isBoosterCatch = true
-        this.handleStandardCatch(fish, true, storeCatch, true);
+        this.handleStandardCatch(fish, true, storeCatch, true, false); // No individual card
         this.state.fishes.splice(i, 1);
       }
+    }
+
+    if (mostValuable && !this.isSinking) {
+      this.recentlyCaught = [{ type: mostValuable.type, life: 2000 }];
     }
   }
 
@@ -2326,15 +2357,30 @@ export class GameEngine {
 
     const storeCatch = this.state.anchorEffectTimerMs <= 0;
 
+    // Goal 7: Find most valuable item for card display
+    let mostValuable: Entity | null = null;
+    let maxValue = -Infinity;
+
     for (const caught of hook.caughtEntities) {
+      const val = OBJECT_MATRIX[caught.type].value;
+      if (val > maxValue) {
+        maxValue = val;
+        mostValuable = caught;
+      }
+
       if (caught.type === 'sunken_boat') {
-        this.handleSunkenBoat(caught, storeCatch);
+        this.handleSunkenBoat(caught, storeCatch, false); // Now supports 3rd param
       } else if (caught.type === 'shell') {
-        this.handleShell(caught, storeCatch);
+        this.handleShell(caught, storeCatch, false); // Now supports 3rd param
       } else {
         // Booster Catch storage muafiyeti: isBoosterCatch = true
-        this.handleStandardCatch(caught, false, storeCatch, true);
+        this.handleStandardCatch(caught, false, storeCatch, true, false); // No individual card
       }
+    }
+
+    // Show most valuable card
+    if (mostValuable && !this.isSinking) {
+      this.recentlyCaught = [{ type: mostValuable.type, life: 2000 }];
     }
 
     // Clear the stack
@@ -2343,7 +2389,7 @@ export class GameEngine {
     this.effects.triggerBoatBob();
   }
 
-  private handleStandardCatch(caught: Entity, ignoreWeight: boolean = false, storeCatch: boolean = true, isBoosterCatch: boolean = false) {
+  private handleStandardCatch(caught: Entity, ignoreWeight: boolean = false, storeCatch: boolean = true, isBoosterCatch: boolean = false, showCard: boolean = true) {
     let value = caught.value;
     if (caught.type === 'crystal') {
       const roll = Math.random();
@@ -2413,8 +2459,9 @@ export class GameEngine {
       this.effects.spawnRareCatch(caught.x, caught.y, caught.color, caught.type === 'king');
     }
 
-    if (!this.isSinking) {
+    if (!this.isSinking && showCard) {
       this.onFishCaught(caught);
+      this.recentlyCaught = [{ type: caught.type, life: 2000 }];
     }
 
     if (storeCatch && caught.type === 'leaf' && this.state.leafBonusStacks < 3) {
@@ -2524,7 +2571,11 @@ export class GameEngine {
     }
   }
 
-  private handleSunkenBoat(caught: Entity, storeCatch: boolean = true) {
+  private handleSunkenBoat(caught: Entity, storeCatch: boolean = true, showCard: boolean = true) {
+    if (!this.isSinking && showCard) {
+      this.onFishCaught(caught);
+      this.recentlyCaught = [{ type: caught.type, life: 2000 }];
+    }
     if (this.state.level === 1 && this.tutorialManager?.isActive()) {
       markTutorialCatch('sunken_boat');
     }
@@ -2593,7 +2644,11 @@ export class GameEngine {
     }
   }
 
-  private handleShell(caught: Entity, storeCatch: boolean = true) {
+  private handleShell(caught: Entity, storeCatch: boolean = true, showCard: boolean = true) {
+    if (!this.isSinking && showCard) {
+      this.onFishCaught(caught);
+      this.recentlyCaught = [{ type: caught.type, life: 2000 }];
+    }
     // Shell game_design Bölüm 3.4: Direk 20 coin verir, inventory'ye girmez
     this.earnCoins(20);
     if (this.state.level === 1 && this.tutorialManager?.isActive()) {
@@ -2805,6 +2860,93 @@ export class GameEngine {
     // ── Game Canvas (dynamic objects) ────────────────────────────────────────
     this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     const t = timestamp * 0.001; // seconds
+    const deltaTime = 1000 / 30; // 30fps throttle
+
+    // Update and Draw Catch Cards in top-left (visual only)
+    if (this.recentlyCaught.length > 0) {
+      this.ctx.save();
+      const startX = 20; // Top-left area
+      const startY = 100; // Moved down to avoid overlap with HUD (timer/pause)
+      
+      for (let i = 0; i < this.recentlyCaught.length; i++) {
+        const item = this.recentlyCaught[i];
+        item.life -= deltaTime;
+        if (item.life <= 0) {
+          this.recentlyCaught.splice(i, 1);
+          i--;
+          continue;
+        }
+
+        const alpha = Math.min(1, item.life / 500);
+        this.ctx.globalAlpha = alpha;
+        
+        // Data mapping for premium cards matching Home.tsx
+        const configMap: Record<string, { color: string, name: string }> = {
+          bubble: { color: '#E8F4FD', name: 'Bubble Fish' },
+          sakura: { color: '#FDF0F5', name: 'Sakura Fish' },
+          zap: { color: '#FFF6C7', name: 'Zap Fish' },
+          candy: { color: '#FFE5EE', name: 'Candy Fish' },
+          moon: { color: '#EEF2FF', name: 'Moon Fish' },
+          lava: { color: '#FFE3D6', name: 'Lava Fish' },
+          crystal: { color: '#EEE8FF', name: 'Crystal Fish' },
+          leaf: { color: '#FFE9D6', name: 'Leaf Fish' },
+          tide: { color: '#E6F4FF', name: 'Tide Fish' },
+          coral: { color: '#FFF3E0', name: 'Coral Reef' },
+          gold_doubloon: { color: '#FFF8E1', name: 'Gold Doubloon' },
+          whirlpool: { color: '#E1F5FE', name: 'Whirlpool' },
+          sunken_boat: { color: '#EFEBE9', name: 'Sunken Boat' },
+          shark_skeleton: { color: '#FAFAFA', name: 'Shark Skeleton' },
+          anchor: { color: '#ECEFF1', name: 'Rusty Anchor' },
+          shell: { color: '#FFF3E0', name: 'Sea Shell' },
+          env_bubbles: { color: '#f0f9ff', name: 'Bubbles' },
+          king: { color: '#FDF1D5', name: 'King Fish' },
+          galaxy: { color: '#EBE8FF', name: 'Galaxy Fish' },
+          mushroom: { color: '#FCECEC', name: 'Mushroom Fish' }
+        };
+        const config = configMap[item.type] || { color: '#FFFFFF', name: item.type };
+
+        // Draw premium card
+        const cardW = 85;
+        const cardH = 110;
+        const cardY = startY + i * 125; // Stack downwards from top
+        const cardX = startX; 
+        
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        this.ctx.fillStyle = config.color;
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 3;
+        this.roundRect(this.ctx, cardX, cardY, cardW, cardH, 18, true, true);
+        this.ctx.shadowBlur = 0;
+        
+        // Draw icon using correct SpriteManager key
+        const assetKey = `fish_${item.type}`;
+        const img = this.spriteManager.getImage(assetKey);
+        if (img && img.complete) {
+          const imgSize = 55;
+          this.ctx.drawImage(img, cardX + (cardW - imgSize) / 2, cardY + 10, imgSize, imgSize);
+        }
+
+        // Draw Name
+        this.ctx.fillStyle = '#334155';
+        this.ctx.font = 'bold 10px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(config.name, cardX + cardW / 2, cardY + 80);
+
+        // Draw "INFO" pill (looks like the price pill in the screenshot)
+        const pillW = 40;
+        const pillH = 18;
+        const pillX = cardX + (cardW - pillW) / 2;
+        const pillY = cardY + 88;
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        this.roundRect(this.ctx, pillX, pillY, pillW, pillH, 9, true, false);
+        
+        this.ctx.fillStyle = '#3b82f6';
+        this.ctx.font = '900 9px sans-serif';
+        this.ctx.fillText('INFO', cardX + cardW / 2, pillY + 12.5);
+      }
+      this.ctx.restore();
+    }
 
     // Ambient: boat water swing
     const boatBobY = Math.sin(t * 0.04 * 60) * 2.5 + this.effects.boatBobY;
@@ -2854,8 +2996,16 @@ export class GameEngine {
     if (this.isArriving) {
       this.ctx.translate(this.arrivalProgress * 100, boatBobY);
     } else if (this.isSinking) {
-      this.ctx.translate(0, this.sinkProgress * 200 + boatBobY);
-      this.ctx.rotate(this.sinkProgress * 0.2);
+      // Constant downward motion + Rotation (45-60 degrees) + Opacity
+      const sinkY = this.sinkProgress * 250; // Sinks deeper
+      const sinkRot = this.sinkProgress * (55 * Math.PI / 180); // ~55 degrees
+      const opacity = Math.max(0, 1 - this.sinkProgress * 1.2); // Fade out early
+      
+      this.ctx.globalAlpha = opacity;
+      this.ctx.translate(CANVAS_WIDTH / 2, SEA_LEVEL_Y + sinkY + boatBobY);
+      this.ctx.rotate(sinkRot);
+      this.ctx.translate(-CANVAS_WIDTH / 2, -(SEA_LEVEL_Y + sinkY + boatBobY));
+      this.ctx.translate(0, SEA_LEVEL_Y + sinkY + boatBobY - (SEA_LEVEL_Y - 40)); 
     } else {
       this.ctx.translate(0, boatBobY);
       this.ctx.translate(CANVAS_WIDTH / 2, SEA_LEVEL_Y - 40);
@@ -3780,5 +3930,38 @@ export class GameEngine {
     this.ctx.closePath();
     this.ctx.fillStyle = 'white';
     this.ctx.fill();
+  }
+
+  private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number, fill: boolean, stroke: boolean) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+  public getCaughtItemAt(x: number, y: number): FishClass | null {
+    if (this.recentlyCaught.length === 0) return null;
+    const { drawX, drawY } = this.getBoatRenderMetrics();
+    const startX = drawX - 60;
+    const startY = drawY + 20;
+    const cardW = 85;
+    const cardH = 110;
+
+    for (let i = 0; i < this.recentlyCaught.length; i++) {
+        const cardX = startX - 15;
+        const cardY = startY - i * 125;
+        if (x >= cardX && x <= cardX + cardW && y >= cardY && y <= cardY + cardH) {
+            return this.recentlyCaught[i].type;
+        }
+    }
+    return null;
   }
 }
