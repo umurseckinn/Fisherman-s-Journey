@@ -15,15 +15,18 @@ export type TutorialStep =
   | 'rest_3'
   | 'anchor_intro'
   | 'anchor_action'
+  | 'l2_storage'
+  | 'l2_hook'
+  | 'l2_final'
   | 'completed';
 
 export interface TutorialState {
   step: TutorialStep;
   isFrozen: boolean;
-  spotlightTarget: 'tnt_btn' | 'net_btn' | 'harpoon_btn' | 'anchor_btn' | 'sea_area' | 'target_fish' | null;
+  spotlightTarget: 'tnt_btn' | 'net_btn' | 'harpoon_btn' | 'anchor_btn' | 'sea_area' | 'target_fish' | 'storage_panel' | 'hook_panel' | 'character' | null;
   overlayText: string | null;
   overlayOpacity: number;
-  allowedAction: 'tap_tnt' | 'drag_tnt' | 'tap_net' | 'tap_sea' | 'tap_harpoon' | 'aim_harpoon' | 'tap_anchor' | null;
+  allowedAction: 'tap_tnt' | 'drag_tnt' | 'tap_net' | 'tap_sea' | 'tap_harpoon' | 'aim_harpoon' | 'tap_anchor' | 'tap_anywhere' | null;
   targetFishIds: number[];
 }
 
@@ -33,9 +36,11 @@ export class TutorialLevelManager {
   private timer: number = 0;
   private hasSpawned: boolean = false;
   private stepTimeouts: number[] = [];
+  private isLevel2: boolean = false;
 
-  constructor(engine: GameEngine) {
+  constructor(engine: GameEngine, isLevel2: boolean = false) {
     this.engine = engine;
+    this.isLevel2 = isLevel2;
     this.state = {
       step: 'idle',
       isFrozen: false,
@@ -49,15 +54,35 @@ export class TutorialLevelManager {
 
   public update(deltaTime: number) {
     if (this.state.step === 'idle') {
-      this.setStep('warmup');
+      if (this.isLevel2) {
+        this.setStep('l2_storage');
+        this.freezeGame();
+        this.state.spotlightTarget = 'storage_panel';
+        this.state.overlayText = "Watch your Storage limit! If your boat gets too heavy, it will sink.";
+        this.state.overlayOpacity = 0.85;
+        this.state.allowedAction = 'tap_anywhere';
+      } else {
+        this.setStep('warmup');
+      }
       return;
     }
 
-    if (this.state.isFrozen) return;
+    if (this.state.isFrozen && !this.isLevel2) return;
 
     this.timer += deltaTime;
 
     switch (this.state.step) {
+      case 'l2_storage':
+        // Waiting for interaction
+        break;
+
+      case 'l2_hook':
+        // Waiting for interaction
+        break;
+
+      case 'l2_final':
+        // Waiting for interaction
+        break;
       case 'warmup':
         if (!this.hasSpawned) {
           this.spawnFish('sakura', 1);
@@ -205,6 +230,46 @@ export class TutorialLevelManager {
   }
 
   public handleInteraction(action: string, data?: any) {
+    if (this.isLevel2) {
+      if (action === 'skip_tutorial') {
+        this.unfreezeGame();
+        this.setStep('completed');
+        return;
+      }
+
+      if (this.state.step === 'l2_storage') {
+        if (action === 'next_step' || action === 'tap_anywhere') {
+          this.state.step = 'l2_hook';
+          this.state.spotlightTarget = 'hook_panel';
+          this.state.overlayText = "This is your Hook health. Hit too many hard obstacles, and it will snap!";
+          this.state.overlayOpacity = 0.85;
+        }
+      } else if (this.state.step === 'l2_hook') {
+        if (action === 'next_step' || action === 'tap_anywhere') {
+          this.state.step = 'l2_final';
+          this.state.spotlightTarget = 'character';
+          this.state.overlayText = "You're all set Captain! Tap anywhere to cast your line and catch some fish!";
+          this.state.overlayOpacity = 0.85;
+        } else if (action === 'prev_step') {
+          this.state.step = 'l2_storage';
+          this.state.spotlightTarget = 'storage_panel';
+          this.state.overlayText = "Watch your Storage limit! If your boat gets too heavy, it will sink.";
+          this.state.overlayOpacity = 0.85;
+        }
+      } else if (this.state.step === 'l2_final') {
+        if (action === 'next_step' || action === 'tap_anywhere') {
+          this.unfreezeGame();
+          this.setStep('completed');
+        } else if (action === 'prev_step') {
+          this.state.step = 'l2_hook';
+          this.state.spotlightTarget = 'hook_panel';
+          this.state.overlayText = "This is your Hook health. Hit too many hard obstacles, and it will snap!";
+          this.state.overlayOpacity = 0.85;
+        }
+      }
+      return;
+    }
+
     if (this.state.step === 'tnt_intro' && action === 'tap_tnt') {
       this.state.step = 'tnt_action';
       this.state.spotlightTarget = 'target_fish';

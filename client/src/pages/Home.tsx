@@ -1,13 +1,16 @@
-import { Play, Anchor, RotateCcw, X } from "lucide-react";
+import { Play, Anchor, RotateCcw, X, Lock, Trophy, Crown, Gift, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { InfoCard } from "../components/InfoCard";
 import { FishClass } from "../game/types";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { BoosterPurchaseModal, BoosterType, PurchasePackage } from "../components/BoosterPurchaseModal";
 import { resetProfile, getSelectedStartLevel, setSelectedStartLevel, getAdminMode, setAdminMode, getUserSelectedStartLevel, setUserSelectedStartLevel, getUserUnlockedLevel, isTutorialCompleted } from "../game/storage";
 import { VEHICLES } from "../game/vehicles";
+import { LEVEL_NAMES } from "../game/levelNames";
+import { Button } from "../components/ui/button";
 
 export default function Home() {
+  const [location, setLocation] = useLocation();
   const [selectedEntity, setSelectedEntity] = useState<FishClass | null>(null);
   const [purchaseBoosterType, setPurchaseBoosterType] = useState<BoosterType | null>(null);
   const [globalBoosters, setGlobalBoosters] = useState(() => {
@@ -33,6 +36,14 @@ export default function Home() {
   const effectiveUserStartLevel = Math.min(userSelectedStartLevel, userUnlockedLevel);
 
   useEffect(() => {
+    // Check for showPicker query param
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('showPicker') === 'true') {
+      setShowLevelPicker(true);
+      // Clean up URL
+      window.history.replaceState({}, '', '/');
+    }
+
     const handleStorage = () => {
       const saved = localStorage.getItem('global_boosters');
       if (saved) setGlobalBoosters(JSON.parse(saved));
@@ -65,7 +76,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-start py-10 pt-20 px-4 pt-safe pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
+    <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-start py-10 pt-24 px-4 pt-safe-32 pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
+      <style>{`
+        .pt-safe-32 {
+          padding-top: calc(env(safe-area-inset-top) + 2rem);
+        }
+      `}</style>
       {/* Decorative Background Elements */}
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-yellow-200 rounded-full blur-3xl opacity-50" />
       <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-blue-300 rounded-full blur-3xl opacity-50" />
@@ -505,10 +521,6 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-5 gap-2 max-h-[420px] overflow-y-auto pr-1">
               {Array.from({ length: 100 }, (_, i) => i + 1).map(num => {
-                // Internal level mapping:
-                // num 1 -> Internal 1 (Tutorial)
-                // num 2 -> Internal 2 (Level 1)
-                // ...
                 const internalLevel = num;
                 const isSelected = isAdminMode
                   ? internalLevel === adminSelectedStartLevel
@@ -516,7 +528,6 @@ export default function Home() {
                 const isLocked = !isAdminMode && internalLevel > userUnlockedLevel;
                 const isTutorial = internalLevel === 1;
 
-                // Hide tutorial in User Mode if completed
                 if (!isAdminMode && isTutorial && tutorialDone) return null;
 
                 return (
