@@ -19,8 +19,11 @@ import {
   buyRod,
   getStoFlags,
   getRodFlags,
+  getPassCards,
+  addPassCards,
 } from "@/game/storage";
 import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
+import { PassCardPurchaseModal } from "@/components/PassCardPurchaseModal";
 import { GarageTutorialManager } from "@/game/GarageTutorialManager";
 
 interface GarageProps {
@@ -34,11 +37,12 @@ export default function Garage({ onStartFishing }: GarageProps) {
     return idx >= 0 ? idx : 0;
   });
   const [pCoins, setPCoins] = useState(getPermanentCoins);
-  const [showHowToEarn, setShowHowToEarn] = useState(false);
+  const [passCards, setPassCardsState] = useState(() => getPassCards());
+  const [showPassCardPurchase, setShowPassCardPurchase] = useState(false);
   const [animatingCoin, setAnimatingCoin] = useState(false);
+  const [isSliding, setIsSliding] = useState(false);
   const [upgradeFlash, setUpgradeFlash] = useState<string | null>(null);
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null);
-  const [isSliding, setIsSliding] = useState(false);
   const [showIap, setShowIap] = useState(false);
   const [iapTitle, setIapTitle] = useState('');
   const coinDisplayRef = useRef(pCoins);
@@ -53,6 +57,8 @@ export default function Garage({ onStartFishing }: GarageProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       const stored = getPermanentCoins();
+      const storedPasses = getPassCards();
+      
       if (stored !== coinDisplayRef.current) {
         if (stored > coinDisplayRef.current) {
           setAnimatingCoin(true);
@@ -61,9 +67,13 @@ export default function Garage({ onStartFishing }: GarageProps) {
         coinDisplayRef.current = stored;
         setPCoins(stored);
       }
+
+      if (storedPasses !== passCards) {
+        setPassCardsState(storedPasses);
+      }
     }, 500);
     return () => clearInterval(interval);
-  }, []);
+  }, [passCards]);
 
   // Persist active vehicle
   useEffect(() => {
@@ -239,30 +249,34 @@ export default function Garage({ onStartFishing }: GarageProps) {
                 <HomeIcon className="w-5 h-5" />
               </button>
             </Link>
-            <div className={`flex items-center gap-2 bg-[#0A2540]/80 border border-[rgba(100,200,255,0.25)] rounded-2xl px-4 py-2 transition-transform ${animatingCoin ? 'scale-125' : 'scale-100'}`} style={{ transition: 'transform 0.2s' }}>
+            {/* Gold Doubloon Counter */}
+            <button 
+              onClick={() => {
+                setIapTitle("Gold Doubloon Shop");
+                setShowIap(true);
+              }}
+              className={`flex items-center gap-2 bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900/40 border border-amber-500/40 rounded-2xl px-4 py-2 shadow-lg hover:scale-105 active:scale-95 transition-all ${animatingCoin ? 'scale-110' : 'scale-100'}`}
+            >
               <img src="/assets/environment/gold_doubloon.png" alt="Gold Doubloon" className="w-6 h-6 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.7))' }} />
               <span className="text-white font-bold text-base">{formatCoins(pCoins)}</span>
-            </div>
+              <div className="bg-amber-500 rounded-full p-0.5 text-black">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              </div>
+            </button>
+            
+            {/* Pass Card Counter */}
+            <button 
+              onClick={() => setShowPassCardPurchase(true)}
+              className="flex items-center gap-2 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900/40 border border-blue-500/40 rounded-2xl px-4 py-2 shadow-lg hover:scale-105 active:scale-95 transition-all"
+            >
+              <img src="/assets/pass_card.png" alt="Pass Card" className="w-5 h-6 object-contain drop-shadow-md" />
+              <span className="text-white font-bold text-base">{passCards}</span>
+              <div className="bg-blue-500 rounded-full p-0.5 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              </div>
+            </button>
           </div>
-          <button
-            onClick={() => setShowHowToEarn(v => !v)}
-            className="flex items-center gap-1 text-cyan-300 text-xs font-semibold bg-[#0A2540]/60 border border-cyan-400/20 rounded-xl px-3 py-2 hover:bg-cyan-900/30 transition-colors"
-          >
-            <Info className="w-3.5 h-3.5" /> HOW TO EARN
-          </button>
         </div>
-
-        {/* How to earn tooltip */}
-        {showHowToEarn && (
-          <div className="mx-5 mb-2 bg-[#0A2540]/90 border border-cyan-400/30 rounded-2xl p-4 text-cyan-100 text-xs relative">
-            <button onClick={() => setShowHowToEarn(false)} className="absolute top-2 right-2 text-cyan-400 hover:text-white"><X className="w-3.5 h-3.5" /></button>
-            <p className="font-bold mb-1 flex items-center gap-1">
-              <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain inline" />
-              Gold Doubloons
-            </p>
-            <p>Every Gold Doubloon you earn in a run is automatically saved — even mid-run. They survive death, app close, everything. Spend them here in the Garage on vehicles and upgrades.</p>
-          </div>
-        )}
 
         {/* ── Vehicle selector ── */}
         <div className="flex items-center justify-between px-4 py-1">
@@ -372,20 +386,38 @@ export default function Garage({ onStartFishing }: GarageProps) {
             START FISHING →
           </button>
         </div>
-      </div>
 
-      <GoldDoubloonShopModal
-        isOpen={showIap}
-        onClose={() => setShowIap(false)}
-        onPurchase={(doubloons, _price) => {
-          // Add purchased doubloons to permanent coins
-          const current = getPermanentCoins();
-          setPermanentCoins(current + doubloons);
-          setPCoins(current + doubloons);
-          setShowIap(false);
-          pendingPurchaseRef.current = null;
-        }}
-      />
+        {showIap && (
+           <GoldDoubloonShopModal
+             isOpen={showIap}
+             onClose={() => {
+               setShowIap(false);
+               pendingPurchaseRef.current = null;
+             }}
+             onPurchase={(coins) => {
+               const next = pCoins + coins;
+               setPermanentCoins(next);
+               setPCoins(next);
+               setShowIap(false);
+               if (pendingPurchaseRef.current) {
+                 pendingPurchaseRef.current();
+                 pendingPurchaseRef.current = null;
+               }
+             }}
+           />
+         )}
+
+        {showPassCardPurchase && (
+          <PassCardPurchaseModal
+            onClose={() => setShowPassCardPurchase(false)}
+            onPurchase={(amount) => {
+              addPassCards(amount);
+              setPassCardsState(getPassCards());
+              setShowPassCardPurchase(false);
+            }}
+          />
+        )}
+      </div>
 
 
       <style>{`

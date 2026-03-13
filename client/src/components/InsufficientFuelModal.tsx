@@ -6,18 +6,22 @@ interface InsufficientFuelModalProps {
     isOpen: boolean;
     onClose: () => void;
     onWatchAd: () => void;
-    onGetDoubloons: () => void;
+    onGetPassCard: () => void;
+    onUsePassCard: () => void;
     onGiveUp: () => void;
     fuelCost: number;
+    passCards: number;
 }
 
 export function InsufficientFuelModal({
     isOpen,
     onClose,
     onWatchAd,
-    onGetDoubloons,
+    onGetPassCard,
+    onUsePassCard,
     onGiveUp,
-    fuelCost
+    fuelCost,
+    passCards
 }: InsufficientFuelModalProps) {
     if (!isOpen) return null;
 
@@ -35,26 +39,36 @@ export function InsufficientFuelModal({
                     <div>
                         <h2 className="text-2xl font-display font-bold text-slate-800">Insufficient Balance!</h2>
                         <p className="text-slate-500 text-sm mt-2 font-medium">
-                            You need <span className="text-red-500 font-bold">{fuelCost} 🪙</span> to buy fuel. Please choose an option to continue.
+                            You need <span className="text-red-500 font-bold">{fuelCost} 🪙</span> to buy fuel. Please use a Pass Card or choose an option.
                         </p>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <Button
-                        onClick={onWatchAd}
-                        className="w-full py-7 text-lg font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-purple-200"
-                    >
-                        <Play className="w-5 h-5 fill-current" />
-                        Watch an Ad (+50)
-                    </Button>
+                    {passCards > 0 ? (
+                        <Button
+                            onClick={onUsePassCard}
+                            className="w-full py-7 text-lg font-bold bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl flex items-center justify-center gap-3 shadow-lg border-b-4 border-blue-800 animate-pulse"
+                        >
+                            <img src="/assets/pass_card.png" alt="Pass" className="w-6 h-8 object-contain" />
+                            Use Pass Card ({passCards})
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={onGetPassCard}
+                            className="w-full py-7 text-lg font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-200 border-b-4 border-amber-600"
+                        >
+                            <img src="/assets/pass_card.png" alt="Pass" className="w-6 h-8 object-contain" />
+                            Get More Pass Cards
+                        </Button>
+                    )}
 
                     <Button
-                        onClick={onGetDoubloons}
-                        className="w-full py-7 text-lg font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-200"
+                        onClick={onWatchAd}
+                        className="w-full py-5 text-sm font-bold bg-purple-600/10 hover:bg-purple-600/20 text-purple-700 border-2 border-purple-200 rounded-2xl flex items-center justify-center gap-3"
                     >
-                        <Coins className="w-5 h-5" />
-                        Get More Doubloons
+                        <Play className="w-4 h-4 fill-current" />
+                        Watch an Ad (+50 🪙)
                     </Button>
 
                     <div className="flex flex-col gap-1">

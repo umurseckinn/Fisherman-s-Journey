@@ -94,7 +94,7 @@ const ENTITY_DETAILS: Record<string, { story: string; effect: string }> = {
   },
   env_bubbles: {
     story: "Bubbles rise in clusters from hidden vents. They look harmless, but they change the buoyancy of everything they touch. Divers chase them for the strange lift they give to gear. Catching one feels like the sea pushing you upward.",
-    effect: "Boosts hook speed and temporarily reduces weight."
+    effect: "Boosts hook speed and permanently reduces current inventory weight by 1 kg."
   },
   anchor: {
     story: "Rusty Anchors lie where ships once prayed for calm seas. They are relics of storms survived and storms lost. Pulling one free feels like lifting a piece of the sea itself. Heavy and valuable, they test both patience and strength.",
@@ -113,6 +113,18 @@ export const InfoCard: React.FC<InfoCardProps> = ({ entityKey, onClose }) => {
   const isEnvironment = ['coral', 'sea_kelp', 'sea_kelp_horizontal', 'sea_rock', 'sea_rock_large', 'gold_doubloon', 'whirlpool', 'sunken_boat', 'shark_skeleton', 'anchor', 'shell', 'env_bubbles'].includes(entityKey);
   const imageName = entityKey === 'env_bubbles' ? 'bubbles' : entityKey;
   const imagePath = isEnvironment ? `/assets/environment/${imageName}.png` : `/assets/fish/${imageName}_fish.png`;
+  
+  // Dynamic color map for the background
+  const colorMap: Record<string, string> = {
+    bubble: '#E8F4FD', sakura: '#FDF0F5', zap: '#FFF6C7', candy: '#FFE5EE',
+    moon: '#EEF2FF', lava: '#FFE3D6', crystal: '#EEE8FF', leaf: '#FFE9D6',
+    tide: '#E6F4FF', coral: '#FFF3E0', gold_doubloon: '#FFF8E1', whirlpool: '#E1F5FE',
+    sunken_boat: '#EFEBE9', shark_skeleton: '#FAFAFA', anchor: '#ECEFF1',
+    shell: '#FFF3E0', env_bubbles: '#f0f9ff', king: '#FDF1D5', galaxy: '#EBE8FF',
+    mushroom: '#FCECEC'
+  };
+  const bgColor = colorMap[entityKey] || '#FFFFFF';
+
   const stats = [
     { label: 'Type', value: isObstacle ? 'Obstacle' : 'Catchable' },
     { label: 'Speed', value: `x${config.speedMultiplier}` },
@@ -124,7 +136,10 @@ export const InfoCard: React.FC<InfoCardProps> = ({ entityKey, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-sm bg-white rounded-[40px] shadow-2xl p-8 border-4 border-white overflow-y-auto max-h-[85vh] flex flex-col items-center">
+      <div 
+        className="relative w-full max-w-sm rounded-[40px] shadow-2xl p-8 border-4 border-white overflow-y-auto max-h-[85vh] flex flex-col items-center"
+        style={{ backgroundColor: bgColor }}
+      >
         <button
           onClick={onClose}
           className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"

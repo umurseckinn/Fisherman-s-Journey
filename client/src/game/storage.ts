@@ -13,6 +13,7 @@ const K = {
   userSelectedStartLevel: 'fj_userSelectedStartLevel',
   userUnlockedLevel: 'fj_userUnlockedLevel',
   adminMode: 'fj_adminMode',
+  passCards: 'fj_passCards',
   tutorialCompleted: 'fj_tutorialCompleted',
   level2TutorialCompleted: 'fj_level2TutorialCompleted',
   rodTutorial: 'fj_rodTutorial',
@@ -162,6 +163,29 @@ export function getAdminMode(): boolean {
 
 export function setAdminMode(value: boolean) {
   setBool(K.adminMode, value);
+}
+
+// ── Pass Cards ───────────────────────────────────────────────────────────────
+
+export function getPassCards(): number {
+  return getNum(K.passCards, 0);
+}
+
+export function setPassCards(value: number) {
+  setNum(K.passCards, Math.max(0, Math.floor(value)));
+}
+
+export function addPassCards(amount: number) {
+  setPassCards(getPassCards() + amount);
+}
+
+export function usePassCard(): boolean {
+  const current = getPassCards();
+  if (current > 0) {
+    setPassCards(current - 1);
+    return true;
+  }
+  return false;
 }
 
 export function isTutorialCompleted(): boolean {

@@ -97,26 +97,26 @@ export default function LevelSelect() {
         }} 
       />
       
-      {/* Bubbles Decoration */}
+      {/* Bubbles Decoration - Optimized for mobile performance */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
+        {[...Array(10)].map((_, i) => (
           <div 
             key={i}
-            className="absolute rounded-full bg-white/10 animate-pulse"
+            className="absolute rounded-full bg-white/5 animate-gentle-float"
             style={{
               width: Math.random() * 40 + 10 + 'px',
               height: Math.random() * 40 + 10 + 'px',
               left: Math.random() * 100 + '%',
-                  top: Math.random() * 100 + '%',
-                  animationDelay: Math.random() * 5 + 's',
-                  animationDuration: Math.random() * 6 + 4 + 's'
-                }}
+              top: Math.random() * 100 + '%',
+              animationDelay: Math.random() * 5 + 's',
+              animationDuration: Math.random() * 10 + 10 + 's'
+            }}
           />
         ))}
       </div>
 
-      {/* 2. Glassmorphism Container */}
-      <div className="relative w-full max-w-md h-[90vh] bg-white/10 backdrop-blur-xl rounded-[40px] shadow-[inset_0_0_20px_rgba(255,255,255,0.2)] border-4 border-white/30 flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+      {/* 2. Glassmorphism Container - Optimized backdrop-blur for mobile */}
+      <div className="relative w-full max-w-md h-[90vh] bg-white/10 backdrop-blur-md rounded-[40px] shadow-[inset_0_0_20px_rgba(255,255,255,0.2)] border-4 border-white/30 flex flex-col overflow-hidden animate-in fade-in duration-500">
         
         {/* Header */}
         <div className="p-6 pb-2 flex justify-between items-center relative z-10">
@@ -160,7 +160,7 @@ export default function LevelSelect() {
                   key={level}
                   onClick={() => isSelectable && setSelectedLevel(level)}
                   className={`
-                    relative aspect-square rounded-[24px] flex items-center justify-center text-2xl font-display font-black transition-all duration-300
+                    relative aspect-square rounded-[24px] flex items-center justify-center text-2xl font-display font-black transition-[transform,opacity] duration-300 will-change-transform
                     ${!isSelectable 
                       ? "opacity-80 grayscale-[0.4] cursor-not-allowed border-2 border-white/5 shadow-inner" 
                       : isSelected
@@ -171,13 +171,14 @@ export default function LevelSelect() {
                     }
                   `}
                 >
-                  {/* Background Layer (Internal Blur/Filter) - Added rounded and overflow hidden here */}
+                  {/* Background Layer (Internal Blur/Filter) - Optimized for performance */}
                   <div 
-                    className="absolute inset-0 rounded-[22px] overflow-hidden transition-all duration-500"
+                    className="absolute inset-0 rounded-[22px] overflow-hidden transition-opacity duration-500 will-change-[filter,opacity]"
                     style={{ 
                       background: nodeStyle.gradient,
-                      filter: !isSelectable ? `${nodeStyle.filter} blur(6px)` : isSelected ? '' : nodeStyle.filter,
-                      opacity: !isSelectable ? 0.6 : 1
+                      filter: !isSelectable ? `${nodeStyle.filter} blur(4px)` : isSelected ? '' : nodeStyle.filter,
+                      opacity: !isSelectable ? 0.6 : 1,
+                      transform: 'translateZ(0)' // Trigger hardware acceleration
                     }}
                   />
 
@@ -273,12 +274,21 @@ export default function LevelSelect() {
           0% { left: -100%; }
           100% { left: 100%; }
         }
+        .animate-gentle-float {
+          animation: float 15s linear infinite;
+        }
+        @keyframes float {
+          0% { transform: translateY(0) translateZ(0); opacity: 0; }
+          20% { opacity: 0.6; }
+          80% { opacity: 0.6; }
+          100% { transform: translateY(-100vh) translateZ(0); opacity: 0; }
+        }
         .animate-slow-pulse {
           animation: slow-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         @keyframes slow-pulse {
-          0%, 100% { opacity: 1; transform: scale(1.1) translateY(-4px); }
-          50% { opacity: 0.85; transform: scale(1.06) translateY(-4px); }
+          0%, 100% { transform: scale(1.1) translateY(-4px) translateZ(0); }
+          50% { transform: scale(1.06) translateY(-4px) translateZ(0); }
         }
         .custom-scrollbar::-webkit-scrollbar {
            width: 4px;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export type MarketTutorialStep = 'sell' | 'fuel' | 'continue' | 'completed';
+export type MarketTutorialStep = 'sell' | 'fuel' | 'pass' | 'continue' | 'completed';
 
 interface MarketTutorialOverlayProps {
     step: MarketTutorialStep;
@@ -20,6 +20,11 @@ export const MarketTutorialOverlay: React.FC<MarketTutorialOverlayProps> = ({ st
             id: 'market-buy-fuel',
             text: "You need fuel to keep sailing. Tap here to refill your tank.",
             position: 'bottom' as const,
+        },
+        pass: {
+            id: 'market-use-pass',
+            text: "Out of coins? You can also use a Pass Card to refill fuel for free!",
+            position: 'top' as const,
         },
         continue: {
             id: 'market-next-level',

@@ -19,11 +19,15 @@ import {
   setTutorialCompleted,
   hasTutorialCaught,
   markTutorialCatch,
-  setPermanentCoins
+  setPermanentCoins,
+  getPassCards,
+  usePassCard,
+  addPassCards
 } from "@/game/storage";
 import { type GameState, type CurseType, type InventoryItem, type FishClass } from "@/game/types";
 import { GameOverModal } from "@/components/GameOverModal";
 import { CursedLevelCard } from "@/components/CursedLevelCard";
+import { PassCardPurchaseModal } from "@/components/PassCardPurchaseModal";
 import { BoosterPurchaseModal, type BoosterType } from "@/components/BoosterPurchaseModal";
 import { InsufficientFuelModal } from "@/components/InsufficientFuelModal";
 import { InsufficientRepairModal } from "@/components/InsufficientRepairModal";
@@ -75,10 +79,13 @@ export default function Game() {
   const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
   const [purchaseBoosterType, setPurchaseBoosterType] = useState<BoosterType | null>(null);
   const [showFuelModal, setShowFuelModal] = useState(false);
+  const [showPassCardPurchase, setShowPassCardPurchase] = useState(false);
+  const [passCards, setPassCardsState] = useState(() => getPassCards());
   const [showRepairModal, setShowRepairModal] = useState(false);
   const [showDoubloonShop, setShowDoubloonShop] = useState(false);
   const [isFuelShopOpened, setIsFuelShopOpened] = useState(false);
   const [showWelcomeGift, setShowWelcomeGift] = useState(false);
+  const [showTutorialPassGift, setShowTutorialPassGift] = useState(false);
   const [showMarketTutorial, setShowMarketTutorial] = useState(false);
   const [marketTutorialStep, setMarketTutorialStep] = useState<MarketTutorialStep>('completed');
   const [discoveryCard, setDiscoveryCard] = useState<FishClass | null>(null);
@@ -712,7 +719,7 @@ export default function Game() {
     }
 
     if (showMarketTutorial && marketTutorialStep === 'fuel') {
-      setMarketTutorialStep('continue');
+      setMarketTutorialStep('pass');
     }
   };
 
@@ -1347,20 +1354,53 @@ export default function Game() {
 
             <div className="w-full bg-white/70 border border-slate-200 rounded-2xl p-3">
               <div className="text-sm font-bold text-slate-700 mb-2">Buy Fuel</div>
-              <Button
-                id="market-buy-fuel"
-                onClick={buyFuel}
-                disabled={upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'fuel')}
-                variant={upgrades.hasFuel ? "outline" : "default"}
-                className="w-full h-10 bg-red-500 hover:bg-red-600 text-white"
-                style={{ position: 'relative', zIndex: marketTutorialStep === 'fuel' ? 9999 : undefined }}
-              >
-                <div className="flex items-center justify-center gap-2 text-sm font-bold">
-                  <Fuel className="w-4 h-4" />
-                  <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain" />
-                  Buy Fuel {currentLevel !== 1 && `(${fuelCost})`}
-                </div>
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  id="market-buy-fuel"
+                  onClick={buyFuel}
+                  disabled={upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'fuel')}
+                  variant={upgrades.hasFuel ? "outline" : "default"}
+                  className="w-full h-10 bg-red-500 hover:bg-red-600 text-white"
+                  style={{ position: 'relative', zIndex: marketTutorialStep === 'fuel' ? 9999 : undefined }}
+                >
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold">
+                    <Fuel className="w-4 h-4" />
+                    <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain" />
+                    Buy Fuel {currentLevel !== 1 && `(${fuelCost})`}
+                  </div>
+                </Button>
+
+                {(!upgrades.hasFuel || (showMarketTutorial && marketTutorialStep === 'pass')) && (
+                  <Button
+                    id="market-use-pass"
+                    onClick={() => {
+                      if (showMarketTutorial && marketTutorialStep === 'pass' && passCards === 0) {
+                        setShowTutorialPassGift(true);
+                        return;
+                      }
+                      
+                      if (passCards > 0) {
+                        if (usePassCard()) {
+                          setPassCardsState(getPassCards());
+                          setUpgrades(prev => ({ ...prev, hasFuel: true }));
+                          if (showMarketTutorial && marketTutorialStep === 'pass') {
+                            setMarketTutorialStep('continue');
+                          }
+                        }
+                      } else {
+                        setShowPassCardPurchase(true);
+                      }
+                    }}
+                    className="w-full h-10 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-b-4 border-blue-800"
+                    style={{ position: 'relative', zIndex: marketTutorialStep === 'pass' ? 9999 : undefined }}
+                  >
+                    <div className="flex items-center justify-center gap-2 text-sm font-bold">
+                      <img src="/assets/pass_card.png" alt="" className="w-5 h-6 object-contain" />
+                      {passCards > 0 ? `Use Pass Card (${passCards})` : "Get Pass Card"}
+                    </div>
+                  </Button>
+                )}
+              </div>
             </div>
 
 
@@ -1460,6 +1500,14 @@ export default function Game() {
                    <img src="/assets/environment/gold_doubloon.png" alt="Gold" className="w-5 h-5 object-contain" />
                    <span className="text-xl font-bold text-yellow-700">{score}</span>
                 </div>
+                {/* Pass Card Counter in Pause Menu */}
+                <div className="mt-3 flex items-center justify-center gap-1.5 bg-blue-50 px-4 py-2 rounded-2xl border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors" onClick={() => setShowPassCardPurchase(true)}>
+                   <img src="/assets/pass_card.png" alt="Pass" className="w-5 h-6 object-contain" />
+                   <span className="text-xl font-bold text-blue-700">{passCards}</span>
+                   <div className="ml-1 bg-blue-600 text-white rounded-full p-0.5">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                   </div>
+                </div>
               </div>
 
               <Button
@@ -1551,16 +1599,23 @@ export default function Game() {
             handleWatchAdReward();
             setShowFuelModal(false);
           }}
-          onGetDoubloons={() => {
+          onGetPassCard={() => {
             setShowFuelModal(false);
-            setIsFuelShopOpened(true);
-            setShowDoubloonShop(true);
+            setShowPassCardPurchase(true);
+          }}
+          onUsePassCard={() => {
+            if (usePassCard()) {
+              setPassCardsState(getPassCards());
+              setUpgrades(prev => ({ ...prev, hasFuel: true }));
+              setShowFuelModal(false);
+            }
           }}
           onGiveUp={() => {
             setShowFuelModal(false);
             handleTriggerGameOver("Insufficient fuel to continue the journey.");
           }}
           fuelCost={fuelCost}
+          passCards={passCards}
         />
 
         <InsufficientRepairModal
@@ -1608,6 +1663,31 @@ export default function Game() {
           }}
         />
 
+        {showPassCardPurchase && (
+          <PassCardPurchaseModal
+            onClose={() => {
+              setShowPassCardPurchase(false);
+              if (gameState === "playing" && !showFuelModal && !showRepairModal) {
+                if (engineRef.current && isPaused) {
+                  engineRef.current.resume();
+                  setIsPaused(false);
+                }
+              }
+            }}
+            onPurchase={(amount) => {
+              addPassCards(amount);
+              setPassCardsState(getPassCards());
+              setShowPassCardPurchase(false);
+              if (gameState === "playing" && !showFuelModal && !showRepairModal) {
+                if (engineRef.current && isPaused) {
+                  engineRef.current.resume();
+                  setIsPaused(false);
+                }
+              }
+            }}
+          />
+        )}
+
         {/* Back Link at bottom (only in playing) */}
         {!isPaused && gameState === "playing" && (
           <Link href="/" className="absolute bottom-6 left-6 z-30 p-3 bg-white/20 backdrop-blur rounded-full hover:bg-white/40 transition-colors">
@@ -1617,6 +1697,49 @@ export default function Game() {
 
         {showWelcomeGift && (
           <WelcomeGiftModal onClaim={handleClaimGift} />
+        )}
+
+        {showTutorialPassGift && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-slate-900/90 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white rounded-[40px] w-full max-w-sm p-8 shadow-2xl flex flex-col items-center text-center gap-6 border-4 border-blue-100 relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-50 rounded-full blur-2xl pointer-events-none" />
+              
+              <div className="w-32 h-44 relative animate-bounce-slow">
+                <img src="/assets/pass_card.png" alt="Pass Card" className="w-full h-full object-contain drop-shadow-2xl" />
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/20 to-transparent skew-x-[-20deg] animate-shimmer" />
+              </div>
+
+              <div>
+                <h2 className="text-3xl font-display font-black text-blue-600 drop-shadow-sm">Tutorial Gift!</h2>
+                <p className="text-slate-500 font-bold mt-2">
+                  Here is a free Pass Card to show you how it works!
+                </p>
+              </div>
+
+              <Button
+                onClick={() => {
+                  addPassCards(1);
+                  setPassCardsState(getPassCards());
+                  setShowTutorialPassGift(false);
+                  
+                  // Automatically complete the 'pass' step and move to 'continue'
+                  if (showMarketTutorial && marketTutorialStep === 'pass') {
+                    setUpgrades(prev => ({ ...prev, hasFuel: true }));
+                    setMarketTutorialStep('continue');
+                  }
+                }}
+                className="w-full py-8 text-xl font-display font-black bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-3xl shadow-xl border-b-8 border-blue-800 active:translate-y-1 active:border-b-4 transition-all"
+              >
+                CLAIM!
+              </Button>
+            </div>
+            <style>{`
+              @keyframes shimmer { 0% { left: -100%; } 100% { left: 100%; } }
+              .animate-shimmer { animation: shimmer 3s infinite; }
+              @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+              .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
+            `}</style>
+          </div>
         )}
 
         {showMarketTutorial && (

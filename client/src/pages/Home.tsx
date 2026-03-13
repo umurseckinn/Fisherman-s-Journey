@@ -1,10 +1,11 @@
 import { Play, Anchor, RotateCcw, X, Lock, Trophy, Crown, Gift, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { InfoCard } from "../components/InfoCard";
+import { PassCardPurchaseModal } from "../components/PassCardPurchaseModal";
 import { FishClass } from "../game/types";
 import { Link, useLocation } from "wouter";
 import { BoosterPurchaseModal, BoosterType, PurchasePackage } from "../components/BoosterPurchaseModal";
-import { resetProfile, getSelectedStartLevel, setSelectedStartLevel, getAdminMode, setAdminMode, getUserSelectedStartLevel, setUserSelectedStartLevel, getUserUnlockedLevel, isTutorialCompleted } from "../game/storage";
+import { resetProfile, getSelectedStartLevel, setSelectedStartLevel, getAdminMode, setAdminMode, getUserSelectedStartLevel, setUserSelectedStartLevel, getUserUnlockedLevel, isTutorialCompleted, getPassCards, addPassCards } from "../game/storage";
 import { VEHICLES } from "../game/vehicles";
 import { LEVEL_NAMES } from "../game/levelNames";
 import { Button } from "../components/ui/button";
@@ -13,6 +14,8 @@ export default function Home() {
   const [location, setLocation] = useLocation();
   const [selectedEntity, setSelectedEntity] = useState<FishClass | null>(null);
   const [purchaseBoosterType, setPurchaseBoosterType] = useState<BoosterType | null>(null);
+  const [showPassCardPurchase, setShowPassCardPurchase] = useState(false);
+  const [passCards, setPassCardsState] = useState(() => getPassCards());
   const [globalBoosters, setGlobalBoosters] = useState(() => {
     const saved = localStorage.getItem('global_boosters');
     if (saved) {
@@ -75,6 +78,13 @@ export default function Home() {
     setSelectedEntity(type);
   };
 
+  const handlePassCardPurchase = (amount: number) => {
+    addPassCards(amount);
+    setPassCardsState(getPassCards());
+    setShowPassCardPurchase(false);
+    console.log(`Initiating IAP for ${amount} Pass Cards`);
+  };
+
   return (
     <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-start py-10 pt-24 px-4 pt-safe-32 pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
       <style>{`
@@ -88,7 +98,7 @@ export default function Home() {
 
       {/* Main Card */}
       <div className="max-w-sm w-full bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl px-6 py-4 border-4 border-white relative z-10 flex flex-col items-center text-center">
-
+        
         {/* Logo / Icon Area */}
         <div className="flex items-center justify-center -mt-2 -mb-4 transform -rotate-6 hover:rotate-0 transition-transform duration-500 z-0">
           <img
@@ -556,6 +566,12 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+      {showPassCardPurchase && (
+        <PassCardPurchaseModal 
+          onClose={() => setShowPassCardPurchase(false)}
+          onPurchase={(amount) => handlePassCardPurchase(amount)}
+        />
       )}
     </div>
   );

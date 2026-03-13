@@ -2336,8 +2336,11 @@ export class GameEngine {
 
   private applyBubbleEffect() {
     this.state.hookSpeedBoostMs = 5000;
-    this.state.buoyancyOffset = -3;
-    this.state.buoyancyOffsetMs = 5000;
+    // Permanent -1kg storage weight reduction
+    this.state.inventory = this.state.inventory.map(item => ({
+      ...item,
+      weight: Math.max(0, item.weight - 1)
+    }));
     this.recalculateStorage();
   }
 
@@ -2924,42 +2927,42 @@ export class GameEngine {
         const config = configMap[item.type] || { color: '#FFFFFF', name: item.type };
 
         // Draw premium card
-        const cardW = 85;
-        const cardH = 110;
-        const cardY = (startY + i * 125) | 0; // Stack downwards from top
+        const cardW = 100; // Increased width from 85
+        const cardH = 135; // Increased height from 110
+        const cardY = (startY + i * 145) | 0; // Increased vertical spacing from 125
         const cardX = startX | 0; 
         
         // Removed shadows for performance
         this.ctx.fillStyle = config.color;
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 3;
-        this.roundRect(this.ctx, cardX, cardY, cardW, cardH, 18, true, true);
+        this.roundRect(this.ctx, cardX, cardY, cardW, cardH, 22, true, true);
         
         // Draw icon using correct SpriteManager key
         const assetKey = `fish_${item.type}`;
         const img = this.spriteManager.getImage(assetKey);
         if (img && img.complete) {
-          const imgSize = 55;
-          this.ctx.drawImage(img, (cardX + (cardW - imgSize) / 2) | 0, (cardY + 10) | 0, imgSize, imgSize);
+          const imgSize = 82; // %50 larger than 55
+          this.ctx.drawImage(img, (cardX + (cardW - imgSize) / 2) | 0, (cardY + 12) | 0, imgSize, imgSize);
         }
 
-        // Draw Name
+        // Draw Name (%25 larger than 10px)
         this.ctx.fillStyle = '#334155';
-        this.ctx.font = 'bold 10px sans-serif';
+        this.ctx.font = 'bold 12.5px sans-serif';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(config.name, cardX + cardW / 2, cardY + 80);
+        this.ctx.fillText(config.name, cardX + cardW / 2, cardY + 102);
 
-        // Draw "INFO" pill (looks like the price pill in the screenshot)
-        const pillW = 40;
-        const pillH = 18;
+        // Draw "INFO" pill (%25 larger than 40x18)
+        const pillW = 50;
+        const pillH = 22;
         const pillX = cardX + (cardW - pillW) / 2;
-        const pillY = cardY + 88;
+        const pillY = cardY + 108;
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        this.roundRect(this.ctx, pillX, pillY, pillW, pillH, 9, true, false);
+        this.roundRect(this.ctx, pillX, pillY, pillW, pillH, 11, true, false);
         
         this.ctx.fillStyle = '#3b82f6';
-        this.ctx.font = '900 9px sans-serif';
-        this.ctx.fillText('INFO', cardX + cardW / 2, pillY + 12.5);
+        this.ctx.font = '900 11.25px sans-serif'; // %25 larger than 9px
+        this.ctx.fillText('INFO', cardX + cardW / 2, pillY + 15.5);
       }
       this.ctx.restore();
     }
@@ -3617,11 +3620,11 @@ export class GameEngine {
     }
 
     // Squash & Stretch Optimization (Fake Motion Blur)
-    if (fish && !isCaught && !isStatic && fish.speed > 1.5) {
+    if (fish && !isCaught && !isStatic && fish.speed > 4.0) {
       const velocityX = fish.speed * (fish.direction || -1);
       const absVX = Math.abs(velocityX);
-      if (absVX > 2) {
-        const stretch = 1 + Math.min(0.2, (absVX - 2) * 0.05);
+      if (absVX > 5.0) {
+        const stretch = 1 + Math.min(0.2, (absVX - 5.0) * 0.05);
         const squash = 1 / stretch;
         this.ctx.scale(stretch, squash);
       }
