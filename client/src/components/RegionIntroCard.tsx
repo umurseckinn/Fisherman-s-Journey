@@ -1,41 +1,66 @@
 import React from "react";
 import { X, Map, Waves } from "lucide-react";
 
-const REGION_INTROS: Record<number, { title: string; range: string; story: string }> = {
-  1: {
-    title: "Training Bay",
-    range: "Tutorial",
-    story: "Welcome to the Training Bay! Here you will learn the ropes of being a master fisherman. Master the use of Harpoons, TNT, Nets, and the mystical Anchor. This short voyage is designed to prepare you for the real challenges ahead in Dawnbreak Cove and beyond. Complete this ritual once, and your true journey begins."
-  },
+const REGION_INTROS: Record<number, { title: string; range: string; story: string; image: string }> = {
   2: {
     title: "Dawnbreak Cove",
-    range: "L1-L19",
-    story: "This is where every sailor takes their first breath, where saltwater first mixes with their blood. Beneath its calm exterior lie treacherous currents and ancient shipwrecks waiting for novices. As the first light of dawn hits the shallow waters, those who dream of becoming legends set their sails here for the very first time. Yet, only those who learn the rhythm of the waves can depart this safe haven in one piece."
+    range: "L1 - L10",
+    story: "This is where every sailor takes their first breath. Beneath its calm exterior lie ancient shipwrecks waiting for novices. As the first light of dawn hits the shallow waters, those who dream of becoming legends set their sails here for the very first time.",
+    image: "Dawnbreak Cove.png"
+  },
+  11: {
+    title: "Twilight Reef",
+    range: "L11 - L20",
+    story: "The glowing corals illuminate the darkened waters, marking your arrival at the mysterious Twilight Reef. Whispers of forgotten sea-dwellers echo through the tides as you dive deeper into the beautiful but treacherous abyss. Now that you have mastered the shallows, the enchanted creatures here will test your growing combat skills. Equip your water-breathing gear and prepare to face the lurking shadows of the vibrant coral mazes. Click here to dive into the adventure and conquer the submerged secrets waiting between levels 11 and 20!",
+    image: "Twilight_Reef.png"
   },
   21: {
     title: "The Whispering Atolls",
-    range: "L20-L29",
-    story: "Mesmerizing with their dazzling colors, these waters are actually one of nature's most ruthless battlegrounds. The massive coral labyrinths beneath the surface hide both unparalleled treasures and bloodthirsty sea creatures. At night, the phosphorescent glow emitted by the corals shines like the souls of lost sailors. Only those with sharp instincts can press on without heeding the whispers of these isles."
+    range: "L21 - L30",
+    story: "Mesmerizing with their dazzling colors, these waters are actually one of nature's most ruthless battlegrounds. The massive coral labyrinths beneath the surface hide both unparalleled treasures and bloodthirsty sea creatures. Only those with sharp instincts can press on.",
+    image: "The Whispering Atolls.png"
   },
   31: {
     title: "The Abyssal Blue",
-    range: "L30-L39",
-    story: "This is the boundary where light slowly fades, descending into the dark heart of the ocean. The water is so deep and ink-black that looking down feels like staring into a massive abyss. The familiar waves of the surface give way to silent, deadly whirlpools created by colossal sea monsters. Only those brave enough to face the darkness can unearth the secrets of this blue hell."
+    range: "L31 - L40",
+    story: "This is the boundary where light slowly fades, descending into the dark heart of the ocean. The familiar waves of the surface give way to silent, deadly whirlpools. Only those brave enough to face the darkness can unearth the secrets of this blue hell.",
+    image: "The Abyssal Blue.png"
   },
   41: {
     title: "Tempest Strait",
-    range: "L40-L59",
-    story: "It is a cursed passage where the sky is forever black and the sea is eternally wrathful. As lightning batters the waters, colossal waves wait to crush even the sturdiest ships like nutshells. The winds here sound less like a storm and more like the shrieks of furious sea spirits. Surviving this strait is not a matter of luck, but an absolute victory won against the fury of nature."
+    range: "L41 - L50",
+    story: "It is a passage where the sky is forever black and the sea is eternally wrathful. Colossal waves wait to crush even the sturdiest ships. Surviving this strait is not a matter of luck, but an absolute victory won against the fury of nature.",
+    image: "Tempest Strait.png"
+  },
+  51: {
+    title: "Aurora Depths",
+    range: "L51 - L60",
+    story: "A mystical realm illuminated by shimmering underwater lights that mimic the northern sky. The currents here move in strange, rhythmic patterns, and the silence is heavy with ancient magic. Watch the glow, for it guides the worthy.",
+    image: "The Infinite Maelstrom.png" // Placeholder
   },
   61: {
-    title: "The Infinite Maelstrom",
-    range: "L60-L79",
-    story: "This is a mystical realm where time and direction sink to the bottom of the ocean, and reality itself warps. Massive, never-ending currents drag ships into an endless spiral. In these waters where compasses go mad, an island you saw yesterday might completely vanish tomorrow. To break this cycle, you must conquer not the sea, but your own mind."
+    title: "Crimson Moon",
+    range: "L61 - L70",
+    story: "A sinister red glow bathes the barren landscape, warning all who dare to step beneath the Crimson Moon. Vengeful spirits and nightmarish beasts roam these haunted lands, drawn by the scent of a seasoned warrior like you. Only those who have survived countless battles can hope to withstand the maddening corruption of this dark realm. Sharpen your finest weapons and brace your mind for the terrifying trials that lie ahead in the shadows. Step into the bloody moonlight today and prove your worth in the deadly challenges of levels 61 to 70!",
+    image: "Crimson_Moon.png"
+  },
+  71: {
+    title: "Chaos Vortex",
+    range: "L71 - L80",
+    story: "This is a mystical realm where time and direction sink to the bottom of the ocean. Massive, never-ending currents drag ships into an endless spiral. In these waters where compasses go mad, you must conquer not the sea, but your own mind.",
+    image: "The Infinite Maelstrom.png"
   },
   81: {
-    title: "The Paragon's Run",
-    range: "L80-L99",
-    story: "Situated at the edge of the world, this is the final trial accessible only to those who will write their names in history with letters of gold. These waters are patrolled by the legendary guardians of the ocean incarnate. Every single mile is an epic battle for survival. Those who complete this run are no longer mere sailors, but living legends of the ocean."
+    title: "Golden Sanctum",
+    range: "L81 - L90",
+    story: "The final trial accessible only to those who will write their names in history with letters of gold. Every single mile is an epic battle for survival. Those who complete this run are no longer mere sailors, but living legends.",
+    image: "The Paragon's Run.png"
+  },
+  91: {
+    title: "Legend's End",
+    range: "L91 - L100",
+    story: "The earth trembles and the skies shatter as you finally stand before the ultimate battleground, Legend's End. This is the apocalyptic arena where gods have fallen and the greatest heroes of history have met their doom. Every monstrous foe here possesses world-ending power, demanding absolute perfection and tactical mastery from your skills. Gather your most legendary artifacts and form your strongest alliances, for this final expedition will decide the fate of everything. Accept your ultimate destiny now and claim your eternal glory by conquering the supreme challenges of levels 91 to 100!",
+    image: "Legend's End.png"
   }
 };
 
@@ -47,7 +72,7 @@ interface RegionIntroCardProps {
 export const RegionIntroCard: React.FC<RegionIntroCardProps> = ({ startLevel, onClose }) => {
   const details = REGION_INTROS[startLevel];
   if (!details) return null;
-  const backgroundUrl = `/assets/episodes/${encodeURIComponent(details.title)}.png`;
+  const backgroundUrl = `/assets/episodes/${details.image}`;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px] animate-in fade-in duration-200">
@@ -89,7 +114,7 @@ export const RegionIntroCard: React.FC<RegionIntroCardProps> = ({ startLevel, on
             onClick={onClose}
             className="w-full bg-amber-400 text-slate-900 py-4 rounded-2xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
-            Start Region
+            BACK TO THE LEVEL SELECTION
           </button>
         </div>
       </div>

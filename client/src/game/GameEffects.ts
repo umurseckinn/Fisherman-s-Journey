@@ -133,7 +133,7 @@ export class GameEffects {
     private blipTimer = 0;
 
     // Motion trail (Zap, Tide, King gibi hızlı balıklar için)
-    public trailHistory: Array<Array<{ x: number; y: number; color: string }>> = [];
+    private trailHistory: Map<number, Array<{ x: number; y: number; color: string }>> = new Map();
 
     constructor(canvasW = 450, canvasH = 800) {
         this.canvasW = canvasW;
@@ -142,11 +142,9 @@ export class GameEffects {
 
     applySlowMotionEffect(ctx: CanvasRenderingContext2D, intensity: number): void {
         const t = Math.max(0, Math.min(1, intensity));
+        // AAA Optimization: Avoid ctx.filter (blur/saturate) - it's a massive performance killer with 120+ objects
+        // Instead, use a subtle globalAlpha reduction and a light darkening overlay
         ctx.globalAlpha *= 1 - t * 0.15;
-        const blur = (0.6 * t).toFixed(2);
-        const saturation = (1 - t * 0.2).toFixed(2);
-        const brightness = (1 - t * 0.08).toFixed(2);
-        ctx.filter = `blur(${blur}px) saturate(${saturation}) brightness(${brightness})`;
     }
 
     // ─── Tween yönetimi ───────────────────────────────────────────────────────
@@ -442,26 +440,34 @@ export class GameEffects {
     // ─── Motion trail (hızlı balıklar) ───────────────────────────────────────
     /** Her frame çağrılır, hızlı balıklar (Zap, Tide, King) için trail bırakır */
     updateTrail(entityId: number, x: number, y: number, color: string): void {
-        if (!this.trailHistory[entityId]) this.trailHistory[entityId] = [];
-        const trail = this.trailHistory[entityId];
+        if (!this.trailHistory.has(entityId)) {
+            this.trailHistory.set(entityId, []);
+        }
+        const trail = this.trailHistory.get(entityId)!;
         trail.push({ x, y, color });
-        if (trail.length > 3) trail.splice(0, 1);
+        if (trail.length > 3) trail.shift();
+    }
+
+    /** Remove trail history for a specific entity to free memory */
+    clearTrail(entityId: number): void {
+        this.trailHistory.delete(entityId);
     }
 
     drawTrail(ctx: CanvasRenderingContext2D, entityId: number, radius: number): void {
-        const trail = this.trailHistory[entityId];
-        if (!trail) return;
+        const trail = this.trailHistory.get(entityId);
+        if (!trail || trail.length === 0) return;
+        
+        ctx.save();
         const alphas = [0.05, 0.14, 0.28];
         for (let i = 0; i < trail.length; i++) {
             const item = trail[i];
-            ctx.save();
             ctx.globalAlpha = alphas[i] ?? 0.05;
             ctx.fillStyle = item.color;
             ctx.beginPath();
             ctx.arc(item.x, item.y, radius, 0, Math.PI * 2);
             ctx.fill();
-            ctx.restore();
         }
+        ctx.restore();
     }
 
     // ─── Ambient olta ucu titremi ─────────────────────────────────────────────
@@ -679,6 +685,6 @@ export class GameEffects {
         this.legendaryMs = 0;
         this.hookBreakMs = 0;
         this.waterBlips = [];
-        this.trailHistory = [];
+        this.trailHistory.clear();
     }
 }

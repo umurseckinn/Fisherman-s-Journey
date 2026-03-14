@@ -73,7 +73,6 @@ export default function Game() {
   const [activeCurse, setActiveCurse] = useState<CurseType>('none');
   const [curseTimerMs, setCurseTimerMs] = useState(0);
   const [curseCard, setCurseCard] = useState<CurseType | null>(null);
-  const [regionCardStartLevel, setRegionCardStartLevel] = useState<number | null>(null);
   const [gameOverReason, setGameOverReason] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
@@ -151,9 +150,7 @@ export default function Game() {
   });
   const [selectedBooster, setSelectedBooster] = useState<'harpoon' | 'net' | 'tnt' | 'anchor' | null>(null);
   const shownCurseLevelsRef = useRef<Set<number>>(new Set());
-  const shownRegionLevelsRef = useRef<Set<number>>(new Set());
   const curseCardRef = useRef<CurseType | null>(null);
-  const regionCardRef = useRef<number | null>(null);
   const pendingCurseRef = useRef<CurseType | null>(null);
 
   useEffect(() => {
@@ -180,10 +177,6 @@ export default function Game() {
   useEffect(() => {
     curseCardRef.current = curseCard;
   }, [curseCard]);
-
-  useEffect(() => {
-    regionCardRef.current = regionCardStartLevel;
-  }, [regionCardStartLevel]);
 
   const handleTriggerGameOver = useCallback((reason: string | null) => {
     setIsGameOverFading(true);
@@ -228,8 +221,6 @@ export default function Game() {
 
     const levelConfig = LEVEL_CONFIG[currentLevel as keyof typeof LEVEL_CONFIG];
     const levelCurse = levelConfig?.curse ?? 'none';
-    const regionStartLevels = new Set([1, 21, 31, 41, 61, 81]);
-    const shouldShowRegion = regionStartLevels.has(currentLevel) && !shownRegionLevelsRef.current.has(currentLevel);
     const shouldShowCurse = levelCurse !== 'none' && !shownCurseLevelsRef.current.has(currentLevel);
     const initialState: GameState = {
       score,
@@ -275,7 +266,7 @@ export default function Game() {
       activeBooster: selectedBooster,
       anchorEffectTimerMs: 0,
       startTimerMs: 750,
-      isPaused: shouldShowRegion || shouldShowCurse,
+      isPaused: shouldShowCurse,
       isTimeFrozen: false
     };
 
@@ -379,12 +370,7 @@ export default function Game() {
     engineRef.current = engine;
 
     pendingCurseRef.current = shouldShowCurse ? levelCurse : null;
-    if (shouldShowRegion) {
-      shownRegionLevelsRef.current.add(currentLevel);
-      engine.pause();
-      setIsPaused(true);
-      setRegionCardStartLevel(currentLevel);
-    } else if (shouldShowCurse) {
+    if (shouldShowCurse) {
       shownCurseLevelsRef.current.add(currentLevel);
       engine.pause();
       setIsPaused(true);
@@ -1256,7 +1242,7 @@ export default function Game() {
                   <button
                     key={booster.id}
                     onClick={() => handleBoosterClick(booster)}
-                    className={`relative w-20 h-20 flex items-center justify-center transition-all ${booster.count === 0
+                    className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all ${booster.count === 0
                       ? 'opacity-50 grayscale hover:scale-105'
                       : selectedBooster === booster.id
                         ? 'scale-125 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]'
@@ -1264,14 +1250,12 @@ export default function Game() {
                       } ${spotlighted ? 'scale-125 drop-shadow-[0_0_20px_rgba(255,215,0,0.9)] animate-pulse' : ''}`}
                     style={{ pointerEvents: pointerEnabled ? 'auto' : 'none', zIndex: spotlighted ? 60 : undefined }}
                   >
-                    <img src={booster.imageSrc} alt={booster.label} className="w-24 h-24 max-w-none object-contain scale-125 hover:scale-150 transition-transform origin-center" />
-                    <span className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border border-white">
+                    <img src={booster.imageSrc} alt={booster.label} className="w-24 h-24 max-w-none object-contain scale-125 hover:scale-[1.4] transition-transform origin-center" />
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border border-white z-10">
                       {booster.count}
                     </span>
                     {selectedBooster === booster.id && (
-                      <div className="absolute -top-1 -right-1 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-md animate-in zoom-in-50">
-                        <X className="w-3 h-3" />
-                      </div>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-4 border-blue-400 rounded-full w-20 h-20 animate-ping opacity-30 pointer-events-none" />
                     )}
                   </button>
                 );
@@ -1368,7 +1352,7 @@ export default function Game() {
                         <img
                           src={resolveInventoryImage(item.type)}
                           alt={item.name}
-                          className="w-full h-full object-contain"
+                          className="max-w-full max-h-full w-auto h-auto object-contain"
                         />
                         {item.count > 1 && (
                           <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border border-white">
@@ -1469,10 +1453,10 @@ export default function Game() {
                   <button
                     key={b.id}
                     onClick={() => { setPurchaseBoosterType(b.id as any); setPurchaseModalOpen(true); }}
-                    className="relative group hover:scale-110 active:scale-95 transition-all"
+                    className="relative w-16 h-16 rounded-full flex items-center justify-center group hover:scale-110 active:scale-95 transition-all"
                   >
-                    <img src={b.icon} alt={b.id} className="w-24 h-24 object-contain drop-shadow-xl" />
-                    <span className="absolute top-2 right-1 bg-red-500 text-white text-[13px] font-black w-7 h-7 flex items-center justify-center rounded-full border-2 border-white shadow-md z-10">
+                    <img src={b.icon} alt={b.id} className="w-20 h-20 object-contain drop-shadow-xl scale-110" />
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white shadow-md z-10">
                       {b.count}
                     </span>
                   </button>
@@ -1511,7 +1495,11 @@ export default function Game() {
             island={currentLevel}
             reason={gameOverReason ?? undefined}
             onRetry={() => {
-              setLocation("/levels");
+              if (currentLevel === 1) {
+                window.location.reload();
+              } else {
+                setLocation("/levels");
+              }
             }}
             scoreBreakdown={scoreBreakdown ?? undefined}
           />
@@ -1525,7 +1513,7 @@ export default function Game() {
         )}
 
         {/* Pause Menu Overlay */}
-        {isPaused && !curseCard && !regionCardStartLevel && (
+        {isPaused && !curseCard && (
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center animate-in fade-in duration-300 px-8">
             <div className="bg-white rounded-[32px] w-full max-w-xs p-8 shadow-2xl flex flex-col gap-4 border-4 border-white items-center">
               <div className="text-center mb-4">
@@ -1594,25 +1582,7 @@ export default function Game() {
           />
         )}
 
-        {regionCardStartLevel && (
-          <RegionIntroCard
-            startLevel={regionCardStartLevel}
-            onClose={() => {
-              setRegionCardStartLevel(null);
-              const pendingCurse = pendingCurseRef.current;
-              pendingCurseRef.current = null;
-              if (pendingCurse && !shownCurseLevelsRef.current.has(currentLevel)) {
-                shownCurseLevelsRef.current.add(currentLevel);
-                setCurseCard(pendingCurse);
-                return;
-              }
-              if (engineRef.current) {
-                engineRef.current.resume();
-                setIsPaused(false);
-              }
-            }}
-          />
-        )}
+
 
         {purchaseBoosterType && (
           <BoosterPurchaseModal

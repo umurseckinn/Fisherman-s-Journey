@@ -1,10 +1,12 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Home as HomeIcon, ArrowLeft, Play, Lock, Crown, Star, Gift, Anchor } from "lucide-react";
+import { Home as HomeIcon, ArrowLeft, Play, Lock, Crown, Star, Gift, Anchor, Info } from "lucide-react";
 import { LEVEL_CONFIG } from "@/game/GameEngine";
 import { LEVEL_NAMES } from "@/game/levelNames";
 import { BACKGROUND_THEMES, type BackgroundTheme } from "@/game/DynamicBackgroundManager";
 import { getAdminMode, getSelectedStartLevel, getUserSelectedStartLevel, getUserUnlockedLevel, setSelectedStartLevel, setUserSelectedStartLevel, isTutorialCompleted, getStartLevelForMode, getMaxLevelReached } from "@/game/storage";
+
+import { RegionIntroCard } from "@/components/RegionIntroCard";
 
 // --- Helper for color interpolation ---
 const parseHex = (hex: string) => {
@@ -59,6 +61,35 @@ const getLevelNodeStyle = (levelId: number) => {
   };
 };
 
+// --- Stage Background Mapping ---
+const STAGE_BACKGROUNDS = [
+  "Dawnbreak Cove.png",
+  "Twilight_Reef.png",
+  "The Whispering Atolls.png",
+  "The Abyssal Blue.png",
+  "Tempest Strait.png",
+  "The Infinite Maelstrom.png",
+  "Crimson_Moon.png",
+  "The Infinite Maelstrom.png",
+  "The Paragon's Run.png",
+  "Legend's End.png"
+];
+
+const STAGE_NAMES = [
+  "Dawnbreak Cove",
+  "Twilight Reef",
+  "Whispering Atolls",
+  "Abyssal Blue",
+  "Tempest Strait",
+  "Aurora Depths",
+  "Crimson Moon",
+  "Chaos Vortex",
+  "Golden Sanctum",
+  "Legend's End"
+];
+
+const STAGE_INTRO_KEYS = [2, 11, 21, 31, 41, 51, 61, 71, 81, 91];
+
 // --- Level Node Component (Memoized for performance) ---
 const LevelNode = React.memo(({ 
   level, 
@@ -68,6 +99,7 @@ const LevelNode = React.memo(({
   isPassed, 
   isCheckpoint, 
   isBoss, 
+  isBossRow,
   onClick 
 }: {
   level: number;
@@ -77,20 +109,30 @@ const LevelNode = React.memo(({
   isPassed: boolean;
   isCheckpoint: boolean;
   isBoss: boolean;
+  isBossRow?: boolean;
   onClick: () => void;
 }) => {
   const nodeStyle = getLevelNodeStyle(level);
 
+  const handleClick = () => {
+    if (!isSelectable) {
+      alert("Bu seviyeye henüz erişiminiz yok! Önceki seviyeleri tamamlamalısınız.");
+      return;
+    }
+    onClick();
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       id={`level-node-${level}`}
       className={`
-        relative aspect-square rounded-[24px] flex items-center justify-center text-2xl font-display font-black transition-[transform,opacity] duration-300 will-change-transform
+        relative rounded-[20px] flex items-center justify-center text-3xl font-display font-black transition-[transform,opacity] duration-300 will-change-transform
+        ${isBossRow ? 'col-span-3 h-20' : 'aspect-square h-20'}
         ${!isSelectable 
-          ? "opacity-80 grayscale-[0.4] cursor-not-allowed border-2 border-white/5 shadow-inner" 
+          ? "opacity-60 grayscale-[0.4] cursor-default border-2 border-white/5 shadow-inner" 
           : isSelected
-            ? "shadow-[0_0_25px_rgba(255,165,0,0.7)] border-b-8 border-orange-700 -translate-y-1 animate-slow-pulse scale-110 z-20"
+            ? "shadow-[0_0_20px_rgba(255,165,0,0.6)] border-b-8 border-orange-700 -translate-y-1 animate-slow-pulse scale-105 z-20"
             : isPassed
               ? "border-b-4 border-black/20 hover:scale-105 active:scale-95 shadow-lg border-2 border-white/10"
               : "border-b-4 border-white/10 hover:scale-105 active:scale-95 border-2 border-white/20"
@@ -98,35 +140,30 @@ const LevelNode = React.memo(({
       `}
     >
       <div 
-        className="absolute inset-0 rounded-[22px] overflow-hidden transition-opacity duration-500 will-change-[filter,opacity]"
+        className="absolute inset-0 rounded-[18px] overflow-hidden transition-opacity duration-500 will-change-[filter,opacity]"
         style={{ 
           background: nodeStyle.gradient,
-          filter: !isSelectable ? `${nodeStyle.filter} blur(4px)` : isSelected ? '' : nodeStyle.filter,
-          opacity: !isSelectable ? 0.6 : 1,
+          filter: nodeStyle.filter,
+          opacity: !isSelectable ? 0.4 : 0.85,
           transform: 'translateZ(0)'
         }}
       />
 
       <div className="relative z-10 flex items-center justify-center w-full h-full">
         {!isSelectable ? (
-          <Lock className="w-6 h-6 text-white/90 drop-shadow-md" />
+          <Lock className="w-6 h-6 text-yellow-400 drop-shadow-md fill-yellow-400/20" />
         ) : (
-          <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-white">
-            {gameLevelNum}
+          <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-white flex items-center gap-2">
+            {isBossRow ? "BOSS" : gameLevelNum}
+            {isBossRow && <Crown className="w-5 h-5 text-yellow-400 fill-yellow-400" />}
           </span>
         )}
       </div>
 
-      {isCheckpoint && (
+      {isCheckpoint && !isBossRow && (
         <div className={`absolute -top-3 -left-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-full px-2.5 py-1.5 shadow-2xl border-2 border-white z-50 flex items-center gap-1 animate-bounce`}>
           <Anchor className="w-3.5 h-3.5 text-white fill-white drop-shadow-sm" />
           <span className="text-[10px] font-display font-black text-white leading-none tracking-tight drop-shadow-md">CHECKPOINT</span>
-        </div>
-      )}
-
-      {isBoss && isSelectable && (
-        <div className={`absolute -top-2 -right-2 rounded-full p-1.5 shadow-xl border-2 border-white z-50 animate-bounce bg-yellow-400`}>
-          <Crown className="w-3.5 h-3.5 text-orange-700 fill-orange-700" />
         </div>
       )}
       
@@ -149,6 +186,8 @@ export default function LevelSelect() {
 
   const initialLevel = isAdminMode ? getStartLevelForMode() : highestSelectableInternalId;
   const [selectedLevel, setSelectedLevel] = useState(initialLevel);
+  const [currentStage, setCurrentStage] = useState(() => Math.floor((selectedLevel - 2) / 10));
+  const [showRegionIntro, setShowRegionIntro] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to selected level on mount
@@ -163,8 +202,10 @@ export default function LevelSelect() {
   }, []);
 
   const levels = useMemo(() => {
-    return Array.from({ length: 99 }, (_, i) => i + 2);
-  }, []);
+    const all = Array.from({ length: 100 }, (_, i) => i + 2);
+    const start = currentStage * 10;
+    return all.slice(start, start + 10);
+  }, [currentStage]);
 
   const selectedLevelStyle = useMemo(() => getLevelNodeStyle(selectedLevel), [selectedLevel]);
 
@@ -177,15 +218,22 @@ export default function LevelSelect() {
     setLocation("/game");
   };
 
+  const nextStage = () => {
+    if (currentStage < 9) {
+      setCurrentStage(currentStage + 1);
+    }
+  };
+
+  const prevStage = () => {
+    if (currentStage > 0) {
+      setCurrentStage(currentStage - 1);
+    }
+  };
+
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 pt-safe pb-safe overflow-hidden font-sans">
-      {/* 1. Oceanic Gradient Background - Dynamic based on Selected Level */}
-      <div 
-        className="absolute inset-0 transition-all duration-1000 opacity-90 pointer-events-none" 
-        style={{ 
-          background: `linear-gradient(to bottom, ${getInterpolatedColors(selectedLevel).skyTop}, ${getInterpolatedColors(selectedLevel).skyBottom}, ${getInterpolatedColors(selectedLevel).seaTop}, ${getInterpolatedColors(selectedLevel).seaBottom})` 
-        }} 
-      />
+    <div className="min-h-screen relative flex items-center justify-center p-4 pt-safe pb-safe overflow-hidden font-sans bg-slate-950">
+      {/* 1. Global Dark Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-black z-0" />
       
       {/* Bubbles Decoration - Optimized for mobile performance */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -208,36 +256,48 @@ export default function LevelSelect() {
       {/* 2. Glassmorphism Container - Optimized backdrop-blur for mobile */}
       <div className="relative w-full max-w-md h-[90vh] bg-white/10 backdrop-blur-md rounded-[40px] shadow-[inset_0_0_20px_rgba(255,255,255,0.2)] border-4 border-white/30 flex flex-col overflow-hidden animate-in fade-in duration-500">
         
+        {/* Regional Background Image - Now contained inside the Phone */}
+        <div 
+          className="absolute inset-0 transition-all duration-1000 opacity-100 pointer-events-none bg-cover bg-center z-0" 
+          style={{ 
+            backgroundImage: `url("/assets/episodes/${STAGE_BACKGROUNDS[currentStage]}")`
+          }} 
+        >
+           <div className="absolute inset-0 bg-black/40" />
+        </div>
+        
         {/* Header */}
         <div className="p-6 pb-2 flex justify-between items-center relative z-10">
-          <div className="flex items-center gap-3">
-            <Link href="/garage">
-              <button className="p-3 rounded-2xl bg-white/20 text-white hover:bg-white/30 transition-all border-2 border-white/20 active:scale-90 shadow-lg">
-                <ArrowLeft className="w-6 h-6 stroke-[3px]" />
-              </button>
-            </Link>
-            <div className="flex flex-col">
-              <h2 className="text-2xl font-display font-black text-white text-shadow-lg tracking-tight uppercase">Island Select</h2>
-              <div className="text-cyan-100 text-[10px] font-bold tracking-widest uppercase opacity-80">
-                {isAdminMode ? "🗺️ EXPLORER MODE" : `🏝️ ${maxGameLevelPassed} PASSED`}
-              </div>
-            </div>
-          </div>
-          <Link href="/">
+          <Link href="/garage">
             <button className="p-3 rounded-2xl bg-white/20 text-white hover:bg-white/30 transition-all border-2 border-white/20 active:scale-90 shadow-lg">
-              <HomeIcon className="w-6 h-6 stroke-[3px]" />
+              <ArrowLeft className="w-6 h-6 stroke-[3px]" />
             </button>
           </Link>
+          
+          <div className="flex flex-col items-center flex-1 px-2 overflow-hidden">
+            <h2 className="text-2xl font-display font-black text-white text-shadow-lg tracking-tight uppercase whitespace-nowrap">Island Select</h2>
+            <div className="text-cyan-100 text-[11px] font-bold tracking-widest uppercase opacity-90 text-center w-full truncate px-1">
+              {isAdminMode ? "🗺️ EXPLORER MODE" : STAGE_NAMES[currentStage]}
+            </div>
+          </div>
+
+          <button 
+            onClick={() => setShowRegionIntro(true)}
+            className="p-3 rounded-2xl bg-white/20 text-white hover:bg-white/30 transition-all border-2 border-white/20 active:scale-90 shadow-lg"
+          >
+            <Info className="w-6 h-6 stroke-[3px]" />
+          </button>
         </div>
 
-        {/* 3. Level Grid (Bubbles/Squircles) */}
         <div 
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar relative z-10"
+          className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar relative z-10 flex flex-col items-center justify-center"
         >
-          <div className="grid grid-cols-4 gap-4 pb-8">
-            {levels.map(level => {
+          <div className="grid grid-cols-3 gap-2 w-full max-w-xs mx-auto">
+            {levels.map((level, index) => {
               const gameLevelNum = level - 1;
+              const isBossLevel = gameLevelNum % 10 === 0;
+              const isBossRow = index === 9; // The last level in the 10-level set
               return (
                 <LevelNode
                   key={level}
@@ -247,7 +307,8 @@ export default function LevelSelect() {
                   isSelectable={isAdminMode || gameLevelNum <= highestSelectableGameLevel}
                   isPassed={!isAdminMode && gameLevelNum <= maxGameLevelPassed}
                   isCheckpoint={gameLevelNum % 5 === 0}
-                  isBoss={gameLevelNum % 10 === 0}
+                  isBoss={isBossLevel}
+                  isBossRow={isBossRow}
                   onClick={() => {
                     const isSelectable = isAdminMode || gameLevelNum <= highestSelectableGameLevel;
                     if (isSelectable) setSelectedLevel(level);
@@ -260,28 +321,36 @@ export default function LevelSelect() {
 
         {/* 4. Dynamic Info Panel & Juicy Start Button */}
         <div className="px-6 py-4 bg-black/20 backdrop-blur-md border-t-2 border-white/10 relative z-20">
-          <div className="flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center border-2 border-white/20 shadow-inner">
-               {(() => {
-                  const gameNum = selectedLevel - 1;
-                  if (gameNum % 10 === 0) return <Crown className="w-8 h-8 text-yellow-400 fill-yellow-400 drop-shadow-glow" />;
-                  if (gameNum % 5 === 0) return <Gift className="w-8 h-8 text-cyan-300" />;
-                  return <Star className="w-8 h-8 text-white fill-white/20" />;
-               })()}
-            </div>
-            <div className="flex flex-col">
-              <div className="text-white font-display font-black text-xl tracking-tight leading-none mb-1 uppercase">
+          <div className="flex items-center justify-between mb-2 animate-in slide-in-from-bottom-4 duration-500">
+            <button 
+              onClick={prevStage}
+              disabled={currentStage === 0}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 disabled:opacity-20 rounded-xl text-[11px] font-black text-white uppercase tracking-tight transition-all border-2 border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)] active:scale-90"
+            >
+              Prev Stage
+            </button>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="text-white font-display font-black text-sm tracking-tight leading-none mb-0.5 uppercase">
                 Level {selectedLevel - 1}
               </div>
-              <div className="text-cyan-200 text-sm font-bold opacity-90 italic truncate max-w-[200px]">
+              <div className="text-cyan-200 text-xs font-bold opacity-90 italic truncate max-w-[150px]">
                 "{LEVEL_NAMES[selectedLevel] || "Unknown Waters"}"
               </div>
             </div>
+
+            <button 
+              onClick={nextStage}
+              disabled={currentStage === 9}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 disabled:opacity-20 rounded-xl text-[11px] font-black text-white uppercase tracking-tight transition-all border-2 border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)] active:scale-90"
+            >
+              Next Stage
+            </button>
           </div>
 
           <button
             onClick={startLevel}
-            className="mt-6 w-full group relative active:scale-95 transition-transform"
+            className="mt-4 w-full group relative active:scale-95 transition-transform"
           >
             {/* Dynamic Shadow based on Selected Level's Sea Color */}
             <div 
@@ -307,6 +376,13 @@ export default function LevelSelect() {
             </div>
           </button>
         </div>
+
+        {showRegionIntro && (
+          <RegionIntroCard
+            startLevel={STAGE_INTRO_KEYS[currentStage]}
+            onClose={() => setShowRegionIntro(false)}
+          />
+        )}
       </div>
 
       <style>{`

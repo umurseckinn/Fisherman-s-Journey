@@ -87,10 +87,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-start py-10 pt-24 px-4 pt-safe-32 pb-safe relative overflow-x-hidden overflow-y-auto font-sans">
+    <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-center p-4 pt-safe-32 pb-safe-8 relative overflow-x-hidden overflow-y-auto font-sans">
       <style>{`
         .pt-safe-32 {
-          padding-top: calc(env(safe-area-inset-top) + 2rem);
+          padding-top: calc(env(safe-area-inset-top) + 1.5rem);
+        }
+        .pb-safe-8 {
+          padding-bottom: calc(env(safe-area-inset-bottom) + 1.5rem);
         }
       `}</style>
       {/* Decorative Background Elements */}
@@ -346,7 +349,7 @@ export default function Home() {
                 <img
                   src="/assets/environment/shark_skeleton.png"
                   alt="Shark Skeleton"
-                  className="w-[96px] h-[72px] object-contain group-hover:scale-110 transition-all duration-300"
+                  className="max-w-[110px] max-h-[80px] w-auto h-auto object-contain group-hover:scale-110 transition-all duration-300"
                 />
               </div>
               <span className="text-sm font-bold text-slate-700">Shark Skeleton</span>
@@ -362,7 +365,7 @@ export default function Home() {
                 <img
                   src="/assets/environment/anchor.png"
                   alt="Anchor"
-                  className="w-[96px] h-[72px] object-contain group-hover:scale-110 transition-all duration-300"
+                  className="max-w-[110px] max-h-[80px] w-auto h-auto object-contain group-hover:scale-110 transition-all duration-300"
                 />
               </div>
               <span className="text-sm font-bold text-slate-700">Rusty Anchor</span>
@@ -378,7 +381,7 @@ export default function Home() {
                 <img
                   src="/assets/environment/shell.png"
                   alt="Shell"
-                  className="w-[96px] h-[72px] object-contain group-hover:scale-110 transition-all duration-300"
+                  className="max-w-[110px] max-h-[80px] w-auto h-auto object-contain group-hover:scale-110 transition-all duration-300"
                 />
               </div>
               <span className="text-sm font-bold text-slate-700">Sea Shell</span>
@@ -394,7 +397,7 @@ export default function Home() {
                 <img
                   src="/assets/environment/bubbles.png"
                   alt="Bubbles"
-                  className="w-[96px] h-[72px] object-contain group-hover:scale-110 transition-all duration-300"
+                  className="max-w-[110px] max-h-[80px] w-auto h-auto object-contain group-hover:scale-110 transition-all duration-300"
                 />
               </div>
               <span className="text-sm font-bold text-slate-700">Bubbles</span>

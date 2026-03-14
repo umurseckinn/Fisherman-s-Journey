@@ -171,7 +171,7 @@ export const VEHICLES: VehicleData[] = [
     },
     storageUpgrades: makeStorageUpgrades([13, 20, 27, 34, 43], 45, 3, [undefined, 6, 16, 31, 51]),
     rodUpgrades: makeRodUpgrades(55, 3, [undefined, 11, 21, 41, 61]),
-    sprite: { file: 'the_fiberglass.png', nativeWidth: 1047, nativeHeight: 726,  rodTipX: 1047 * 0.11,  rodTipY: 726 * 0.2 },
+    sprite: { file: 'the_fiberglass.png', nativeWidth: 1047, nativeHeight: 726,  rodTipX: 1047 * 0.68,  rodTipY: 726 * 0.12 },
   },
 
   // ──────────────────────────────────────────────────────

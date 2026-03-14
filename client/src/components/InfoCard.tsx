@@ -110,9 +110,31 @@ export const InfoCard: React.FC<InfoCardProps> = ({ entityKey, onClose }) => {
   const config = OBJECT_MATRIX[entityKey];
   const details = ENTITY_DETAILS[entityKey] || { story: "A deep sea mystery with no known record.", effect: "Unknown." };
   const isObstacle = Boolean(config.isObstacle);
-  const isEnvironment = ['coral', 'sea_kelp', 'sea_kelp_horizontal', 'sea_rock', 'sea_rock_large', 'gold_doubloon', 'whirlpool', 'sunken_boat', 'shark_skeleton', 'anchor', 'shell', 'env_bubbles'].includes(entityKey);
-  const imageName = entityKey === 'env_bubbles' ? 'bubbles' : entityKey;
-  const imagePath = isEnvironment ? `/assets/environment/${imageName}.png` : `/assets/fish/${imageName}_fish.png`;
+  // Ultra-robust mapping that exactly mirrors Home.tsx paths
+  const getEntityImagePath = (key: string): string => {
+    // Exact mapping for environment items
+    const envPaths: Record<string, string> = {
+      coral: '/assets/environment/coral.png',
+      sea_kelp: '/assets/environment/sea_kelp.png',
+      sea_kelp_horizontal: '/assets/environment/sea_kelp.png',
+      sea_rock: '/assets/environment/sea_rock.png',
+      sea_rock_large: '/assets/environment/sea_rock.png',
+      gold_doubloon: '/assets/environment/gold_doubloon.png',
+      whirlpool: '/assets/environment/whirlpool.png',
+      sunken_boat: '/assets/environment/sunken_boat.png',
+      shark_skeleton: '/assets/environment/shark_skeleton.png',
+      anchor: '/assets/environment/anchor.png',
+      shell: '/assets/environment/shell.png',
+      env_bubbles: '/assets/environment/bubbles.png'
+    };
+
+    if (envPaths[key]) return envPaths[key];
+    
+    // Everything else is a fish in /assets/fish/
+    return `/assets/fish/${key}_fish.png`;
+  };
+
+  const imagePath = getEntityImagePath(entityKey);
   
   // Dynamic color map for the background
   const colorMap: Record<string, string> = {
@@ -137,22 +159,36 @@ export const InfoCard: React.FC<InfoCardProps> = ({ entityKey, onClose }) => {
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-sm rounded-[40px] shadow-2xl p-8 border-4 border-white overflow-y-auto max-h-[85vh] flex flex-col items-center"
+        className="relative w-full max-w-sm rounded-[40px] shadow-2xl p-8 border-4 border-white overflow-y-auto max-h-[90vh] flex flex-col items-center"
         style={{ backgroundColor: bgColor }}
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+          className="absolute top-6 right-6 p-2 rounded-full bg-white/80 text-slate-500 hover:bg-white shadow-sm transition-colors z-20"
         >
           <X size={24} />
         </button>
 
-        <div className="w-40 h-40 bg-slate-50 rounded-full flex items-center justify-center mb-6 shadow-inner border-4 border-slate-100">
-          <img
-            src={imagePath}
-            alt={config.names[0]}
-            className="w-32 h-32 object-contain drop-shadow-lg"
-          />
+        <div className="relative w-48 h-48 flex items-center justify-center mb-6">
+          <div className="absolute inset-0 bg-white/40 rounded-full blur-2xl" />
+          <div className="relative z-10 w-44 h-44 bg-white/60 rounded-full shadow-inner border-2 border-white flex items-center justify-center p-4 overflow-hidden">
+            <img
+              key={imagePath}
+              src={imagePath}
+              alt={config.names[0]}
+              className="w-36 h-36 object-contain drop-shadow-lg"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                if (target.parentElement) {
+                  const label = document.createElement('div');
+                  label.innerText = 'Missing Asset';
+                  label.className = 'text-xs text-slate-400 font-bold';
+                  target.parentElement.appendChild(label);
+                }
+              }}
+            />
+          </div>
         </div>
 
         <h2 className="text-3xl font-bold text-slate-900 mb-2">{config.names[0]}</h2>

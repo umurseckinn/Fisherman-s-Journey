@@ -13,7 +13,7 @@ export interface BackgroundTheme {
 }
 
 export const BACKGROUND_THEMES: BackgroundTheme[] = [
-    { // 1. Dawnbreak Cove: Sığ sular. Üstte açık turkuaz ve güneş sarısı, altta canlı deniz mavisi.
+    { // 1. Dawnbreak Cove (1-10): Tropical morning.
         skyTop: "#4DD0E1", skyBottom: "#FFF176",
         seaTop: "#0288D1", seaBottom: "#01579B",
         rayColor: "rgba(255, 255, 200, 0.15)",
@@ -22,16 +22,25 @@ export const BACKGROUND_THEMES: BackgroundTheme[] = [
         showGodRays: true,
         particleType: 'bubble'
     },
-    { // 2. The Whispering Atolls: Üstte koyu çivit mavisi (indigo), altta fosforlu mor ve pembe tonları.
-        skyTop: "#303F9F", skyBottom: "#D81B60",
-        seaTop: "#8E24AA", seaBottom: "#4A148C",
-        rayColor: "rgba(255, 100, 255, 0.2)",
-        bubbleColor: "rgba(255, 200, 255, 0.6)",
+    { // 2. Twilight Reef (11-20): Warm sunset orange.
+        skyTop: "#FF7043", skyBottom: "#FDD835",
+        seaTop: "#1976D2", seaBottom: "#0D47A1",
+        rayColor: "rgba(255, 200, 100, 0.2)",
+        bubbleColor: "rgba(255, 255, 255, 0.4)",
+        causticOpacity: 0.2,
+        showGodRays: true,
+        particleType: 'bubble'
+    },
+    { // 3. The Whispering Atolls (21-30): Ethereal purple coral.
+        skyTop: "#7B1FA2", skyBottom: "#E1BEE7",
+        seaTop: "#4A148C", seaBottom: "#212121",
+        rayColor: "rgba(255, 100, 255, 0.15)",
+        bubbleColor: "rgba(255, 200, 255, 0.5)",
         causticOpacity: 0.25,
         showGodRays: true,
         particleType: 'dust'
     },
-    { // 3. The Abyssal Blue: Üstte mürekkep laciverdi, altta zifiri siyah ve koyu gri.
+    { // 4. The Abyssal Blue (31-40): Deep navy and midnight.
         skyTop: "#0D1B2A", skyBottom: "#1B263B",
         seaTop: "#0A0A0A", seaBottom: "#000000",
         rayColor: "rgba(255, 255, 255, 0)",
@@ -40,7 +49,7 @@ export const BACKGROUND_THEMES: BackgroundTheme[] = [
         showGodRays: false,
         particleType: 'bubble'
     },
-    { // 4. Tempest Strait: Üstte bulanık koyu yeşil/gri, altta fırtınalı gece mavisi.
+    { // 5. Tempest Strait (41-50): Stormy grey and dark blue.
         skyTop: "#37474F", skyBottom: "#263238",
         seaTop: "#1A237E", seaBottom: "#000051",
         rayColor: "rgba(200, 200, 255, 0.1)",
@@ -49,16 +58,34 @@ export const BACKGROUND_THEMES: BackgroundTheme[] = [
         showGodRays: false,
         particleType: 'tempest'
     },
-    { // 5. The Infinite Maelstrom: Üstte mistik cyan/teal, altta girdap hissiyatı veren koyu mor tonları.
-        skyTop: "#006064", skyBottom: "#004D40",
-        seaTop: "#311B92", seaBottom: "#1A237E",
-        rayColor: "rgba(0, 255, 255, 0.15)",
-        bubbleColor: "rgba(0, 255, 255, 0.5)",
+    { // 6. Aurora Depths (51-60): Mystical green teal.
+        skyTop: "#004D40", skyBottom: "#80CBC4",
+        seaTop: "#006064", seaBottom: "#000000",
+        rayColor: "rgba(0, 255, 200, 0.2)",
+        bubbleColor: "rgba(200, 255, 255, 0.6)",
         causticOpacity: 0.3,
         showGodRays: true,
         particleType: 'dust'
     },
-    { // 6. The Paragon's Run: Üstte görkemli kraliyet mavisi, altta zafer hissi veren parlayan altın sarısı tonları.
+    { // 7. Crimson Moon (61-70): Dark red night.
+        skyTop: "#212121", skyBottom: "#D32F2F",
+        seaTop: "#421010", seaBottom: "#000000",
+        rayColor: "rgba(255, 0, 0, 0.1)",
+        bubbleColor: "rgba(255, 150, 150, 0.3)",
+        causticOpacity: 0.15,
+        showGodRays: false,
+        particleType: 'tempest'
+    },
+    { // 8. Chaos Vortex (71-80): Intense purple void.
+        skyTop: "#1A237E", skyBottom: "#9C27B0",
+        seaTop: "#311B92", seaBottom: "#000000",
+        rayColor: "rgba(150, 0, 255, 0.2)",
+        bubbleColor: "rgba(200, 100, 255, 0.4)",
+        causticOpacity: 0.3,
+        showGodRays: false,
+        particleType: 'tempest'
+    },
+    { // 9. Golden Sanctum (81-90): Royal golden depths.
         skyTop: "#1A237E", skyBottom: "#283593",
         seaTop: "#FFD600", seaBottom: "#FF6F00",
         rayColor: "rgba(255, 215, 0, 0.3)",
@@ -66,6 +93,15 @@ export const BACKGROUND_THEMES: BackgroundTheme[] = [
         causticOpacity: 0.4,
         showGodRays: true,
         particleType: 'bubble'
+    },
+    { // 10. Legend's End (91-100): Cosmic celestial horizon.
+        skyTop: "#000000", skyBottom: "#1A237E",
+        seaTop: "#0D1B2A", seaBottom: "#000000",
+        rayColor: "rgba(255, 255, 255, 0.1)",
+        bubbleColor: "rgba(255, 255, 255, 0.8)",
+        causticOpacity: 0.2,
+        showGodRays: true,
+        particleType: 'dust'
     }
 ];
 

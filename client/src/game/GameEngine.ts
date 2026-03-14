@@ -59,7 +59,7 @@ export const LEVEL_CONFIG: Record<number, {
   fuelCost: number;
   storageCapacity?: number;
   seaColor: string;
-  skyColor: string;
+  skyColor: { top: string; bottom: string };
   weatherWeights: Record<string, number>;
   fish: FishClass[];
   obstacles: { sea_kelp: number; sea_rock: number; coral: number; anchor: number };
@@ -69,134 +69,134 @@ export const LEVEL_CONFIG: Record<number, {
   // ═══════════════════════════════════════════════
   // REGION 1: Starter Bay (L1–L20)
   // ═══════════════════════════════════════════════
-  1: { duration: 50, region: 1, fuelCost: 25, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura'], obstacles: { sea_kelp: 0, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell'] },
-  2: { duration: 50, region: 1, fuelCost: 28, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap'], obstacles: { sea_kelp: 0, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell'] },
-  3: { duration: 50, region: 1, fuelCost: 32, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap'], obstacles: { sea_kelp: 1, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell'] },
-  4: { duration: 49, region: 1, fuelCost: 36, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell'] },
-  5: { duration: 49, region: 1, fuelCost: 42, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
-  6: { duration: 47, region: 1, fuelCost: 48, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 0.6, cloudy: 0.4 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell'] },
-  7: { duration: 52, region: 1, fuelCost: 44, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#abd8eaff', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
-  8: { duration: 48, region: 1, fuelCost: 55, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#81D4FA', weatherWeights: { sunny: 0.5, cloudy: 0.5 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
-  9: { duration: 46, region: 1, fuelCost: 62, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#81D4FA', weatherWeights: { sunny: 0.5, cloudy: 0.5 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 2, coral: 0, anchor: 0 }, dynamic: ['shell'] },
-  10: { duration: 52, region: 1, fuelCost: 58, storageCapacity: 10, seaColor: '#29B6F6', skyColor: '#87CEEB', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] }, // BOSS — golden x1.5
-  11: { duration: 48, region: 1, fuelCost: 68, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#81D4FA', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 1 }, dynamic: ['shell', 'sunken_boat'] },
-  12: { duration: 47, region: 1, fuelCost: 72, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#81D4FA', weatherWeights: { sunny: 0.6, cloudy: 0.4 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 1 }, dynamic: ['shell', 'sunken_boat'] },
-  13: { duration: 53, region: 1, fuelCost: 62, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#81D4FA', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] },
-  14: { duration: 46, region: 1, fuelCost: 78, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#B0BEC5', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide'], obstacles: { sea_kelp: 2, sea_rock: 2, coral: 0, anchor: 1 }, dynamic: ['shell'] },
-  15: { duration: 46, region: 1, fuelCost: 82, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#81D4FA', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 2, anchor: 1 }, dynamic: ['shell'] },
-  16: { duration: 48, region: 1, fuelCost: 86, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#78909C', weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
-  17: { duration: 47, region: 1, fuelCost: 90, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#78909C', weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'shark_skeleton'] },
-  18: { duration: 47, region: 1, fuelCost: 94, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#78909C', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  19: { duration: 45, region: 1, fuelCost: 98, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#546E7A', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  20: { duration: 58, region: 1, fuelCost: 120, storageCapacity: 10, seaColor: '#26C6DA', skyColor: '#546E7A', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
+  1: { duration: 50, region: 1, fuelCost: 25, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#87CEEB', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura'], obstacles: { sea_kelp: 0, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell'] },
+  2: { duration: 50, region: 1, fuelCost: 28, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#87CEEB', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap'], obstacles: { sea_kelp: 0, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell'] },
+  3: { duration: 50, region: 1, fuelCost: 32, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#87CEEB', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap'], obstacles: { sea_kelp: 1, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell'] },
+  4: { duration: 49, region: 1, fuelCost: 36, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#87CEEB', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell'] },
+  5: { duration: 49, region: 1, fuelCost: 42, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#87CEEB', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
+  6: { duration: 47, region: 1, fuelCost: 48, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#87CEEB', bottom: '#E0F7FA' }, weatherWeights: { sunny: 0.6, cloudy: 0.4 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell'] },
+  7: { duration: 52, region: 1, fuelCost: 44, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#abd8eaff', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy'], obstacles: { sea_kelp: 1, sea_rock: 0, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
+  8: { duration: 48, region: 1, fuelCost: 55, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#81D4FA', bottom: '#E0F7FA' }, weatherWeights: { sunny: 0.5, cloudy: 0.5 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
+  9: { duration: 46, region: 1, fuelCost: 62, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#81D4FA', bottom: '#E0F7FA' }, weatherWeights: { sunny: 0.5, cloudy: 0.5 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 2, coral: 0, anchor: 0 }, dynamic: ['shell'] },
+  10: { duration: 52, region: 1, fuelCost: 58, storageCapacity: 10, seaColor: '#29B6F6', skyColor: { top: '#87CEEB', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] }, // BOSS — golden x1.5
+  11: { duration: 48, region: 1, fuelCost: 68, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#81D4FA', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 1 }, dynamic: ['shell', 'sunken_boat'] },
+  12: { duration: 47, region: 1, fuelCost: 72, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#81D4FA', bottom: '#E0F7FA' }, weatherWeights: { sunny: 0.6, cloudy: 0.4 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 1 }, dynamic: ['shell', 'sunken_boat'] },
+  13: { duration: 53, region: 1, fuelCost: 62, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#81D4FA', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava'], obstacles: { sea_kelp: 1, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] },
+  14: { duration: 46, region: 1, fuelCost: 78, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#B0BEC5', bottom: '#E0F7FA' }, weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide'], obstacles: { sea_kelp: 2, sea_rock: 2, coral: 0, anchor: 1 }, dynamic: ['shell'] },
+  15: { duration: 46, region: 1, fuelCost: 82, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#81D4FA', bottom: '#E0F7FA' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 2, anchor: 1 }, dynamic: ['shell'] },
+  16: { duration: 48, region: 1, fuelCost: 86, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#78909C', bottom: '#E0F7FA' }, weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
+  17: { duration: 47, region: 1, fuelCost: 90, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#78909C', bottom: '#E0F7FA' }, weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'shark_skeleton'] },
+  18: { duration: 47, region: 1, fuelCost: 94, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#78909C', bottom: '#E0F7FA' }, weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  19: { duration: 45, region: 1, fuelCost: 98, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#546E7A', bottom: '#E0F7FA' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  20: { duration: 58, region: 1, fuelCost: 120, storageCapacity: 10, seaColor: '#26C6DA', skyColor: { top: '#546E7A', bottom: '#E0F7FA' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
 
   // ═══════════════════════════════════════════════
   // REGION 2: Coral Islands (L21–L40)
   // ═══════════════════════════════════════════════
-  21: { duration: 48, region: 2, fuelCost: 160, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#FFF9C4', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
-  22: { duration: 47, region: 2, fuelCost: 163, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#FFF9C4', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat'] },
-  23: { duration: 43, region: 2, fuelCost: 166, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#B0BEC5', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 2, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
-  24: { duration: 54, region: 2, fuelCost: 152, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#FFF9C4', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
-  25: { duration: 48, region: 2, fuelCost: 170, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#CFD8DC', weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'shark_skeleton'] },
-  26: { duration: 47, region: 2, fuelCost: 173, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#CFD8DC', weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'shark_skeleton'] },
-  27: { duration: 47, region: 2, fuelCost: 176, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#B0BEC5', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool'] },
-  28: { duration: 46, region: 2, fuelCost: 179, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#FFF9C4', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 3, anchor: 1 }, dynamic: ['shell', 'sunken_boat'] },
-  29: { duration: 54, region: 2, fuelCost: 160, storageCapacity: 10, seaColor: '#0288D1', skyColor: '#e4db86ff', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
-  30: { duration: 58, region: 2, fuelCost: 200, storageCapacity: 10, seaColor: '#0277BD', skyColor: '#546E7A', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
+  21: { duration: 48, region: 2, fuelCost: 160, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#FFF9C4', bottom: '#FFAB91' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
+  22: { duration: 47, region: 2, fuelCost: 163, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#FFF9C4', bottom: '#FFAB91' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat'] },
+  23: { duration: 43, region: 2, fuelCost: 166, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#B0BEC5', bottom: '#FFAB91' }, weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 2, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon'] },
+  24: { duration: 54, region: 2, fuelCost: 152, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#FFF9C4', bottom: '#FFAB91' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 0, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
+  25: { duration: 48, region: 2, fuelCost: 170, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#CFD8DC', bottom: '#FFAB91' }, weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'shark_skeleton'] },
+  26: { duration: 47, region: 2, fuelCost: 173, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#CFD8DC', bottom: '#FFAB91' }, weatherWeights: { sunny: 0.4, cloudy: 0.6 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'shark_skeleton'] },
+  27: { duration: 47, region: 2, fuelCost: 176, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#B0BEC5', bottom: '#FFAB91' }, weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool'] },
+  28: { duration: 46, region: 2, fuelCost: 179, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#FFF9C4', bottom: '#FFAB91' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 3, anchor: 1 }, dynamic: ['shell', 'sunken_boat'] },
+  29: { duration: 54, region: 2, fuelCost: 160, storageCapacity: 10, seaColor: '#0288D1', skyColor: { top: '#e4db86ff', bottom: '#FFAB91' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
+  30: { duration: 58, region: 2, fuelCost: 200, storageCapacity: 10, seaColor: '#0277BD', skyColor: { top: '#546E7A', bottom: '#FFAB91' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
 
   // ═══════════════════════════════════════════════
   // REGION 3: Deep Blue (L31–L50)
   // ═══════════════════════════════════════════════
-  31: { duration: 48, region: 3, fuelCost: 210, storageCapacity: 10, seaColor: '#01579B', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  32: { duration: 47, region: 3, fuelCost: 214, storageCapacity: 10, seaColor: '#0a5995ff', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon'] },
-  33: { duration: 44, region: 3, fuelCost: 217, storageCapacity: 10, seaColor: '#01579B', skyColor: '#37474F', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  34: { duration: 54, region: 3, fuelCost: 198, storageCapacity: 10, seaColor: '#01579B', skyColor: '#78909C', weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
-  35: { duration: 48, region: 3, fuelCost: 220, storageCapacity: 10, seaColor: '#01579B', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  36: { duration: 46, region: 3, fuelCost: 223, storageCapacity: 10, seaColor: '#01579B', skyColor: '#37474F', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  37: { duration: 47, region: 3, fuelCost: 226, storageCapacity: 10, seaColor: '#01579B', skyColor: '#546E7A', weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  38: { duration: 46, region: 3, fuelCost: 229, storageCapacity: 10, seaColor: '#01579B', skyColor: '#37474F', weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 3, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  39: { duration: 44, region: 3, fuelCost: 232, storageCapacity: 10, seaColor: '#01579B', skyColor: '#263238', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  40: { duration: 60, region: 3, fuelCost: 260, storageCapacity: 10, seaColor: '#0D47A1', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
+  31: { duration: 48, region: 3, fuelCost: 210, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#546E7A' }, weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  32: { duration: 47, region: 3, fuelCost: 214, storageCapacity: 10, seaColor: '#0a5995ff', skyColor: { top: '#263238', bottom: '#546E7A' }, weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon'] },
+  33: { duration: 44, region: 3, fuelCost: 217, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#37474F' }, weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  34: { duration: 54, region: 3, fuelCost: 198, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#78909C' }, weatherWeights: { sunny: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom'], obstacles: { sea_kelp: 2, sea_rock: 1, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
+  35: { duration: 48, region: 3, fuelCost: 220, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#546E7A' }, weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 2, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  36: { duration: 46, region: 3, fuelCost: 223, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#37474F' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  37: { duration: 47, region: 3, fuelCost: 226, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#546E7A' }, weatherWeights: { sunny: 0.3, cloudy: 0.7 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  38: { duration: 46, region: 3, fuelCost: 229, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#37474F' }, weatherWeights: { rainy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 2, coral: 3, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  39: { duration: 44, region: 3, fuelCost: 232, storageCapacity: 10, seaColor: '#01579B', skyColor: { top: '#263238', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  40: { duration: 60, region: 3, fuelCost: 260, storageCapacity: 10, seaColor: '#0D47A1', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
 
   // ═══════════════════════════════════════════════
   // REGION 4: Storm Pass (L41–L50)
   // ═══════════════════════════════════════════════
-  41: { duration: 48, region: 4, fuelCost: 270, storageCapacity: 10, seaColor: '#112942ff', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  42: { duration: 47, region: 4, fuelCost: 273, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  43: { duration: 46, region: 4, fuelCost: 276, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 3, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  44: { duration: 54, region: 4, fuelCost: 255, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#263238', weatherWeights: { sunny: 0.2, cloudy: 0.8 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
-  45: { duration: 48, region: 4, fuelCost: 280, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  46: { duration: 46, region: 4, fuelCost: 283, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  47: { duration: 47, region: 4, fuelCost: 286, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#263238', weatherWeights: { sunny: 0.1, cloudy: 0.9 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  48: { duration: 46, region: 4, fuelCost: 289, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  49: { duration: 44, region: 4, fuelCost: 292, storageCapacity: 10, seaColor: '#0D2137', skyColor: '#1A237E', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  50: { duration: 62, region: 4, fuelCost: 320, storageCapacity: 10, seaColor: '#0A1929', skyColor: '#0D1B2A', weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
+  41: { duration: 48, region: 4, fuelCost: 270, storageCapacity: 10, seaColor: '#112942ff', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  42: { duration: 47, region: 4, fuelCost: 273, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  43: { duration: 46, region: 4, fuelCost: 276, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 3, anchor: 1 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  44: { duration: 54, region: 4, fuelCost: 255, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#263238', bottom: '#37474F' }, weatherWeights: { sunny: 0.2, cloudy: 0.8 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
+  45: { duration: 48, region: 4, fuelCost: 280, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  46: { duration: 46, region: 4, fuelCost: 283, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  47: { duration: 47, region: 4, fuelCost: 286, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#263238', bottom: '#37474F' }, weatherWeights: { sunny: 0.1, cloudy: 0.9 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  48: { duration: 46, region: 4, fuelCost: 289, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  49: { duration: 44, region: 4, fuelCost: 292, storageCapacity: 10, seaColor: '#0D2137', skyColor: { top: '#1A237E', bottom: '#263238' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  50: { duration: 62, region: 4, fuelCost: 320, storageCapacity: 10, seaColor: '#0A1929', skyColor: { top: '#0D1B2A', bottom: '#1B263B' }, weatherWeights: { stormy: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
 
   // ═══════════════════════════════════════════════
   // REGION 5: Aurora Night (L51–L60)
   // ═══════════════════════════════════════════════
-  51: { duration: 50, region: 5, fuelCost: 330, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  52: { duration: 48, region: 5, fuelCost: 333, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  53: { duration: 55, region: 5, fuelCost: 315, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
-  54: { duration: 48, region: 5, fuelCost: 336, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  55: { duration: 47, region: 5, fuelCost: 339, seaColor: '#241157ff', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 5, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  56: { duration: 47, region: 5, fuelCost: 342, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  57: { duration: 46, region: 5, fuelCost: 345, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 3, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  58: { duration: 46, region: 5, fuelCost: 348, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  59: { duration: 45, region: 5, fuelCost: 352, seaColor: '#120040', skyColor: '#0D0028', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  60: { duration: 65, region: 5, fuelCost: 380, seaColor: '#1A0040', skyColor: '#120030', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
+  51: { duration: 50, region: 5, fuelCost: 330, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  52: { duration: 48, region: 5, fuelCost: 333, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  53: { duration: 55, region: 5, fuelCost: 315, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
+  54: { duration: 48, region: 5, fuelCost: 336, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  55: { duration: 47, region: 5, fuelCost: 339, seaColor: '#241157ff', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 3, coral: 5, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  56: { duration: 47, region: 5, fuelCost: 342, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 5, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  57: { duration: 46, region: 5, fuelCost: 345, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 3, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  58: { duration: 46, region: 5, fuelCost: 348, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  59: { duration: 45, region: 5, fuelCost: 352, seaColor: '#120040', skyColor: { top: '#0D0028', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  60: { duration: 65, region: 5, fuelCost: 380, seaColor: '#1A0040', skyColor: { top: '#120030', bottom: '#004D40' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
 
   // ═══════════════════════════════════════════════
   // REGION 6: Crimson Night (L61–L70)
   // ═══════════════════════════════════════════════
-  61: { duration: 50, region: 6, fuelCost: 390, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  62: { duration: 48, region: 6, fuelCost: 393, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'heavy_waters' },
-  63: { duration: 48, region: 6, fuelCost: 396, seaColor: '#4a081fff', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'fast_current' },
-  64: { duration: 55, region: 6, fuelCost: 375, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
-  65: { duration: 48, region: 6, fuelCost: 400, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'blind_spot' },
-  66: { duration: 48, region: 6, fuelCost: 403, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'reverse_current' },
-  67: { duration: 47, region: 6, fuelCost: 406, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'double_damage' },
-  68: { duration: 55, region: 6, fuelCost: 385, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
-  69: { duration: 47, region: 6, fuelCost: 410, seaColor: '#2D0010', skyColor: '#1A0008', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'economic_crisis' },
-  70: { duration: 68, region: 6, fuelCost: 430, seaColor: '#3D0018', skyColor: '#250010', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
+  61: { duration: 50, region: 6, fuelCost: 390, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  62: { duration: 48, region: 6, fuelCost: 393, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'heavy_waters' },
+  63: { duration: 48, region: 6, fuelCost: 396, seaColor: '#4a081fff', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 3, anchor: 2 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'fast_current' },
+  64: { duration: 55, region: 6, fuelCost: 375, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
+  65: { duration: 48, region: 6, fuelCost: 400, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'blind_spot' },
+  66: { duration: 48, region: 6, fuelCost: 403, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 4, coral: 4, anchor: 2 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'reverse_current' },
+  67: { duration: 47, region: 6, fuelCost: 406, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'double_damage' },
+  68: { duration: 55, region: 6, fuelCost: 385, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 3, sea_rock: 2, coral: 1, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
+  69: { duration: 47, region: 6, fuelCost: 410, seaColor: '#2D0010', skyColor: { top: '#1A0008', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'economic_crisis' },
+  70: { duration: 68, region: 6, fuelCost: 430, seaColor: '#3D0018', skyColor: { top: '#250010', bottom: '#4A0E0E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS
 
   // ═══════════════════════════════════════════════
   // REGION 7: Neon Night / Chaos Dimension (L71–L80)
   // ═══════════════════════════════════════════════
-  71: { duration: 50, region: 7, fuelCost: 440, seaColor: '#475656ff', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
-  72: { duration: 48, region: 7, fuelCost: 443, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'chain_reaction' },
-  73: { duration: 48, region: 7, fuelCost: 446, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'invisible_fish' },
-  74: { duration: 55, region: 7, fuelCost: 420, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
-  75: { duration: 48, region: 7, fuelCost: 450, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'countdown' },
-  76: { duration: 48, region: 7, fuelCost: 453, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'reverse_market' },
-  77: { duration: 47, region: 7, fuelCost: 456, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'skeleton_army' },
-  78: { duration: 55, region: 7, fuelCost: 430, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
-  79: { duration: 46, region: 7, fuelCost: 458, seaColor: '#001A1A', skyColor: '#001226', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'random_curse' },
-  80: { duration: 70, region: 7, fuelCost: 480, seaColor: '#002020', skyColor: '#001830', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS x2.0
+  71: { duration: 50, region: 7, fuelCost: 440, seaColor: '#475656ff', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 6, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
+  72: { duration: 48, region: 7, fuelCost: 443, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'chain_reaction' },
+  73: { duration: 48, region: 7, fuelCost: 446, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'invisible_fish' },
+  74: { duration: 55, region: 7, fuelCost: 420, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
+  75: { duration: 48, region: 7, fuelCost: 450, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'countdown' },
+  76: { duration: 48, region: 7, fuelCost: 453, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'reverse_market' },
+  77: { duration: 47, region: 7, fuelCost: 456, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'skeleton_army' },
+  78: { duration: 55, region: 7, fuelCost: 430, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
+  79: { duration: 46, region: 7, fuelCost: 458, seaColor: '#001A1A', skyColor: { top: '#001226', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'random_curse' },
+  80: { duration: 70, region: 7, fuelCost: 480, seaColor: '#002020', skyColor: { top: '#001830', bottom: '#4A148C' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS x2.0
 
   // ═══════════════════════════════════════════════
   // REGION 8: Golden Night / Legend Run (L81–L100)
   // ═══════════════════════════════════════════════
-  81: { duration: 50, region: 8, fuelCost: 490, seaColor: '#67551cff', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  82: { duration: 48, region: 8, fuelCost: 493, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'combo_1' },
-  83: { duration: 47, region: 8, fuelCost: 496, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'combo_2' },
-  84: { duration: 55, region: 8, fuelCost: 470, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
-  85: { duration: 35, region: 8, fuelCost: 500, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] }, // Lanet: 35sn süre
-  86: { duration: 48, region: 8, fuelCost: 503, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'reverse_weight' }, // Lanet: Ters Gösterge
-  87: { duration: 47, region: 8, fuelCost: 506, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 6, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'fish_escape' },
-  88: { duration: 54, region: 8, fuelCost: 480, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
-  89: { duration: 46, region: 8, fuelCost: 508, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'combo_3' },
-  90: { duration: 72, region: 8, fuelCost: 530, seaColor: '#201A00', skyColor: '#150F00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS x2.0
-  91: { duration: 50, region: 8, fuelCost: 540, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
-  92: { duration: 48, region: 8, fuelCost: 543, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'time_bomb' },
-  93: { duration: 47, region: 8, fuelCost: 546, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'dark_matter' },
-  94: { duration: 55, region: 8, fuelCost: 520, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
-  95: { duration: 47, region: 8, fuelCost: 550, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'final_1' },
-  96: { duration: 46, region: 8, fuelCost: 553, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'final_2' },
-  97: { duration: 46, region: 8, fuelCost: 556, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 7, coral: 6, anchor: 5 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'final_3' },
-  98: { duration: 45, region: 8, fuelCost: 558, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 7, coral: 6, anchor: 5 }, dynamic: ['shell', 'sunken_boat', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
-  99: { duration: 48, region: 8, fuelCost: 560, seaColor: '#1A1400', skyColor: '#0D0D00', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 7, coral: 7, anchor: 5 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'one_chance' },
-  100: { duration: 75, region: 8, fuelCost: 600, seaColor: '#252000', skyColor: '#1A1800', weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 10, sea_rock: 7, coral: 7, anchor: 5 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // FINAL BOSS x2.5
+  81: { duration: 50, region: 8, fuelCost: 490, seaColor: '#67551cff', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  82: { duration: 48, region: 8, fuelCost: 493, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'combo_1' },
+  83: { duration: 47, region: 8, fuelCost: 496, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'combo_2' },
+  84: { duration: 55, region: 8, fuelCost: 470, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'] }, // Nefes
+  85: { duration: 35, region: 8, fuelCost: 500, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] }, // Lanet: 35sn süre
+  86: { duration: 48, region: 8, fuelCost: 503, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 5, coral: 4, anchor: 3 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'reverse_weight' }, // Lanet: Ters Gösterge
+  87: { duration: 47, region: 8, fuelCost: 506, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 7, sea_rock: 6, coral: 5, anchor: 3 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'fish_escape' },
+  88: { duration: 54, region: 8, fuelCost: 480, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'none' },
+  89: { duration: 46, region: 8, fuelCost: 508, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'combo_3' },
+  90: { duration: 72, region: 8, fuelCost: 530, seaColor: '#201A00', skyColor: { top: '#150F00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // BOSS x2.0
+  91: { duration: 50, region: 8, fuelCost: 540, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] },
+  92: { duration: 48, region: 8, fuelCost: 543, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 5, anchor: 4 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'time_bomb' },
+  93: { duration: 47, region: 8, fuelCost: 546, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 8, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'whirlpool', 'shark_skeleton'], curse: 'dark_matter' },
+  94: { duration: 55, region: 8, fuelCost: 520, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 4, sea_rock: 3, coral: 2, anchor: 0 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat'], curse: 'none' },
+  95: { duration: 47, region: 8, fuelCost: 550, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'final_1' },
+  96: { duration: 46, region: 8, fuelCost: 553, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 6, coral: 6, anchor: 4 }, dynamic: ['shell', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'final_2' },
+  97: { duration: 46, region: 8, fuelCost: 556, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 7, coral: 6, anchor: 5 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'final_3' },
+  98: { duration: 45, region: 8, fuelCost: 558, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 7, coral: 6, anchor: 5 }, dynamic: ['shell', 'sunken_boat', 'gold_doubloon', 'whirlpool', 'shark_skeleton'] },
+  99: { duration: 48, region: 8, fuelCost: 560, seaColor: '#1A1400', skyColor: { top: '#0D0D00', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 9, sea_rock: 7, coral: 7, anchor: 5 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'], curse: 'one_chance' },
+  100: { duration: 75, region: 8, fuelCost: 600, seaColor: '#252000', skyColor: { top: '#1A1800', bottom: '#4E342E' }, weatherWeights: { magic: 1 }, fish: ['bubble', 'sakura', 'zap', 'candy', 'moon', 'lava', 'tide', 'leaf', 'crystal', 'galaxy', 'mushroom', 'king'], obstacles: { sea_kelp: 10, sea_rock: 7, coral: 7, anchor: 5 }, dynamic: ['shell', 'gold_doubloon', 'sunken_boat', 'whirlpool', 'shark_skeleton'] }, // FINAL BOSS x2.5
 };
 
 Object.entries(LEVEL_CONFIG).forEach(([levelKey, config]) => {
@@ -1278,6 +1278,7 @@ export class GameEngine {
           }
           if (fish.type === 'env_bubbles') {
             this.applyBubbleEffect();
+            this.effects.clearTrail(fish.id);
             this.state.fishes.splice(i, 1);
             i -= 1;
             continue;
@@ -1285,6 +1286,7 @@ export class GameEngine {
           if (fish.type === 'sunken_boat') {
             this.handleSunkenBoat(fish, false);
             this.effects.spawnRareCatch(fish.x, fish.y, '#8B4513');
+            this.effects.clearTrail(fish.id);
             this.state.fishes.splice(i, 1);
             i -= 1;
             continue;
@@ -1292,6 +1294,7 @@ export class GameEngine {
           if (fish.type === 'shell') {
             this.handleShell(fish, false);
             this.effects.spawnSmallCatch(fish.x, fish.y, '#FFEFD5');
+            this.effects.clearTrail(fish.id);
             this.state.fishes.splice(i, 1);
             i -= 1;
             continue;
@@ -1301,6 +1304,7 @@ export class GameEngine {
             this.earnCoins(skeletonPenalty);
             this.state.fishPanicMs = 5000;
             this.effects.spawnRockHit(collisionX, collisionY);
+            this.effects.clearTrail(fish.id);
             this.state.fishes.splice(i, 1);
             i -= 1;
             continue;
@@ -1311,6 +1315,7 @@ export class GameEngine {
           }
 
           this.handleStandardCatch(fish, false, false);
+          this.effects.clearTrail(fish.id);
           this.state.fishes.splice(i, 1);
           i -= 1;
           continue;
@@ -1399,6 +1404,7 @@ export class GameEngine {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.applyBubbleEffect();
+          this.effects.clearTrail(fish.id);
           this.state.fishes.splice(i, 1);
           break;
         }
@@ -1409,6 +1415,7 @@ export class GameEngine {
           this.handleTutorialInteraction('aim_harpoon_complete');
         }
         hook.caughtEntity = fish;
+        this.effects.clearTrail(fish.id);
         this.state.fishes.splice(i, 1);
         this.effects.shakeScreen(3, 3);
         break;
@@ -1437,7 +1444,7 @@ export class GameEngine {
 
   private getRodLineLayers() {
     const level = this.state.upgrades.rodLevel || 1;
-    // Constant thicknesses across all levels: Core 2, Mid 4, Glow 6-10 (glow is naturally wider for effect)
+    // Standardized thicknesses matching Level 2: Core 2, Glow 6
     switch (level) {
       case 1:
         return [
@@ -1455,14 +1462,12 @@ export class GameEngine {
         ];
       case 4:
         return [
-          { width: 8, color: 'rgba(0, 255, 255, 0.4)' }, 
-          { width: 4, color: 'rgba(0, 200, 255, 0.8)' }, 
+          { width: 6, color: 'rgba(0, 255, 255, 0.4)' }, 
           { width: 2, color: '#E0FFFF' } 
         ];
       case 5:
         return [
-          { width: 10, color: 'rgba(138, 43, 226, 0.4)' }, 
-          { width: 5, color: 'rgba(255, 0, 255, 0.6)' }, 
+          { width: 6, color: 'rgba(138, 43, 226, 0.4)' }, 
           { width: 2, color: '#FFFFFF' } 
         ];
       default:
@@ -1478,9 +1483,7 @@ export class GameEngine {
     const isHarpoonActive = hook.state === 'harpoon' || hook.state === 'harpoon_retracting';
 
     if (hookSprite && hookSprite.complete && hookSprite.naturalWidth > 0 && !isHarpoonActive) {
-      const baseScale = 0.05; 
-      const scaleMultiplier = 1 + (rodLevel - 1) * 0.15;
-      const scale = baseScale * scaleMultiplier;
+      const scale = 0.05;
       
       const w = (hookSprite.naturalWidth * scale) | 0;
       const h = (hookSprite.naturalHeight * scale) | 0;
@@ -1513,10 +1516,8 @@ export class GameEngine {
     const weatherSpeedBonus = this.state.weather === 'stormy' ? 0.5 : 0;
     const weatherSpeedMultiplier = this.state.weather === 'rainy' ? 1.2 : 1;
     const holdSlowFactor = this.getHoldSlowFactor();
-    const baseSpeed = (f: Entity) => {
-      const kingBoost = (f.kingSpeedBoostMs && f.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
-      return (f.speed + travelSpeed + weatherSpeedBonus) * weatherSpeedMultiplier * moonSlowMultiplier * (isAnchorActive ? 0.2 : 1) * holdSlowFactor * kingBoost;
-    };
+    const globalSpeedMultiplier = weatherSpeedMultiplier * moonSlowMultiplier * (isAnchorActive ? 0.2 : 1) * holdSlowFactor;
+    const globalSpeedAddition = travelSpeed + weatherSpeedBonus;
 
     const hookX = this.state.hook.x;
     const hookY = this.state.hook.y;
@@ -1534,6 +1535,7 @@ export class GameEngine {
       const prevX = fish.x;
       if (!this.state.hook.caughtEntity || this.state.hook.caughtEntity.id !== fish.id) {
         if (fish.x < -120 || fish.x > CANVAS_WIDTH + 120) {
+          this.effects.clearTrail(fish.id);
           this.state.fishes.splice(i, 1);
           continue;
         }
@@ -1595,6 +1597,7 @@ export class GameEngine {
         const islandX = CANVAS_WIDTH - (Math.min(1, this.arrivalProgress) * islandWidth);
         const landLeftEdge = islandX - 120;
         if (fish.x > landLeftEdge) {
+          this.effects.clearTrail(fish.id);
           this.state.fishes.splice(i, 1);
           continue;
         }
@@ -1603,6 +1606,7 @@ export class GameEngine {
       if (this.whirlpoolCenter && this.state.hook.state === 'whirlpool' && fish.value < 100) {
         const dist = Math.hypot(fish.x - this.whirlpoolCenter.x, fish.y - this.whirlpoolCenter.y);
         if (dist < 80) {
+          this.effects.clearTrail(fish.id);
           this.state.fishes.splice(i, 1);
           continue;
         }
@@ -1622,7 +1626,9 @@ export class GameEngine {
         const pausePhase = (timeMs + (fish.animationOffset || 0) * 500) % pauseCycle;
         const isPaused = pausePhase > (pauseCycle - 500); // last 0.5s of cycle = pause
         if (!isPaused) {
-          fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+          const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         }
         const waveY = Math.sin(fish.x * 0.04) * 20;
         fish.y = (fish.startY || fish.y) + waveY;
@@ -1632,7 +1638,9 @@ export class GameEngine {
         const zigzagPhase = (timeMs + (fish.animationOffset || 0) * 1000) % zigzagCycle;
         const zigzagSeed = Math.floor((timeMs + (fish.animationOffset || 0) * 1000) / zigzagCycle);
         const zigzagDir = Math.sin(zigzagSeed * 7.13 + (fish.animationOffset || 0)) < 0 ? -1 : 1;
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         // Oscillate around startY — no drift
         const zigzagOffset = zigzagPhase < 150
           ? zigzagDir * 30 * (zigzagPhase / 150)
@@ -1643,7 +1651,9 @@ export class GameEngine {
         const moonPeriod = 6;
         const sineProgress = Math.sin(time / (moonPeriod / 2) + (fish.animationOffset || 0));
         const effectiveSine = Math.abs(sineProgress) > 0.95 ? Math.sign(sineProgress) : sineProgress;
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + effectiveSine * 40;
       } else if (fish.type === 'lava') {
         // Lava: diagonal bounce ±60px around startY
@@ -1651,28 +1661,40 @@ export class GameEngine {
         const bouncePhase = (timeMs + (fish.animationOffset || 0) * 1000) % bouncePeriod;
         const bounceProgress = bouncePhase / bouncePeriod;
         const triangleWave = bounceProgress < 0.5 ? bounceProgress * 2 - 0.5 : 1.5 - bounceProgress * 2;
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + triangleWave * 60;
       } else if (fish.type === 'tide') {
         // Tide: wide sine ±45px, 2.5s period, very fast
         const tideWave = Math.sin(time * (Math.PI * 2 / 2.5) + (fish.animationOffset || 0)) * 45;
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + tideWave;
       } else if (fish.type === 'candy') {
         const spiral = time * 1.4 + (fish.animationOffset || 0);
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         fish.x += Math.cos(spiral) * 1.5;
         fish.y = (fish.startY || fish.y) + Math.sin(spiral) * 20;
       } else if (fish.type === 'sakura') {
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         const deviation = Math.sin(time + (fish.animationOffset || 0)) * 15;
         fish.y = (fish.startY || fish.y) + deviation;
       } else if (fish.type === 'leaf') {
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         const drift = Math.sin(time + (fish.animationOffset || 0)) * 18;
         fish.y = (fish.startY || fish.y) + drift;
       } else if (fish.type === 'crystal') {
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         const slalom = Math.sin(time * 2 + (fish.animationOffset || 0)) * 35;
         fish.y = (fish.startY || fish.y) + slalom;
       } else if (fish.type === 'galaxy') {
@@ -1681,7 +1703,9 @@ export class GameEngine {
         const jumpSeed = Math.floor((timeMs + (fish.animationOffset || 0) * 1000) / cycle);
         const jumpDir = Math.sin(jumpSeed * 12.9898 + (fish.animationOffset || 0)) < 0 ? -1 : 1;
         const jumpOffset = (0.3 + Math.sin(jumpSeed * 9.1 + (fish.animationOffset || 0)) * 0.3) * 50;
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + jumpDir * jumpOffset;
         if (phase < 100) {
           fish.y = fish.startY || fish.y;
@@ -1691,7 +1715,9 @@ export class GameEngine {
         const phase = (timeMs + (fish.animationOffset || 0) * 1000) % cycle;
         const jumpSeed = Math.floor((timeMs + (fish.animationOffset || 0) * 1000) / cycle);
         const jumpDir = Math.sin(jumpSeed * 8.37 + (fish.animationOffset || 0)) < 0 ? -1 : 1;
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         if (phase < 800) {
           fish.y = (fish.startY || fish.y);
         } else {
@@ -1700,39 +1726,59 @@ export class GameEngine {
         }
       } else if (fish.type === 'king') {
         const spiral = time * 0.8 + (fish.animationOffset || 0);
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         fish.x += Math.cos(spiral) * 2;
         fish.y = (fish.startY || fish.y) + Math.sin(spiral) * 30;
         if (fish.x < CANVAS_WIDTH && fish.x > 0 && this.state.fishPanicMs < 500) {
           this.state.fishPanicMs = 3000;
         }
       } else if (fish.type === 'gold_doubloon') {
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         fish.y = (fish.startY || fish.y) + Math.sin(time * 0.06 + (fish.animationOffset || 0)) * 0.8;
       } else if (fish.type === 'shark_skeleton') {
-        fish.x -= (baseSpeed(fish) * 0.4) * dtFactor;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= (fishBaseSpeed * 0.4) * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 8;
       } else if (fish.type === 'whirlpool') {
-        fish.x -= (baseSpeed(fish) * 0.4) * dtFactor;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= (fishBaseSpeed * 0.4) * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 10;
         this.activeWhirlpool = fish;
       } else if (fish.type === 'anchor') {
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
         // Subtle sway instead of cumulative pendulum
         const sway = Math.sin(time * 1.5 + (fish.animationOffset || 0)) * 2;
         fish.x += sway * dtFactor;
       } else if (fish.type === 'sea_kelp') {
-        fish.x -= baseSpeed(fish) * dtFactor;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 3;
       } else if (fish.type === 'sea_kelp_horizontal') {
-        fish.x -= baseSpeed(fish) * dtFactor;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor;
         fish.y = (fish.startY || fish.y) + Math.sin(time + (fish.animationOffset || 0)) * 2;
       } else if (fish.type === 'coral') {
-        fish.x -= baseSpeed(fish) * dtFactor;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor;
       } else if (fish.type === 'sea_rock' || fish.type === 'sea_rock_large' || fish.type === 'shell' || fish.type === 'sunken_boat') {
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
       } else {
-        fish.x -= baseSpeed(fish) * dtFactor * panicMultiplier;
+        const kingBoost = (fish.kingSpeedBoostMs && fish.kingSpeedBoostMs > 0) ? 1.6 : 1.0;
+        const fishBaseSpeed = (fish.speed + globalSpeedAddition) * globalSpeedMultiplier * kingBoost;
+        fish.x -= fishBaseSpeed * dtFactor * panicMultiplier;
       }
 
       // Global Y-clamp: keep all fish within water bounds (never above sea level or below sand)
@@ -1777,6 +1823,7 @@ export class GameEngine {
 
       // Despawn logic for all non-static fish
       if (fish.x < -120 || fish.x > CANVAS_WIDTH + 120) {
+        this.effects.clearTrail(fish.id);
         this.state.fishes.splice(i, 1);
       }
     }
@@ -1802,6 +1849,7 @@ export class GameEngine {
             mostValuable = fish;
           }
           this.handleStandardCatch(fish, true, storeCatch, true, false); // No individual card
+          this.effects.clearTrail(fish.id);
           this.state.fishes.splice(i, 1);
         }
       }
@@ -1830,6 +1878,7 @@ export class GameEngine {
         }
         // Net Catch muafiyeti: isBoosterCatch = true
         this.handleStandardCatch(fish, true, storeCatch, true, false); // No individual card
+        this.effects.clearTrail(fish.id);
         this.state.fishes.splice(i, 1);
       }
     }
@@ -2858,8 +2907,8 @@ export class GameEngine {
 
     const islandConfig = LEVEL_CONFIG[this.state.level];
     const hue = (this.state.level - 1) * 30;
-    const skyTop = islandConfig?.skyColor ?? '#87CEEB';
-    const skyBottom = this.darkenColor(skyTop, 20);
+    const skyTop = islandConfig?.skyColor?.top ?? '#87CEEB';
+    const skyBottom = islandConfig?.skyColor?.bottom ?? '#E0F7FA';
     const seaTop = islandConfig?.seaColor ?? '#29B6F6';
     const seaBottom = this.darkenColor(seaTop, 40);
 
@@ -3063,7 +3112,29 @@ export class GameEngine {
         const img = this.spriteManager.getImage(assetKey);
         if (img && img.complete) {
           const imgSize = 82; // %50 larger than 55
-          this.ctx.drawImage(img, (cardX + (cardW - imgSize) / 2) | 0, (cardY + 12) | 0, imgSize, imgSize);
+          const ratio = img.naturalWidth / img.naturalHeight;
+          let drawW = imgSize;
+          let drawH = imgSize;
+          
+          if (ratio > 1) {
+            // Wider fish
+            drawH = imgSize / ratio;
+          } else if (ratio < 1) {
+            // Taller fish/objects
+            drawW = imgSize * ratio;
+          }
+
+          // Center the scaled image within the 82x82 area
+          const offsetX = (imgSize - drawW) / 2;
+          const offsetY = (imgSize - drawH) / 2;
+          
+          this.ctx.drawImage(
+            img, 
+            (cardX + (cardW - imgSize) / 2 + offsetX) | 0, 
+            (cardY + 12 + offsetY) | 0, 
+            drawW | 0, 
+            drawH | 0
+          );
         }
 
         // Draw Name (%25 larger than 10px)
@@ -3275,7 +3346,9 @@ export class GameEngine {
           this.ctx.lineWidth = isNet ? 2 : layer.width;
           this.ctx.beginPath();
           this.ctx.moveTo(tipX, tipY);
-          this.ctx.lineTo(pivotX, pivotY);
+          const cpX = (tipX + pivotX) / 2;
+          const cpY = ((tipY + pivotY) / 2) + 30;
+          this.ctx.quadraticCurveTo(cpX, cpY, pivotX, pivotY);
           this.ctx.stroke();
         }
 
@@ -3410,13 +3483,69 @@ export class GameEngine {
       const progress = Math.min(1, this.arrivalProgress);
       const islandWidth = CANVAS_WIDTH * 0.6;
       const islandX = CANVAS_WIDTH - (progress * islandWidth);
+      const region = islandConfig?.region || 1;
+      const time = performance.now();
 
-      const sandGradient = bx.createLinearGradient(islandX, SEA_LEVEL_Y, CANVAS_WIDTH, CANVAS_HEIGHT);
-      sandGradient.addColorStop(0, '#FFE082');
-      sandGradient.addColorStop(0.4, '#FFD54F');
-      sandGradient.addColorStop(1, '#FFCA28');
+      bx.save();
+      
+      // Define Regional Styles
+      let fillStyle: string | CanvasGradient = '#FFE082';
+      let shadowColor = 'rgba(255, 255, 255, 0.5)';
+      let shadowBlur = 20;
 
-      bx.fillStyle = sandGradient;
+      switch (region) {
+        case 1: // Starter Bay - Classic Sand
+          const g1 = bx.createLinearGradient(islandX, SEA_LEVEL_Y, CANVAS_WIDTH, CANVAS_HEIGHT);
+          g1.addColorStop(0, '#FFE082');
+          g1.addColorStop(1, '#FFCA28');
+          fillStyle = g1;
+          shadowColor = '#FFD54F';
+          break;
+        case 2: // Coral Islands - Purple/Red
+          const g2 = bx.createLinearGradient(islandX, SEA_LEVEL_Y, CANVAS_WIDTH, CANVAS_HEIGHT);
+          g2.addColorStop(0, 'rgba(128, 0, 128, 0.9)');
+          g2.addColorStop(1, 'rgba(255, 0, 0, 0.8)');
+          fillStyle = g2;
+          shadowColor = '#FF00FF';
+          break;
+        case 3: // Deep Blue
+          fillStyle = 'rgb(25, 101, 167)';
+          shadowColor = '#00FFFF';
+          break;
+        case 4: // Storm Pass
+          fillStyle = 'rgb(151, 163, 209)';
+          shadowColor = '#FFFFFF';
+          break;
+        case 5: // Aurora Night
+          fillStyle = 'rgb(17, 163, 209)';
+          shadowColor = '#00F0FF';
+          shadowBlur = 35; // Extra glow for Aurora
+          break;
+        case 6: // Crimson Night - Textured Gray-Blue
+          fillStyle = '#546E7A';
+          shadowColor = '#81D4FA';
+          shadowBlur = 30 + Math.sin(time * 0.003) * 10;
+          break;
+        case 7: // Neon Night - Pulsating Neon Purple
+          fillStyle = '#A020F0';
+          shadowColor = '#FF00FF';
+          shadowBlur = 30 + Math.sin(time * 0.005) * 20; // Pulsating
+          break;
+        case 8: // Golden Night - Shimmering Golden
+          const g8 = bx.createLinearGradient(islandX - 50 + (time % 1000) / 1000 * 100, SEA_LEVEL_Y, islandX + 150 + (time % 1000) / 1000 * 100, CANVAS_HEIGHT);
+          g8.addColorStop(0, '#FFD700');
+          g8.addColorStop(0.5, '#FFFACD'); // Shimmer highlight
+          g8.addColorStop(1, '#FF8C00');
+          fillStyle = g8;
+          shadowColor = '#FFD700';
+          shadowBlur = 40;
+          break;
+      }
+
+      bx.shadowBlur = shadowBlur;
+      bx.shadowColor = shadowColor;
+      bx.fillStyle = fillStyle;
+
       bx.beginPath();
       bx.moveTo(CANVAS_WIDTH, CANVAS_HEIGHT);
       bx.lineTo(islandX - 100, CANVAS_HEIGHT);
@@ -3424,15 +3553,16 @@ export class GameEngine {
       bx.bezierCurveTo(islandX + 40, SEA_LEVEL_Y - 30, CANVAS_WIDTH - 50, SEA_LEVEL_Y - 60, CANVAS_WIDTH, SEA_LEVEL_Y - 50);
       bx.closePath();
       bx.fill();
+      bx.restore();
 
-      bx.fillStyle = `hsl(${100 + hue}, 60%, 45%)`;
+      // Thematic Grass/Top Layer - Subtly adapted
+      bx.fillStyle = `hsl(${100 + hue}, 40%, 30%)`; 
       bx.beginPath();
       bx.moveTo(islandX + 20, SEA_LEVEL_Y);
       bx.quadraticCurveTo(islandX + 60, SEA_LEVEL_Y - 40, CANVAS_WIDTH, SEA_LEVEL_Y - 20);
       bx.lineTo(CANVAS_WIDTH, SEA_LEVEL_Y);
       bx.closePath();
       bx.fill();
-
     }
 
 
@@ -3698,9 +3828,7 @@ export class GameEngine {
     const hookSprite = this.spriteManager.getImage(spriteKey);
 
     if (hookSprite && hookSprite.complete && hookSprite.naturalWidth > 0) {
-      const baseScale = 0.05; 
-      const scaleMultiplier = 1 + (rodLevel - 1) * 0.15;
-      const scale = baseScale * scaleMultiplier;
+      const scale = 0.05; 
 
       const w = hookSprite.naturalWidth * scale;
       const h = hookSprite.naturalHeight * scale;
@@ -3740,6 +3868,10 @@ export class GameEngine {
     }
     const safeRadius = Math.max(1, Math.abs(radius));
     this.ctx.save();
+    
+    // AAA Optimization: shadowBlur is a massive performance hit.
+    // Procedural entities turn it on, so we MUST force it off for sprite-based entities here.
+    this.ctx.shadowBlur = 0;
     const time = performance.now() * 0.005;
     const wobble = isCaught ? 0 : Math.sin(time + x * 0.05) * 5;
 
