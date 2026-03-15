@@ -1,4 +1,4 @@
-import { Play, RotateCcw, X, Lock, Trophy, Settings, Globe, Anchor } from "lucide-react";
+import { Play, RotateCcw, X, Lock, Settings, Globe, Anchor } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { InfoCard } from "../components/InfoCard";
 import { FishClass } from "../game/types";
@@ -252,15 +252,6 @@ export default function Home() {
             </button>
           </Link>
         </div>
-      </div>
-
-      {/* Leaderboard Button */}
-      <div className="flex gap-4 mt-6 z-10">
-        <Link href="/leaderboard">
-          <button className="p-4 bg-white/90 backdrop-blur-sm rounded-2xl text-amber-500 shadow-lg hover:scale-110 active:scale-90 transition-all border-2 border-white">
-            <Trophy className="w-6 h-6" />
-          </button>
-        </Link>
       </div>
 
       {/* Modals */}
