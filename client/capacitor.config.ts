@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.umurseckin.fishermansjourney',
-  appName: "Fisherman's Journey",
+  appName: "The Boatman's Tale",
   webDir: 'dist'
 };
 

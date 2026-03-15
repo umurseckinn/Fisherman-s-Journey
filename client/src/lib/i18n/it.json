@@ -1,0 +1,690 @@
+{
+  "common": {
+    "buy": "ACQUISTA",
+    "active": "ATTIVO",
+    "repair_rod": "Ripara Canna",
+    "game_over": "GAME OVER",
+    "score": "Punteggio",
+    "coins": "Monete",
+    "fuel": "Carburante",
+    "weight": "Peso",
+    "storage": "Stiva",
+    "level": "Livello",
+    "region": "Regione",
+    "capacity": "Capacità",
+    "speed": "Velocità",
+    "depth": "Profondità",
+    "attempts": "Tentativi",
+    "protection": "Protezione",
+    "reduction": "Riduzione",
+    "info": "INFO",
+    "tap_anywhere": "Tocca ovunque per continuare",
+    "kg": "kg",
+    "story": "Storia",
+    "ability_effect": "Abilità / Effetto",
+    "type": "Tipo",
+    "radius": "Raggio",
+    "aspect": "Aspetto",
+    "obstacle": "Ostacolo",
+    "catchable": "Catturabile",
+    "close": "Chiudi",
+    "visibility": "Visibilità",
+    "direction": "Direzione",
+    "coral": "Corallo",
+    "curse": "MALEDIZIONE",
+    "value": "Valore",
+    "spawn": "Comparsa",
+    "escape": "Fuga",
+    "inventory": "Inventario",
+    "obstacles": "Ostacoli",
+    "chain": "Catena",
+    "prices": "Prezzi",
+    "swing": "Oscillazione",
+    "gauge": "Indicatore",
+    "cycle": "Ciclo",
+    "owned": "Posseduto",
+    "unlocked": "Sbloccato",
+    "locked": "Bloccato",
+    "buy_now": "ACQUISTA ORA",
+    "select": "SELEZIONA",
+    "selected": "SELEZIONATO",
+    "min_level": "Livello Min {level}",
+    "storage_lv": "Stiva Liv.{level}",
+    "rod_lv": "Canna Liv.{level}",
+    "storage_max": "Stiva MAX",
+    "rod_max": "Canna MAX",
+    "effective_stats": "Statistiche Attuali",
+    "start_fishing": "INIZIA A PESCARE →",
+    "loading": "Caricamento...",
+    "hall_of_fame": "Hall of Fame",
+    "top_fishermen": "Migliori pescatori leggendari",
+    "no_scores": "Nessun punteggio. Sii il primo!",
+    "island": "Isola",
+    "island_level": "Isola Livello {level}",
+    "training_bay": "Baia di Addestramento",
+    "tutorial_harbor": "Porto del Tutorial",
+    "unknown_waters": "Acque Sconosciute",
+    "deep_sea_market": "Mercato Abissale",
+    "deep_voyage": "Viaggio Abissale",
+    "sell_haul": "Vendi il Bottino",
+    "fish_count": "{count} Pesci",
+    "empty_nets": "Reti vuote...",
+    "sell_all": "Vendi Tutto",
+    "boat_services": "Servizi Barca",
+    "refill_fuel": "Rifornimento",
+    "repair_rod_btn": "Ripara Canna",
+    "needs_fuel": "Serve Carburante",
+    "set_sail_btn": "Prendi il mare!",
+    "end_journey_confirm": "Terminare il viaggio? Tutti i progressi andranno perduti!",
+    "end_journey_reason": "Carburante esaurito! Viaggio terminato al mercato.",
+    "end_journey_btn": "Termina Viaggio (Arrenditi)",
+    "you_won": "Hai Vinto",
+    "you_won_msg": "Hai raggiunto tutte le isole. È stato un viaggio leggendario!",
+    "restart_btn": "RICOMINCIA",
+    "boss": "BOSS",
+    "checkpoint": "CHECKPOINT",
+    "language": "Lingua",
+    "free": "GRATIS",
+    "most_popular": "PIÙ POPOLARE",
+    "best_value": "MIGLIOR VALORE",
+    "snaps_hook": "L'amo si rompe!",
+    "danger": "Pericolo!",
+    "boost": "Boost 💨",
+    "harpoon": "Arpione",
+    "net": "Rete",
+    "tnt": "TNT",
+    "anchor_booster": "Ancora"
+  },
+  "game": {
+    "over": {
+      "boat_sank": "La barca è affondata! È stata schiacciata dal troppo carico.",
+      "no_hooks": "Canna inutilizzabile! Tutti gli ami sono rotti."
+    },
+    "hud": {
+      "weight": "{current} / {max} kg",
+      "score": "{score} 🪙",
+      "storage": "Stiva",
+      "hook": "Amo",
+      "storage_almost_full": "STIVA QUASI PIENA! ⚠️",
+      "boat_sinking": "LA BARCA AFFONDA! STIVA PIENA! 🚨"
+    },
+    "feedback": {
+      "legendary": "LEGGENDARIO!",
+      "rod_broken": "CANNA ROTTA!",
+      "combo_2": "2 DI FILA!",
+      "combo_3": "COMBO x3!",
+      "combo_5": "A FUOCO x5!",
+      "combo_7": "INARRESTABILE x7!",
+      "combo_poseidon": "POSEIDONE! x{combo}",
+      "weight_reduced": "-1 kg"
+    }
+  },
+  "ui": {
+    "storage_full": "Stiva Piena!",
+    "out_of_fuel": "Carburante Finito!",
+    "rod_broken": "Canna Rotta!",
+    "level_complete": "Livello Completato!",
+    "next_level": "Prossimo Livello",
+    "try_again": "Riprova",
+    "back_to_home": "Home",
+    "garage": "Garage",
+    "leaderboard": "Classifica",
+    "settings": "Impostazioni",
+    "repair_cost": "Costo Riparazione",
+    "unlock_cost": "Costo Sblocco",
+    "insufficient_balance": "Saldo Insufficiente!",
+    "need_fuel_msg": "Ti servono {cost} 🪙 per il carburante. Usa una Carta Pass o scegli un'opzione.",
+    "use_pass_card": "Usa Carta Pass",
+    "get_pass_cards": "Più Carte Pass",
+    "watch_ad": "Guarda Pubblicità (+50 🪙)",
+    "back_to_market": "Torna al Mercato",
+    "give_up": "Arrenditi (Fine Viaggio)",
+    "repair_needed": "Riparazione Necessaria!",
+    "need_repair_msg": "Ti servono {cost} 🪙 per riparare la canna. Scegli un'opzione.",
+    "get_more_doubloons": "Più Dubloni",
+    "watch_ad_amount": "Guarda Pubblicità (+{amount} 🪙)",
+    "island_select": "Scegli Isola",
+    "explorer_mode": "🗺️ MODALITÀ ESPLORATORE",
+    "prev_stage": "Prec.",
+    "next_stage": "Succ.",
+    "set_sail": "Prendi il mare!",
+    "level_locked_msg": "Livello bloccato! Completa prima i livelli precedenti.",
+    "tutorial": "Tutorial",
+    "new_region": "Nuova Regione",
+    "back_to_level_select": "TORNA ALLA SELEZIONE",
+    "island_clear": "Isola Completata!",
+    "refueling_msg": "Rifornimento in corso...",
+    "current_gold": "Dubloni d'Oro Attuali",
+    "fuel_cost": "Costo Carburante",
+    "remaining": "Rimanente",
+    "travel_to_island": "Viaggio verso Isola {island}",
+    "rod_broken_title": "Accidenti! Canna rotta!",
+    "boat_sunk_title": "Troppo peso! Barca affondata!",
+    "out_of_fuel_title": "Bloccato! Senza carburante!",
+    "island_reached": "Isola {island} Raggiunta",
+    "new_record": "NUOVO RECORD!",
+    "total_score": "PUNTEGGIO TOTALE",
+    "base_score": "Punteggio Base",
+    "depth_bonus": "Bonus Profondità",
+    "king_bounty": "Taglia Reale",
+    "vault_earnings": "Guadagni Caveau",
+    "menu": "MENU",
+    "retry": "RIPROVA",
+    "play_tutorial": "GIOCA TUTORIAL",
+    "play_game": "GIOCA",
+    "levels_title": "LIVELLI",
+    "admin_mode_msg": "Selezione modalità Admin",
+    "unlocked_up_to": "Sbloccato fino a L{level}",
+    "admin_mode": "Modalità Admin",
+    "select_level": "Scegli Livello",
+    "reset_confirm": "Sei sicuro? Tutti i progressi verranno azzerati!",
+    "reset_progress": "Azzera Progressi",
+    "logo_text": "L'Eco del Mare",
+    "shop": {
+      "pass_pouch": "Sacchetto Pass Base",
+      "pass_sack": "Sacco Pass Popolare",
+      "pass_chest": "Baule Pass Capitano",
+      "doubloon_pouch": "Sacchetto Dubloni",
+      "doubloon_sack": "Sacco Dubloni Esperto",
+      "doubloon_chest": "Baule Dubloni Capitano",
+      "doubloon_hoard": "Tesoro di Poseidone",
+      "welcome_gift": "Regalo di Benvenuto!",
+      "level_2_reached": "Hai raggiunto il Livello 2!",
+      "claim_gift": "RISCATTA REGALO",
+      "claim_now": "ORA"
+    },
+    "boosters": {
+      "out_of": "Finito {booster}?",
+      "mega_pack": "Mega Pack",
+      "epic_pack": "Epic Pack",
+      "all_boosters": "{amount}x TUTTI i Booster",
+      "single_booster": "{amount}x {booster}",
+      "how_it_works": "Come funziona",
+      "tips": "Consigli",
+      "harpoon": {
+        "phrase": "Fiocina le prede ostinate senza sforzo!",
+        "summary": "Lancia un arpione dritto per catturare un bersaglio istantaneamente.",
+        "usage": [
+          "Tocca per lanciare; trafigge tutto e cattura il primo bersaglio.",
+          "Ideale per pesci preziosi o passaggi stretti.",
+          "Le catture con arpione non contano nel peso della stiva durante il boost."
+        ],
+        "tips": [
+          "Usa quando il bersaglio è allineato con la barca.",
+          "Perfetto per i momenti critici quando il tempo stringe."
+        ]
+      },
+      "net": {
+        "phrase": "Raccogli tutto sul tuo cammino!",
+        "summary": "Lancia un'ampia rete che raccoglie i pesci nei paraggi.",
+        "usage": [
+          "Tocca per dispiegare; tutto nel cerchio viene raccolto.",
+          "Perfetto per banchi densi.",
+          "Le catture con rete non contano nel peso della stiva durante il boost."
+        ],
+        "tips": [
+          "Aspetta un gruppo prima di lanciare.",
+          "Usa i momenti di calma per i grandi gruppi."
+        ]
+      },
+      "tnt": {
+        "phrase": "Pulisci il fondale con un'esplosione!",
+        "summary": "Fa esplodere un'area 3x3 per liberare gli ostacoli.",
+        "usage": [
+          "Tocca per piazzare; l'esplosione pulisce tutto istantaneamente.",
+          "Ideale per zone con molti ostacoli.",
+          "Gli oggetti raccolti con TNT non contano nel peso durante il boost."
+        ],
+        "tips": [
+          "Lancialo dove gli ostacoli sono più densi.",
+          "Usalo per aprire percorsi quando sei bloccato."
+        ]
+      },
+      "anchor": {
+        "phrase": "Congela il tempo!",
+        "summary": "Ferma brevemente il tempo per raccogliere in sicurezza.",
+        "usage": [
+          "Tocca per attivare; il tempo scorre più lentamente.",
+          "Ideale per catture precise ed evitare pericoli.",
+          "Gli oggetti raccolti con l'ancora non contano nel peso durante il boost."
+        ],
+        "tips": [
+          "Attivalo appena prima di un lancio rischioso.",
+          "Usalo per stabilizzare quando gli ami sono pochi."
+        ]
+      }
+    }
+  },
+  "garage": {
+    "current_stats": "Statistiche Attuali",
+    "storage": "Stiva",
+    "swing": "Oscillazione",
+    "depth": "Profondità",
+    "casts": "Lanci",
+    "coral": "Corallo",
+    "owned": "Posseduto",
+    "start_fishing": "INIZIA A PESCARE →"
+  },
+  "leaderboard": {
+    "loading": "Caricamento punteggi...",
+    "no_scores": "Nessun punteggio. Sii il primo!",
+    "island": "Isola"
+  },
+  "upgrades": {
+    "storage_capacity": "Capacità Stiva",
+    "swing_speed": "Velocità Oscillazione",
+    "cast_speed": "Velocità Lancio",
+    "return_speed": "Velocità Risalita",
+    "hook_depth": "Profondità Amo",
+    "cast_attempts": "Tentativi Lancio",
+    "coral_protection": "Protezione Corallo",
+    "kelp_duration": "Durata Alghe"
+  },
+  "vehicles": {
+    "t1": { "name": "Il Dinghy", "captain": "Bill Galleggiante" },
+    "t2": { "name": "Lo Skiff Dipinto", "captain": "Danny l'Audace" },
+    "t3": { "name": "Lo Scafo in Fibra", "captain": "Eddie l'Esperto" },
+    "t4": { "name": "Il Cruiser a Motore", "captain": "Capitan Ken" },
+    "t5": { "name": "Il Bolide dei Mari", "captain": "Turbo Trev" },
+    "t6": { "name": "Il Peschereccio", "captain": "Sam il Marinaio" },
+    "t7": { "name": "La Nave del Capitano", "captain": "Capitan Theo" },
+    "t8": { "name": "La Nave da Ricerca", "captain": "Professoressa Pippa" },
+    "t9": { "name": "Il Corsaro", "captain": "Cam il Nero" },
+    "t10": { "name": "La Leggenda", "captain": "Il Pescatore Leggendario" }
+  },
+  "regions": {
+    "r1": "Cala dell'Alba",
+    "r2": "Barriera del Crepuscolo",
+    "r3": "Atolli Sussurranti",
+    "r4": "Blu Abissale",
+    "r5": "Stretto della Tempesta",
+    "r6": "Profondità di Aurora",
+    "r7": "Luna Cremisi",
+    "r8": "Vortice del Caos",
+    "r9": "Santuario Dorato",
+    "r10": "Fine della Leggenda"
+  },
+  "levels": {
+    "1": "Uscita Mattutina",
+    "2": "Sorpresa di Velocità",
+    "3": "Giardino di Alghe",
+    "4": "Primo Mercato",
+    "5": "Scoperta di Dolci",
+    "6": "Test di Velocità",
+    "7": "Delizia del Baule",
+    "8": "Caduta di Luna",
+    "9": "Pressione del Peso",
+    "10": "Livello Dorato",
+    "11": "Trappola ad Ancora",
+    "12": "Tentazione di Lava",
+    "13": "Pausa Respiro",
+    "14": "Tempesta di Marea",
+    "15": "Inferno di Corallo",
+    "16": "Sussurro delle Foglie",
+    "17": "Notte Scheletrica",
+    "18": "Il Vortice si Alza",
+    "19": "Ultimo Respiro",
+    "20": "BOSS: Regina della Cala",
+    "21": "Shock Corallino",
+    "22": "Doppio Corallo",
+    "23": "Inferno di Velocità",
+    "24": "Pausa Respiro",
+    "25": "Porta Galattica",
+    "26": "Corridoio Scheletrico",
+    "27": "Doppio Vortice",
+    "28": "Prova di Canna",
+    "29": "Pausa Respiro",
+    "30": "BOSS: Corallo Dorato",
+    "31": "Apertura Profonda",
+    "32": "Crisi di Capacità",
+    "33": "Trappola di Pioggia",
+    "34": "Pausa Respiro",
+    "35": "Sussurro del Re",
+    "36": "Profondità Oscure",
+    "37": "Danza dei Funghi",
+    "38": "Caccia Galattica",
+    "39": "Ultima Mossa",
+    "40": "BOSS: Bestia del Blu Profondo",
+    "41": "Porta della Tempesta",
+    "42": "Doppio Scheletro",
+    "43": "Shock di Capacità",
+    "44": "Pausa Respiro",
+    "45": "Stagione Reale",
+    "46": "Corridoio Oscuro",
+    "47": "Foresta di Funghi",
+    "48": "Tempesta Galattica",
+    "49": "Prova Finale",
+    "50": "BOSS: Signore della Tempesta",
+    "51": "Apertura di Aurora",
+    "52": "Caccia Oscura",
+    "53": "Pausa Respiro",
+    "54": "Ondata Reale",
+    "55": "Labirinto Corallino",
+    "56": "Guerra Warp",
+    "57": "Pericolo Silenzioso",
+    "58": "Tempesta di Aurora",
+    "59": "Notte di Caos",
+    "60": "BOSS: Dragone di Aurora",
+    "61": "Luna Cremisi",
+    "62": "Maledizione: Acque Pesanti",
+    "63": "Maledizione: Corrente Rapida",
+    "64": "Pausa Respiro",
+    "65": "Maledizione: Angolo Cieco",
+    "66": "Maledizione: Corrente Inversa",
+    "67": "Maledizione: Doppio Danno",
+    "68": "Pausa Respiro",
+    "69": "Maledizione: Crisi Economica",
+    "70": "BOSS: Bestia della Luna Cremisi",
+    "71": "Porta Dimensionale",
+    "72": "Maledizione: Reazione a Catena",
+    "73": "Maledizione: Pesci Invisibili",
+    "74": "Pausa Respiro",
+    "75": "Maledizione: Conto alla Rovescia",
+    "76": "Maledizione: Mercato Inverso",
+    "77": "Maledizione: Armata Scheletrica",
+    "78": "Pausa Respiro",
+    "79": "Tutto è Attivo",
+    "80": "BOSS: Signore del Caos",
+    "81": "Oscurità Dorata",
+    "82": "Maledizione Combinata I",
+    "83": "Maledizione Combinata II",
+    "84": "Pausa Respiro",
+    "85": "Maledizione: Pressione del Tempo",
+    "86": "Maledizione: Peso Inverso",
+    "87": "Maledizione: Fuga di Pesci",
+    "88": "Pausa Respiro",
+    "89": "Tutte le Maledizioni",
+    "90": "BOSS: Dragone Dorato",
+    "91": "Il Viaggio Finale Inizia",
+    "92": "Maledizione: Bomba a Orologeria",
+    "93": "Maledizione: Materia Oscura",
+    "94": "Ultimo Respiro",
+    "95": "Maledizione Combinata: Finale I",
+    "96": "Maledizione Combinata: Finale II",
+    "97": "Maledizione Combinata: Finale III",
+    "98": "Tempesta Silenziosa",
+    "99": "Una Chance",
+    "100": "BOSS FINALE: Signore delle Leggende"
+  },
+  "tutorial": {
+    "storage": "Controlla la Stiva! Se la barca diventa troppo pesante, affonda.",
+    "tnt": "Trascina la TNT per liberare l'area!",
+    "net": "Tocca per lanciare la rete!",
+    "harpoon": "Mira con l'arpione per i pesci veloci!",
+    "anchor": "Tocca il mare per gettare l'ancora!",
+    "garage_rod": "Una canna più forte cattura pesci più grandi!\nTocca qui per migliorarla.",
+    "garage_storage": "Finito lo spazio?\nTocca qui per ingrandire la stiva.",
+    "garage_next_boat": "Guadagnato abbastanza per una barca migliore!\nTocca la freccia.",
+    "garage_buy_boat": "È la {boat}!\nTocca per acquistarla e avere statistiche migliori."
+  },
+  "region_intros": {
+    "r1": {
+      "title": "Cala dell'Alba",
+      "story": "Qui ogni marinaio respira per la prima volta. Sotto la sua superficie calma, dei relitti attendono i novizi. Quando l'alba illumina le acque basse, chi sogna di diventare leggenda prende il mare."
+    },
+    "r2": {
+      "title": "Barriera del Crepuscolo",
+      "story": "I coralli lucenti illuminano le acque scure. Benvenuto nella misteriosa Barriera del Crepuscolo. Sussurri di antichi abitanti echeggiano tra le maree. Equipaggiati e affronta le ombre del labirinto (Livelli 11-20)."
+    },
+    "r3": {
+      "title": "Atolli Sussurranti",
+      "story": "Magnifici ma spietati. Immensi labirinti di corallo nascondono tesori e creature affamate. Solo chi ha istinti acuti avanza."
+    },
+    "r4": {
+      "title": "Blu Abissale",
+      "story": "Qui la luce svanisce. Le onde lasciano il posto a vortici silenziosi e mortali. Solo chi sfida l'oscurità trova i segreti di questo inferno blu."
+    },
+    "r5": {
+      "title": "Stretto della Tempesta",
+      "story": "Il cielo è eternamente nero, il mare eternamente furioso. Onde giganti schiacciano le navi. Sopravvivere qui non è fortuna, ma una vittoria contro la natura."
+    },
+    "r6": {
+      "title": "Profondità di Aurora",
+      "story": "Un regno mistico, illuminato da luci come al cielo del Nord. Le correnti seguono antichi incantesimi. Guarda il bagliore, ti guida."
+    },
+    "r7": {
+      "title": "Luna Cremisi",
+      "story": "Un rosso sinistro bagna il paesaggio. Spiriti e bestie si aggirano qui. Solo chi è sopravvissuto a innumerevoli battaglie resiste alla corruzione (Livelli 61-70)."
+    },
+    "r8": {
+      "title": "Vortice del Caos",
+      "story": "Tempo e direzione affondano qui. Correnti senza fine trascinano le navi in una spirale. Quando le bussole impazziscono, devi dominare la tua stessa mente."
+    },
+    "r9": {
+      "title": "Santuario Dorato",
+      "story": "L'ultima prova per chi scrive la storia. Ogni miglio è un combattimento. Chi ci riesce non è più un marinaio, ma una leggenda."
+    },
+    "r10": {
+      "title": "Fine della Leggenda",
+      "story": "La terra trema, il cielo si spezza. Sei davanti all'ultima battaglia. Dei sono caduti qui. Le tue capacità devono essere perfette per la fine (Livelli 91-100)."
+    }
+  },
+  "entities": {
+    "bubble": {
+      "name": "Pesce Bolla",
+      "story": "Galleggiano come lanterne in superficie. I marinai dicono che segnano acque sicure. Formano costellazioni specchiate nel mare.",
+      "effect": "Cattura innocua di basso valore e peso."
+    },
+    "sakura": {
+      "name": "Pesce Sakura",
+      "story": "Fioriscono in primavera nelle acque basse. La loro scia porta a passaggi sicuri. Un portafortuna per ogni viaggio.",
+      "effect": "Lascia petali ed è molto veloce."
+    },
+    "zap": {
+      "name": "Pesce Zap",
+      "story": "Nati nei temporali, portano il tuono in sé. Un solo colpo può cambiare tutta la pesca del giorno.",
+      "effect": "Dà la scossa alla barca per 3s; gli altri pesci scappano più facilmente."
+    },
+    "candy": {
+      "name": "Pesce Candy",
+      "story": "Si radunano nelle correnti calde. Il loro gusto dovrebbe alleggerire il cuore e la stiva.",
+      "effect": "Riduce il peso della barca di 1 (fino a 3x)."
+    },
+    "moon": {
+      "name": "Pesce Luna",
+      "story": "Brillano nelle notti serene. Ascoltano maree che solo loro sentono. Custodiscono sentieri segreti.",
+      "effect": "Rallenta tutti gli altri pesci del 40% per 10s."
+    },
+    "lava": {
+      "name": "Pesce Lava",
+      "story": "Nuotano presso i soffioni bollenti. Sono come brace viva delle fosse più profonde.",
+      "effect": "Provoca Bruciatura (+1 peso al secondo per 5s)."
+    },
+    "tide": {
+      "name": "Pesce Marea",
+      "story": "Sfrecciano come siluri al bordo delle tempeste. Un falso movimento e spariscono nella spuma.",
+      "effect": "Scuote la barca; chance di drop item."
+    },
+    "leaf": {
+      "name": "Pesce Foglia",
+      "story": "Leggeri come alghe, spariscono al pericolo. Garantiscono prosperità per tutto il viaggio.",
+      "effect": "Aumenta il valore di mercato del 10% (fino al 30%)."
+    },
+    "crystal": {
+      "name": "Pesce Cristallo",
+      "story": "Crescono nelle grotte minerali. Il loro corpo rifrange la luce in colori strani. Bellezza e rischio insieme.",
+      "effect": "Valore fluttuante alla cattura: +50, 0 o -30 Dubloni."
+    },
+    "galaxy": {
+      "name": "Pesce Galassia",
+      "story": "Nuotano tra correnti e stelle. Lasciano una nebbia viola. Chi li trova viene ricompensato.",
+      "effect": "Bonus casuale: +100 Dubloni o +10% carburante."
+    },
+    "mushroom": {
+      "name": "Pesce Fungo",
+      "story": "Fluttuano tra le spore scintillanti. La loro magia raddoppia il valore di un tesoro già posseduto.",
+      "effect": "Raddoppia il valore di mercato di un pesce casuale nell'inventario."
+    },
+    "king": {
+      "name": "Pesce Re",
+      "story": "Una leggenda vivente. Il mare tace quando passa. Catturarlo è come un'incoronazione.",
+      "effect": "Spaventa i pesci piccoli; +20% valore mercato."
+    },
+    "coral": {
+      "name": "Barriera Corallina",
+      "story": "Custodi silenziosi del fondale. Gli ami tornano spesso rotti. Sono confini sacri.",
+      "effect": "Rompe un amo al contatto."
+    },
+    "sea_kelp": {
+      "name": "Alghe",
+      "story": "Come nastri morbidi, ma possono trattenere una lenza con forza. Lasciale perdere.",
+      "effect": "Aggroviglia l'amo brevemente senza danni."
+    },
+    "sea_kelp_horizontal": {
+      "name": "Alghe Galleggianti",
+      "story": "Si nascondono nel fango. Possono tirare la lenza di lato senza preavviso.",
+      "effect": "Aggroviglia l'amo brevemente senza danni."
+    },
+    "sea_rock": {
+      "name": "Roccia Marina",
+      "story": "Vecchie ossa della costa. Fanno rimbalzare la lenza immediatamente.",
+      "effect": "Fa rimbalzare l'amo istantaneamente."
+    },
+    "sea_rock_large": {
+      "name": "Roccia Grande",
+      "story": "Mura sott'acqua. Dividono le correnti e fermano ogni lancio.",
+      "effect": "Fa rimbalzare l'amo istantaneamente."
+    },
+    "gold_doubloon": {
+      "name": "Dublone d'Oro",
+      "story": "Fluttuano come stelle cadute dai relitti. Attraggono i cupidi nel pericolo.",
+      "effect": "Porta +10kg di peso, ma molto oro."
+    },
+    "whirlpool": {
+      "name": "Vortice",
+      "story": "Ferite nell'oceano. Sopravvivi e il mare conoscerà il tuo nome.",
+      "effect": "Può affondare la barca se l'amo resta bloccato troppo a lungo."
+    },
+    "sunken_boat": {
+      "name": "Relitto",
+      "story": "Tombe di antichi viaggi. Ogni relitto è un avvertimento della storia.",
+      "effect": "Ostacolo solido, estremamente pesante e blocca il cammino."
+    },
+    "shark_skeleton": {
+      "name": "Scheletro di Squalo",
+      "story": "Reliquie decomposte delle profondità. Pescare ossa porta solo rimpianto.",
+      "effect": "Porta un peso inutile e -10 Oro."
+    },
+    "env_bubbles": {
+      "name": "Bolle",
+      "story": "Salgono dai soffioni. Danno all'equipaggiamento una strana spinta idrostatica.",
+      "effect": "Boost velocità amo; riduce il peso inventario di 1kg."
+    },
+    "anchor": {
+      "name": "Ancora Arrugginita",
+      "story": "Reliquie di tempeste superate. Sollevarla mette a prova pazienza e forza.",
+      "effect": "Ferma la barca immediatamente; riduce consumo carburante."
+    },
+    "shell": {
+      "name": "Conchiglia",
+      "story": "Si nascondono nella sabbia. Ognuna racconta una storia diversa delle maree.",
+      "effect": "Dà +20 Dubloni d'Oro alla cattura."
+    }
+  },
+  "curses": {
+    "none": {
+      "title": "Nessuna Maledizione",
+      "story": "Il mare è calmo. Una buona giornata per pescare."
+    },
+    "heavy_waters": {
+      "title": "Acque Pesanti",
+      "story": "L'acqua diventa densa come melassa. Tutto è più pesante, la stiva si riempie prima."
+    },
+    "fast_current": {
+      "title": "Corrente Rapida",
+      "story": "I pesci sfrecciano. Solo reazioni rapide portano al successo qui."
+    },
+    "blind_spot": {
+      "title": "Angolo Cieco",
+      "story": "La nebbia fredda inghiotte la vista. Fidati dei tuoi istinti più che degli occhi."
+    },
+    "reverse_current": {
+      "title": "Corrente Inversa",
+      "story": "La corrente gira. I pesci fuggono verso il largo. Un labirinto di porte."
+    },
+    "double_damage": {
+      "title": "Doppio Danno",
+      "story": "Ogni errore fa male il doppio. La precisione è la tua unica protezione."
+    },
+    "economic_crisis": {
+      "title": "Crisi Economica",
+      "story": "I mercati si seccano. Solo chi fa massa guadagna ancora qui."
+    },
+    "countdown": {
+      "title": "Conto alla Rovescia",
+      "story": "La stiva si restringe ogni 10 secondi. Sbrigati prima che tutto sparisca."
+    },
+    "skeleton_army": {
+      "title": "Armata Scheletrica",
+      "story": "Ossa salgono e rodono la tua pesca. Tieni le distanze!"
+    },
+    "fish_escape": {
+      "title": "Fuga di Pesci",
+      "story": "I pesci sono timidi e scivolano via all'ultimo momento. La pazienza è la chiave."
+    },
+    "time_bomb": {
+      "title": "Bomba a Orologeria",
+      "story": "Il tuo carico sparisce ogni 8 secondi. Pesca in fretta prima che sia tardi."
+    },
+    "dark_matter": {
+      "title": "Materia Oscura",
+      "story": "Il mare è in ombra. Ogni lancio comporta il rischio di un arresto brusco."
+    },
+    "chain_reaction": {
+      "title": "Reazione a Catena",
+      "story": "Un pesce ne tira altri con sé. Scegli il tuo bersaglio con saggezza."
+    },
+    "invisible_fish": {
+      "title": "Pesci Invisibili",
+      "story": "Senti i guizzi, ma non li vedi. Un test di ritmo e nervi."
+    },
+    "reverse_market": {
+      "title": "Mercato Inverso",
+      "story": "I prezzi salgono, i guadagni calano. Solo i coraggiosi fanno Dubloni qui."
+    },
+    "random_loop": {
+      "title": "Loop Casuale",
+      "story": "L'amo oscilla in modo imprevedibile. La flessibilità batte l'abitudine qui."
+    },
+    "reverse_weight": {
+      "title": "Peso Inverso",
+      "story": "La bilancia mente. Fidati della tua memoria, non dell'indicatore."
+    },
+    "random_curse": {
+      "title": "Maledizione Casuale",
+      "story": "Ogni 15 secondi il pericolo cambia. Adattati più in fretta della marea."
+    },
+    "combo_1": {
+      "title": "Combo I: Pesante & Rapido",
+      "story": "Acque dense e pesci veloci. Forza e tempo richiesti."
+    },
+    "combo_2": {
+      "title": "Combo II: Crisi & Pericolo",
+      "story": "Meno guadagno, più danno. Solo marinai prudenti riescono qui."
+    },
+    "combo_3": {
+      "title": "Combo III: Il Trio",
+      "story": "Pesci pesanti, rapidi e senza valore. Sopravvivi e diventa leggenda."
+    },
+    "final_1": {
+      "title": "Finale I: Fantasmi & Ossa",
+      "story": "Prede invisibili e scheletri. Ogni lancio è una scommessa."
+    },
+    "final_2": {
+      "title": "Finale II: Corsa contro il Tempo",
+      "story": "Il tempo vola, la stiva si restringe, i pesci sfrecciano. Fidati dell'istinto."
+    },
+    "final_3": {
+      "title": "Finale III: L'ultimo Resistente",
+      "story": "Il mercato è contro di te, i pesci fuggono. Mostra la tua perseveranza."
+    },
+    "one_chance": {
+      "title": "Una Chance",
+      "story": "Un solo lancio decide tutto. Scegli il tuo momento con saggezza."
+    },
+    "card": {
+      "label": "Livello Maledetto",
+      "start": "Inizia Livello"
+    }
+  }
+}

@@ -3,6 +3,8 @@ import { RefreshCcw, Home, Trophy, Play } from "lucide-react";
 import { Link } from "wouter";
 import { useMemo } from "react";
 import { type RunScoreBreakdown } from "@/game/storage";
+import { t } from "@/lib/i18n";
+import { AutoShrinkText } from "@/components/ui/AutoShrinkText";
 
 interface GameOverModalProps {
   score: number;
@@ -18,7 +20,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
     if (r.includes("unusable") || r.includes("broken")) {
       return {
         type: 'ROD_BROKEN',
-        title: "Oh snap! Rod Broken!",
+        title: t('ui.rod_broken_title', "Oh snap! Rod Broken!"),
         image: "/assets/game_over/ROD_BROKEN.png",
         color: "from-orange-400 to-red-600",
         btn: "bg-orange-500 hover:bg-orange-600 shadow-orange-900/50",
@@ -29,7 +31,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
     if (r.includes("sank") || r.includes("heavy load")) {
       return {
         type: 'STORAGE_FULL_SUNK',
-        title: "Overweight! Boat Sunk!",
+        title: t('ui.boat_sunk_title', "Overweight! Boat Sunk!"),
         image: "/assets/game_over/STORAGE_FULL_SUNK.png",
         color: "from-cyan-400 to-blue-600",
         btn: "bg-cyan-500 hover:bg-cyan-600 shadow-cyan-900/50",
@@ -40,7 +42,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
     if (r.includes("fuel")) {
       return {
         type: 'OUT_OF_FUEL',
-        title: "Stranded! Out of Fuel!",
+        title: t('ui.out_of_fuel_title', "Stranded! Out of Fuel!"),
         image: "/assets/game_over/OUT_OF_FUEL.png",
         color: "from-red-400 to-yellow-600",
         btn: "bg-red-500 hover:bg-red-600 shadow-red-900/50",
@@ -50,7 +52,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
     }
     return {
       type: 'DEFAULT',
-      title: "Game Over",
+      title: t('common.game_over', "Game Over"),
       image: "/assets/game_over/ROD_BROKEN.png",
       color: "from-slate-400 to-slate-600",
       btn: "bg-primary hover:bg-primary/90 shadow-slate-900/50",
@@ -85,10 +87,10 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
         {/* Dynamic Title */}
         <div className="text-center mb-6">
           <h2 className={`text-2xl font-black italic tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] bg-gradient-to-b ${theme.color} bg-clip-text text-transparent uppercase`}>
-            {theme.title}
+            <AutoShrinkText maxFontSize={24}>{theme.title}</AutoShrinkText>
           </h2>
           <p className="text-slate-500 font-black uppercase text-[10px] tracking-widest mt-1">
-            Island {island} Reached
+            {t('ui.island_reached', 'Island {island} Reached', { island })}
           </p>
         </div>
 
@@ -100,12 +102,12 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
               transition={{ repeat: Infinity, duration: 2 }}
               className="absolute -top-2 -right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg border-2 border-slate-950 z-20"
             >
-              NEW RECORD!
+              {t('ui.new_record', 'NEW RECORD!')}
             </motion.div>
           )}
 
           <div className="text-center mb-4">
-            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">TOTAL SCORE</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{t('ui.total_score', 'TOTAL SCORE')}</div>
             <div className="text-4xl font-black text-white tracking-tighter tabular-nums drop-shadow-sm">
               {score.toLocaleString()}
             </div>
@@ -113,16 +115,16 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
 
           <div className="space-y-2 border-t border-white/5 pt-4 px-2">
             <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
-              <span>Base Score</span>
+              <span>{t('ui.base_score', 'Base Score')}</span>
               <span className="text-slate-200">{scoreBreakdown?.baseScore.toLocaleString() || 0}</span>
             </div>
             <div className="flex justify-between items-center text-[10px] font-black text-blue-400 uppercase">
-              <span>Depth Bonus</span>
+              <span>{t('ui.depth_bonus', 'Depth Bonus')}</span>
               <span>+{scoreBreakdown?.depthBonus.toLocaleString() || 0}</span>
             </div>
             {(scoreBreakdown?.kingBonus || 0) > 0 && (
               <div className="flex justify-between items-center text-[10px] font-black text-amber-500 uppercase">
-                <span>King Bounty</span>
+                <span>{t('ui.king_bounty', 'King Bounty')}</span>
                 <span>+{scoreBreakdown?.kingBonus.toLocaleString() || 0}</span>
               </div>
             )}
@@ -130,7 +132,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
             {/* Vault Translation (Dark) */}
             <div className="mt-4 bg-slate-900 rounded-2xl p-3 border border-white/5 flex items-center justify-between shadow-inner">
               <div className="flex flex-col">
-                <span className="text-[9px] font-black text-slate-500 uppercase leading-none mb-1">Vault Earnings</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase leading-none mb-1">{t('ui.vault_earnings', 'Vault Earnings')}</span>
                 <div className="flex items-center gap-1 leading-none">
                   <span className="text-lg font-black text-amber-500">+{scoreBreakdown?.finalScore.toLocaleString() || score.toLocaleString()}</span>
                   <img src="/assets/environment/gold_doubloon.png" alt="🪙" className="w-4 h-4 object-contain" />
@@ -146,7 +148,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
           <Link href="/">
             <button className="w-full py-4 rounded-[24px] font-black text-[12px] text-slate-400 bg-slate-900 border-b-4 border-black active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2">
               <Home className="w-4 h-4 text-slate-500" />
-              MENU
+              {t('ui.menu', 'MENU')}
             </button>
           </Link>
 
@@ -155,7 +157,7 @@ export function GameOverModal({ score, island, reason, onRetry, scoreBreakdown }
             className={`w-full py-4 rounded-[24px] font-black text-[12px] text-white shadow-[0_4px_0_rgba(0,0,0,0.3)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2 ${theme.btn}`}
           >
             <RefreshCcw className="w-4 h-4" />
-            RETRY
+            {t('ui.retry', 'RETRY')}
           </button>
         </div>
       </motion.div>

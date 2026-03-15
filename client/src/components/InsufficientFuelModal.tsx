@@ -1,6 +1,8 @@
 import React from 'react';
 import { Fuel, Play, ArrowLeft, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
+import { AutoShrinkText } from '@/components/ui/AutoShrinkText';
 
 interface InsufficientFuelModalProps {
     isOpen: boolean;
@@ -37,9 +39,11 @@ export function InsufficientFuelModal({
                     </div>
 
                     <div>
-                        <h2 className="text-2xl font-display font-bold text-slate-800">Insufficient Balance!</h2>
+                        <h2 className="text-2xl font-display font-bold text-slate-800">
+                            <AutoShrinkText maxFontSize={24}>{t('ui.insufficient_balance', 'Insufficient Balance!')}</AutoShrinkText>
+                        </h2>
                         <p className="text-slate-500 text-sm mt-2 font-medium">
-                            You need <span className="text-red-500 font-bold">{fuelCost} 🪙</span> to buy fuel. Please use a Pass Card or choose an option.
+                            {t('ui.need_fuel_msg', 'You need {cost} 🪙 to buy fuel. Please use a Pass Card or choose an option.', { cost: fuelCost })}
                         </p>
                     </div>
                 </div>
@@ -51,7 +55,7 @@ export function InsufficientFuelModal({
                             className="w-full py-7 text-lg font-bold bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl flex items-center justify-center gap-3 shadow-lg border-b-4 border-blue-800 animate-pulse"
                         >
                             <img src="/assets/pass_card.png" alt="Pass" className="w-6 h-8 object-contain" />
-                            Use Pass Card ({passCards})
+                            <AutoShrinkText maxFontSize={18}>{`${t('ui.use_pass_card', 'Use Pass Card')} (${passCards})`}</AutoShrinkText>
                         </Button>
                     ) : (
                         <Button
@@ -59,7 +63,7 @@ export function InsufficientFuelModal({
                             className="w-full py-7 text-lg font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-200 border-b-4 border-amber-600"
                         >
                             <img src="/assets/pass_card.png" alt="Pass" className="w-6 h-8 object-contain" />
-                            Get More Pass Cards
+                            <AutoShrinkText maxFontSize={18}>{t('ui.get_pass_cards', 'Get More Pass Cards')}</AutoShrinkText>
                         </Button>
                     )}
 
@@ -68,7 +72,7 @@ export function InsufficientFuelModal({
                         className="w-full py-5 text-sm font-bold bg-purple-600/10 hover:bg-purple-600/20 text-purple-700 border-2 border-purple-200 rounded-2xl flex items-center justify-center gap-3"
                     >
                         <Play className="w-4 h-4 fill-current" />
-                        Watch an Ad (+50 🪙)
+                        <AutoShrinkText maxFontSize={14}>{t('ui.watch_ad', 'Watch an Ad (+50 🪙)')}</AutoShrinkText>
                     </Button>
 
                     <div className="flex flex-col gap-1">
@@ -78,7 +82,7 @@ export function InsufficientFuelModal({
                             className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 hover:bg-transparent rounded-2xl flex items-center justify-center gap-2"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            Back to Market
+                            <AutoShrinkText maxFontSize={14}>{t('ui.back_to_market', 'Back to Market')}</AutoShrinkText>
                         </Button>
 
                         <Button
@@ -86,7 +90,7 @@ export function InsufficientFuelModal({
                             variant="ghost"
                             className="w-full py-2 text-red-400 text-xs font-bold hover:text-red-600 hover:bg-red-50 rounded-xl flex items-center justify-center gap-2"
                         >
-                            Give Up (End Journey)
+                            <AutoShrinkText maxFontSize={12}>{t('ui.give_up', 'Give Up (End Journey)')}</AutoShrinkText>
                         </Button>
                     </div>
                 </div>

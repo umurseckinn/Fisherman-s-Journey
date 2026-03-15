@@ -1,4 +1,5 @@
 import { type GameState, type Entity, type FishClass, type CurseType, OBJECT_MATRIX } from "./types";
+import { t, getCanvasFontSize, getFontFamily } from "@/lib/i18n";
 import { SpriteManager, ASSETS } from "./SpriteManager";
 import { TutorialLevelManager } from "./TutorialManager";
 import { GameEffects } from "./GameEffects";
@@ -23,6 +24,14 @@ export const CANVAS_WIDTH = 450;
 export const CANVAS_HEIGHT = 800;
 export const SEA_LEVEL_Y = CANVAS_HEIGHT * 0.25;
 export const FISH_ZONE_TOP = SEA_LEVEL_Y + 60; // Hull avoidance (User request 1)
+
+const REGIONAL_THEMES: Record<number, { boatColor: string }> = {
+  1: { boatColor: '#8b4513' }, // Saddle Brown
+  2: { boatColor: '#5d4037' }, // Darker Brown
+  3: { boatColor: '#3e2723' }, // Very Dark Brown
+  4: { boatColor: '#263238' }, // Blue Grey
+  5: { boatColor: '#212121' }, // Near Black
+};
 
 const DEFAULT_FLEE = { radius: 0, power: 0 };
 
@@ -245,11 +254,20 @@ export class GameEngine {
   private whirlpoolTurns: number = 0;
   private whirlpoolRadius: number = 0;
   private hookBreakDuration: number = 3500;
-  private lastSnagType: 'anchor' | 'kelp' | 'rock' | null = null;
+  private lastSnagType: 'anchor' | 'kelp' | 'rock' | 'coral' | null = null;
   private lastSpawnedType: FishClass | null = null;
   public effects: GameEffects;
   private backgroundManager: DynamicBackgroundManager;
   private wasSubmerged: boolean = false;
+
+  // Arrival Reel-in Logic
+  private arrivalReelInMs: number = 0;
+  private readonly REEL_IN_DURATION: number = 750; // Refined: 600-800ms range
+  private isHookHidden: boolean = false;
+  private isReeledIn: boolean = false;
+  private reelInLength: number = 0;
+  private reelInStarted: boolean = false;
+  private reelInStage: 1 | 2 = 1;
   private hookLaunchMs: number = 0; // timer for launch animation
   private isPointerDown: boolean = false;
   private anchorVisualState: 'inactive' | 'dropping' | 'resting' | 'drifting' = 'inactive';
@@ -341,6 +359,8 @@ export class GameEngine {
     this.state.isPlaying = true;
     this.isArriving = false;
     this.arrivalProgress = 0;
+    this.isHookHidden = false;
+    this.isReeledIn = false;
     this.isSinking = false;
     this.sinkProgress = 0;
     this.state.lavaBurnMs = 0;
@@ -448,6 +468,7 @@ export class GameEngine {
     this.anchorVisualY = 0;
     this.anchorDropElapsed = 0;
     this.anchorDriftSpeed = 0;
+    this.state.currentCombo = 0;
 
     this.lastFrameTime = performance.now();
     requestAnimationFrame(this.loop);
@@ -827,37 +848,24 @@ export class GameEngine {
           if (prevTime > 1.0 && this.state.timeRemaining <= 1.0) {
             this.state.fishes.forEach(ent => {
               ent.direction = -1; // Face left
-              // Set a base speed for stationary objects (rocks, etc) so they actually move
               if (ent.speed === 0) ent.speed = 0.5; 
               ent.speed *= 4; // 4x speed for everything
-              ent.fleeVelocityX = -15; // Aggressive left move
+              ent.fleeVelocityX = -15; 
             });
+          }
+
+          // RULE: Trigger Fast Reel-In and Boat Arrival earlier (1.5s remaining)
+          if (prevTime > 1.5 && this.state.timeRemaining <= 1.5 && !this.isArriving && !this.isSinking) {
+            this.isArriving = true;
+            this.arrivalProgress = 0;
           }
         }
       } else if (!this.isArriving) {
-        // RULE: Timeout — Stop fishing, drop caught fish, and make them swim left
-        const hook = this.state.hook;
-        
-        const dropEntity = (entity: Entity) => {
-          entity.direction = -1; // Face left
-          entity.speed = 1.5; // Fast swim away
-          entity.fleeVelocityX = -5; // Aggressive left move
-          this.state.fishes.push(entity);
-        };
-
-        if (hook.caughtEntity) {
-          dropEntity(hook.caughtEntity);
-          hook.caughtEntity = null;
+        // Safety trigger for timeout
+        if (!this.isSinking) {
+          this.isArriving = true;
+          this.arrivalProgress = 0;
         }
-
-        if (hook.caughtEntities && hook.caughtEntities.length > 0) {
-          hook.caughtEntities.forEach(e => dropEntity(e));
-          hook.caughtEntities = [];
-        }
-
-        this.isArriving = true;
-        this.state.hook.state = 'idle';
-        this.arrivalProgress = 0;
       }
     }
 
@@ -890,12 +898,38 @@ export class GameEngine {
       if (this.sinkProgress >= 1) {
         this.sinkProgress = 1;
         this.state.isPlaying = false;
-        this.onGameOver(this.state.score, this.state.level, "The boat sank! It was crushed under heavy load.");
+        this.onGameOver(this.state.score, this.state.level, t('game.over.boat_sank', "The boat sank! It was crushed under heavy load."));
       }
       return;
     }
 
     if (this.isArriving) {
+      if (!this.reelInStarted) {
+        this.reelInStarted = true;
+        this.reelInStage = 1;
+        this.arrivalReelInMs = this.REEL_IN_DURATION;
+        this.reelInLength = this.state.hook.length;
+        
+        // RULE: Drop any caught items immediately when reel-in starts
+        const dropEntity = (entity: Entity) => {
+          entity.direction = -1; 
+          entity.speed = 2.0; 
+          entity.fleeVelocityX = -8; 
+          this.state.fishes.push(entity);
+        };
+
+        if (this.state.hook.caughtEntity) {
+          dropEntity(this.state.hook.caughtEntity);
+          this.state.hook.caughtEntity = null;
+        }
+        if (this.state.hook.caughtEntities && this.state.hook.caughtEntities.length > 0) {
+          this.state.hook.caughtEntities.forEach(dropEntity);
+          this.state.hook.caughtEntities = [];
+        }
+        
+        this.state.hook.state = 'idle';
+      }
+
       this.arrivalProgress += deltaTime / 2000;
       if (this.arrivalProgress >= 1) {
         this.arrivalProgress = 1;
@@ -1024,10 +1058,13 @@ export class GameEngine {
     const actualWeight = this.state.inventory.reduce((sum, item) => sum + item.weight, 0);
     // currentStorage display value includes temporary buoyancy offsets (visual stress as per game_design 2.2)
     this.state.currentStorage = actualWeight + (this.state.buoyancyOffset || 0);
-    const maxStorage = this.state.upgrades.storageCapacity || 50;
-    // Sink check only against real inventory weight as per game_design
-    if (actualWeight > maxStorage) {
+    const maxStorage = this.state.upgrades.storageCapacity || 10;
+    // Sink check: fillPercentage >= 100 triggers sinking
+    if (actualWeight >= maxStorage && !this.isSinking) {
       this.isSinking = true;
+      this.isArriving = false;
+      this.arrivalProgress = 0;
+      this.reelInStarted = false;
     }
   }
 
@@ -1045,6 +1082,9 @@ export class GameEngine {
       rodWidth,
       lineWidth,
       maxAttempts: this.state.upgrades.castAttempts || 3,
+      maxWeight: this.state.upgrades.storageCapacity || 10,
+      hookOffsetX: 0, // Fallback
+      hookOffsetY: 0  // Fallback
     };
   }
 
@@ -1054,6 +1094,46 @@ export class GameEngine {
     const hookPivot = this.getHookPivotPosition();
     const pivotX = hookPivot.x;
     const pivotY = hookPivot.y;
+
+    if (this.isArriving) {
+      if (!this.isReeledIn) {
+        // TWO-STAGE REEL-IN
+        // Stage 1: Move to Hook Pivot (the center of swing)
+        // Stage 2: Move to Rod Tip (actual rod tip on boat)
+        const target = this.reelInStage === 1 
+          ? this.getHookPivotPosition() 
+          : this.getRodTipPosition();
+        
+        const tx = target.x;
+        const ty = target.y;
+        
+        const smoothing = 0.15;
+        hook.x += (tx - hook.x) * smoothing;
+        hook.y += (ty - hook.y) * smoothing;
+
+        const dist = Math.sqrt(Math.pow(tx - hook.x, 2) + Math.pow(ty - hook.y, 2));
+        
+        if (dist < 5) {
+          if (this.reelInStage === 1) {
+            this.reelInStage = 2; // Move to final rod tip
+          } else {
+            hook.x = tx;
+            hook.y = ty;
+            this.isReeledIn = true;
+            this.isHookHidden = true;
+          }
+        }
+        
+        this.state.hookX = hook.x;
+        this.state.hookY = hook.y;
+        hook.state = 'idle';
+      } else {
+        this.isReeledIn = true;
+        this.isHookHidden = true;
+      }
+      return;
+    }
+
     if (this.state.hookBrokenMs > 0) {
       hook.state = 'idle';
       hook.length = 0;
@@ -1080,6 +1160,17 @@ export class GameEngine {
     const depthPercent = Math.max(0.1, Math.min(1, (this.state.upgrades.hookDepth || 50) / 100));
     const waterDepth = (CANVAS_HEIGHT - SEA_LEVEL_Y - (this.state.weather === 'stormy' ? 10 : 0)) * 0.5; // Depth reduction: 1/2 submerged length
     const maxDepth = SEA_LEVEL_Y + waterDepth * depthPercent;
+
+    if (hook.state === 'shooting') {
+      const hx = hook.x;
+      const hy = hook.y;
+      if (hy > SEA_LEVEL_Y + 50 && (hy >= maxDepth || hx < 0 || hx > CANVAS_WIDTH)) {
+        // Miss: Shooting reaches limit without catch
+        this.state.currentCombo = 0;
+        hook.state = 'retracting';
+        this.effects.spawnCircles(hx, hy, 8, '#A0D8EF', 6, 2, 800);
+      }
+    }
 
     if (hook.state === 'idle') {
       const minAngle = 0;
@@ -1239,6 +1330,9 @@ export class GameEngine {
         if (this.tutorialManager?.getState().step === 'harpoon_action') {
           this.handleTutorialInteraction('aim_harpoon_complete');
         }
+        if (!isHarpoonShot) {
+          this.state.currentCombo = 0; // Miss reset
+        }
       }
 
       // Magical Hook Logic: Calculate precise collision tip (Bottom sharp edge)
@@ -1278,6 +1372,7 @@ export class GameEngine {
           }
           if (fish.type === 'env_bubbles') {
             this.applyBubbleEffect();
+            this.effects.spawnBubblesFeedback(collisionX, collisionY);
             this.effects.clearTrail(fish.id);
             this.state.fishes.splice(i, 1);
             i -= 1;
@@ -1321,14 +1416,22 @@ export class GameEngine {
           continue;
         }
 
+        // If not harpoon, and it's an obstacle, break hook
+        if (!isHarpoonShot && OBJECT_MATRIX[fish.type].isObstacle) {
+          this.state.currentCombo = 0; // Reset combo on hit
+          this.triggerHookBreak();
+          break;
+        }
+
         if (fish.type === 'coral') {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
-          this.effects.spawnCoralHit(collisionX, collisionY);
-          if (rod.coralProtection === 0 || Math.random() > rod.coralProtection) {
-            const curse = this.state.activeCurse;
-            const damage = (curse === 'double_damage' || curse === 'combo_2' || curse === 'final_1') ? -2 : -1;
-            this.updateHookAttempts(damage);
+          this.effects.spawnRockHit(collisionX, collisionY);
+          this.state.anchorSnagMs = 200;
+          this.lastSnagType = 'coral';
+          if (!isHarpoonShot) {
+            this.updateHookAttempts(-1);
+            this.state.currentCombo = 0; // Reset combo on hit
             this.triggerHookBreak();
           }
           break;
@@ -1340,8 +1443,11 @@ export class GameEngine {
           this.effects.spawnKelpHit(collisionX, collisionY);
           this.state.anchorSnagMs = 200;
           this.lastSnagType = 'kelp';
-          this.updateHookAttempts(-1);
-          this.triggerHookBreak();
+          if (!isHarpoonShot) {
+            this.updateHookAttempts(-1);
+            this.state.currentCombo = 0; // Reset combo on snag
+            this.triggerHookBreak();
+          }
           break;
         }
 
@@ -1351,8 +1457,11 @@ export class GameEngine {
           this.effects.spawnRockHit(collisionX, collisionY);
           this.state.anchorSnagMs = 200;
           this.lastSnagType = 'rock';
-          this.updateHookAttempts(-1);
-          this.triggerHookBreak();
+          if (!isHarpoonShot) {
+            this.updateHookAttempts(-1);
+            this.state.currentCombo = 0; // Reset combo on rock
+            this.triggerHookBreak();
+          }
           break;
         }
 
@@ -1369,8 +1478,10 @@ export class GameEngine {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.effects.spawnRockHit(collisionX, collisionY);
-          this.updateHookAttempts(-1);
-          this.triggerHookBreak();
+          if (!isHarpoonShot) {
+            this.updateHookAttempts(-1);
+            this.triggerHookBreak();
+          }
           break;
         }
 
@@ -1394,8 +1505,11 @@ export class GameEngine {
           hook.caughtEntity = null;
           const skeletonPenalty = this.activeVehicleId === 't6' ? Math.round(-10 * 0.75) : -10;
           this.earnCoins(skeletonPenalty);
-          this.updateHookAttempts(-1);
-          this.triggerHookBreak();
+          if (!isHarpoonShot) {
+            this.updateHookAttempts(-1);
+            this.state.currentCombo = 0; // Reset combo on skeleton
+            this.triggerHookBreak();
+          }
           this.state.fishPanicMs = 5000;
           break;
         }
@@ -1404,6 +1518,7 @@ export class GameEngine {
           hook.state = isHarpoonShot ? 'harpoon_retracting' : 'retracting';
           hook.caughtEntity = null;
           this.applyBubbleEffect();
+          this.effects.spawnBubblesFeedback(collisionX, collisionY);
           this.effects.clearTrail(fish.id);
           this.state.fishes.splice(i, 1);
           break;
@@ -1552,10 +1667,7 @@ export class GameEngine {
       fish.fleeVelocityX *= 0.85;
       fish.fleeVelocityY *= 0.85;
 
-      if (!isHookActive) {
-        fish.fleeVelocityX = 0;
-        fish.fleeVelocityY = 0;
-      } else {
+      if (isHookActive) {
         const config = FLEE_CONFIG[fish.type] || DEFAULT_FLEE;
         const distToHook = Math.hypot(hookX - fish.x, hookY - fish.y);
 
@@ -2487,7 +2599,7 @@ export class GameEngine {
 
     if (next === 0 && !this.isArriving && !this.isSinking) {
       this.state.isPlaying = false;
-      this.onGameOver(this.state.score, this.state.level, "Fishing rod unusable! All hooks are broken.");
+      this.onGameOver(this.state.score, this.state.level, t('game.over.no_hooks', "Fishing rod unusable! All hooks are broken."));
     }
   }
 
@@ -2590,9 +2702,18 @@ export class GameEngine {
     // 'fish_escape' veya 'final_3' curse: Yakalanan balık %30 şansla kaçar
     const curse = this.state.activeCurse;
     if ((curse === 'fish_escape' || curse === 'final_3') && Math.random() < 0.3) {
-      this.effects.shakeScreen(5, 5);
-      this.effects.spawnSplash(caught.x, caught.y);
+      this.effects.spawnBubblesFeedback(caught.x, caught.y);
+      this.state.currentCombo = 0; // Combo resets if fish escapes or line breaks
       return; // Fish escaped, do not add to inventory
+    }
+
+    // Combo logic: Fish and Shell increment combo
+    const isComboType = !OBJECT_MATRIX[caught.type].isObstacle || caught.type === 'shell';
+    if (isComboType) {
+        this.state.currentCombo += 1;
+        if (this.state.currentCombo >= 2) {
+            this.effects.spawnComboEffect(this.state.currentCombo);
+        }
     }
 
     if (this.state.level === 1 && this.tutorialManager?.isActive()) {
@@ -2862,132 +2983,7 @@ export class GameEngine {
     }
   }
 
-  private checkIslandProgress() {
-    // Moved logic to update isArriving
-  }
 
-  private darkenColor(hex: string, amount: number) {
-    const value = hex.replace('#', '');
-    const num = parseInt(value, 16);
-    const r = Math.max(0, ((num >> 16) & 255) - amount);
-    const g = Math.max(0, ((num >> 8) & 255) - amount);
-    const b = Math.max(0, (num & 255) - amount);
-    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
-  }
-
-  private drawWeatherEffects(bx: CanvasRenderingContext2D) {
-    if (this.state.weather === 'cloudy') {
-      bx.fillStyle = 'rgba(0,0,0,0.08)';
-      bx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    } else if (this.state.weather === 'rainy' || this.state.weather === 'stormy') {
-      bx.fillStyle = this.state.weather === 'stormy' ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.12)';
-      bx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      bx.strokeStyle = 'rgba(180,220,255,0.6)';
-      bx.lineWidth = 1;
-      for (let i = 0; i < 20; i++) {
-        const x = Math.random() * CANVAS_WIDTH;
-        const y = Math.random() * CANVAS_HEIGHT;
-        bx.beginPath();
-        bx.moveTo(x, y);
-        bx.lineTo(x + 4, y + 10);
-        bx.stroke();
-      }
-    } else if (this.state.weather === 'magic') {
-      bx.fillStyle = 'rgba(123,31,162,0.12)';
-      bx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    }
-  }
-
-  /**
-   * Draw all static background elements onto bgCtx.
-   * Called only when backgroundDirty === true (level start, assets load, arrival, sinking).
-   */
-  private drawBackground(bgCtx: CanvasRenderingContext2D) {
-    bgCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-    const islandConfig = LEVEL_CONFIG[this.state.level];
-    const hue = (this.state.level - 1) * 30;
-    const skyTop = islandConfig?.skyColor?.top ?? '#87CEEB';
-    const skyBottom = islandConfig?.skyColor?.bottom ?? '#E0F7FA';
-    const seaTop = islandConfig?.seaColor ?? '#29B6F6';
-    const seaBottom = this.darkenColor(seaTop, 40);
-
-    // Sky gradient
-    const skyGradient = bgCtx.createLinearGradient(0, 0, 0, SEA_LEVEL_Y);
-    skyGradient.addColorStop(0, skyTop);
-    skyGradient.addColorStop(1, skyBottom);
-    bgCtx.fillStyle = skyGradient;
-    bgCtx.fillRect(0, 0, CANVAS_WIDTH, SEA_LEVEL_Y);
-
-    if (this.state.weather === 'sunny' || this.state.weather === 'cloudy') {
-      this.drawSun(bgCtx, CANVAS_WIDTH - 60, 50);
-    }
-    if (this.state.weather !== 'magic') {
-      this.drawCloud(bgCtx, 60, 40, 40);
-      this.drawCloud(bgCtx, 150, 60, 30);
-      this.drawCloud(bgCtx, 300, 45, 35);
-    }
-
-    // Sea gradient
-    const seaGradient = bgCtx.createLinearGradient(0, SEA_LEVEL_Y, 0, CANVAS_HEIGHT);
-    seaGradient.addColorStop(0, seaTop);
-    seaGradient.addColorStop(1, seaBottom);
-    bgCtx.fillStyle = seaGradient;
-
-    // Static sea surface (no wave animation — saves CPU per frame)
-    bgCtx.beginPath();
-    bgCtx.moveTo(0, SEA_LEVEL_Y);
-    bgCtx.lineTo(CANVAS_WIDTH, SEA_LEVEL_Y);
-    bgCtx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - 20);
-    bgCtx.lineTo(0, CANVAS_HEIGHT - 20);
-    bgCtx.closePath();
-    bgCtx.fill();
-
-    this.drawWeatherEffects(bgCtx);
-
-    // Bottom Sand (Flat 2D line)
-    bgCtx.beginPath();
-    bgCtx.moveTo(0, CANVAS_HEIGHT - 20);
-    bgCtx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - 20);
-    bgCtx.strokeStyle = 'hsl(40, 100%, 80%)';
-    bgCtx.lineWidth = 4;
-    bgCtx.stroke();
-
-    // Bottom Bedrock Fill
-    bgCtx.fillStyle = '#3e2723';
-    bgCtx.fillRect(0, CANVAS_HEIGHT - 18, CANVAS_WIDTH, 18);
-    // Boss Level Golden Aura (her 10. level — x1.5 çarpan görsel işareti)
-    if (this.state.level % 10 === 0) {
-      const goldGradient = bgCtx.createRadialGradient(
-        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0,
-        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_HEIGHT * 0.7
-      );
-      goldGradient.addColorStop(0, 'rgba(255, 215, 0, 0.07)');
-      goldGradient.addColorStop(0.5, 'rgba(255, 180, 0, 0.05)');
-      goldGradient.addColorStop(1, 'rgba(255, 140, 0, 0)');
-      bgCtx.fillStyle = goldGradient;
-      bgCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-      // Golden frame (border glow)
-      bgCtx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
-      bgCtx.lineWidth = 6;
-      bgCtx.strokeRect(3, 3, CANVAS_WIDTH - 6, CANVAS_HEIGHT - 6);
-    }
-  }
-
-  private drawBottomBedrock(bgCtx: CanvasRenderingContext2D) {
-    // Bottom Sand (Flat 2D line)
-    bgCtx.beginPath();
-    bgCtx.moveTo(0, CANVAS_HEIGHT - 20);
-    bgCtx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - 20);
-    bgCtx.strokeStyle = 'hsl(40, 100%, 80%)';
-    bgCtx.lineWidth = 4;
-    bgCtx.stroke();
-
-    // Bottom Bedrock Fill
-    bgCtx.fillStyle = '#3e2723';
-    bgCtx.fillRect(0, CANVAS_HEIGHT - 18, CANVAS_WIDTH, 18);
-  }
 
   private drawBossAura(bgCtx: CanvasRenderingContext2D) {
     // Boss Level Golden Aura (her 10. level — x1.5 çarpan görsel işareti)
@@ -3000,7 +2996,8 @@ export class GameEngine {
       goldGradient.addColorStop(0.5, 'rgba(255, 180, 0, 0.05)');
       goldGradient.addColorStop(1, 'rgba(255, 140, 0, 0)');
       bgCtx.fillStyle = goldGradient;
-      bgCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      // Overdraw to prevent edge bleeding
+      bgCtx.fillRect(-5, -5, CANVAS_WIDTH + 10, CANVAS_HEIGHT + 10);
 
       // Golden frame (border glow)
       bgCtx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
@@ -3009,39 +3006,82 @@ export class GameEngine {
     }
   }
 
-  /**
-   * Helper to draw image covering the target area (like CSS background-size: cover)
-   */
-  private drawImageCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
-    const imgRatio = img.naturalWidth / img.naturalHeight;
-    const targetRatio = w / h;
 
-    let sourceX = 0;
-    let sourceY = 0;
-    let sourceW = img.naturalWidth;
-    let sourceH = img.naturalHeight;
 
-    if (imgRatio > targetRatio) {
-      // Image is wider than target: crop width
-      sourceW = sourceH * targetRatio;
-      sourceX = (img.naturalWidth - sourceW) / 2;
-    } else {
-      // Image is taller than target: crop height
-      sourceH = sourceW / targetRatio;
-      sourceY = (img.naturalHeight - sourceH) / 2;
+
+
+  private drawGameEntities(ctx: CanvasRenderingContext2D, timestamp: number) {
+    const sorted = [...this.state.entities].sort((a, b) => (a.y - b.y));
+    for (const entity of sorted) {
+      this.drawEntity(entity.x, entity.y, entity.radius, entity.color, entity.type, false, entity);
     }
-
-    ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, x, y, w, h);
+    
+    // Draw Hook / Line
+    this.drawHook(ctx);
+    
+    // Draw Boat (which includes fisherman in sprite)
+    this.drawBoat();
   }
+
+
+
+
+
+  private drawHook(ctx: CanvasRenderingContext2D) {
+    if (this.isHookHidden || this.isReeledIn) return;
+    const pivot = this.getHookPivotPosition();
+    
+    // Draw line
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pivot.x, pivot.y);
+    ctx.lineTo(this.state.hookX, this.state.hookY);
+    ctx.stroke();
+
+    // Draw hook
+    ctx.save();
+    ctx.translate(this.state.hookX, this.state.hookY);
+    ctx.rotate(this.state.hookRotation);
+    
+    const sprite = this.spriteManager.getImage('hook');
+    if (sprite) {
+      ctx.drawImage(sprite, -15, -15, 30, 30);
+    } else {
+      ctx.strokeStyle = '#c0c0c0';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI, false);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  private drawUI(ctx: CanvasRenderingContext2D, timestamp: number) {
+    // Basic UI stats drawing (Coins, Fuel, Weight)
+    ctx.font = `bold 24px ${getFontFamily()}`;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.fillText(t('game.hud.score', '{score} 🪙', { score: Math.floor(this.state.coins) }), 50, 50);
+    
+    const maxWeight = this.getRodStats().maxWeight;
+    const currentWeight = this.state.inventory.reduce((s, i) => s + i.weight, 0);
+    ctx.fillText(t('game.hud.weight', '{current} / {max} kg', { current: currentWeight.toFixed(1), max: maxWeight }), 50, 80);
+  }
+
+
 
   private draw(timestamp: number = 0) {
     const bx = this.bgCtx;
 
+    // AAA Optimization: Explicitly clear background to prevent persistence artifacts
+    bx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
     // Dynamic Background System
     this.backgroundManager.draw(bx);
 
-    // Any specific overlays (sinking/arrival) on top of the dynamic background
-    if (this.isArriving || this.isSinking) {
+    // Any specific overlays (arrival) on top of the dynamic background
+    if (this.isArriving && !this.isSinking) {
       this.drawArrivalOrSinking(bx);
     }
 
@@ -3049,7 +3089,7 @@ export class GameEngine {
 
     // ── Game Canvas (dynamic objects) ────────────────────────────────────────
     this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    const t = timestamp * 0.001; // seconds
+    const timeSec = timestamp * 0.001; // seconds
     const deltaTime = 1000 / 30; // 30fps throttle
 
     // Update and Draw Catch Cards in top-left (visual only)
@@ -3072,26 +3112,26 @@ export class GameEngine {
         
         // Data mapping for premium cards matching Home.tsx
         const configMap: Record<string, { color: string, name: string }> = {
-          bubble: { color: '#E8F4FD', name: 'Bubble Fish' },
-          sakura: { color: '#FDF0F5', name: 'Sakura Fish' },
-          zap: { color: '#FFF6C7', name: 'Zap Fish' },
-          candy: { color: '#FFE5EE', name: 'Candy Fish' },
-          moon: { color: '#EEF2FF', name: 'Moon Fish' },
-          lava: { color: '#FFE3D6', name: 'Lava Fish' },
-          crystal: { color: '#EEE8FF', name: 'Crystal Fish' },
-          leaf: { color: '#FFE9D6', name: 'Leaf Fish' },
-          tide: { color: '#E6F4FF', name: 'Tide Fish' },
-          coral: { color: '#FFF3E0', name: 'Coral Reef' },
-          gold_doubloon: { color: '#FFF8E1', name: 'Gold Doubloon' },
-          whirlpool: { color: '#E1F5FE', name: 'Whirlpool' },
-          sunken_boat: { color: '#EFEBE9', name: 'Sunken Boat' },
-          shark_skeleton: { color: '#FAFAFA', name: 'Shark Skeleton' },
-          anchor: { color: '#ECEFF1', name: 'Rusty Anchor' },
-          shell: { color: '#FFF3E0', name: 'Sea Shell' },
-          env_bubbles: { color: '#f0f9ff', name: 'Bubbles' },
-          king: { color: '#FDF1D5', name: 'King Fish' },
-          galaxy: { color: '#EBE8FF', name: 'Galaxy Fish' },
-          mushroom: { color: '#FCECEC', name: 'Mushroom Fish' }
+          bubble: { color: '#E8F4FD', name: t('entities.bubble.name', 'Bubble Fish') },
+          sakura: { color: '#FDF0F5', name: t('entities.sakura.name', 'Sakura Fish') },
+          zap: { color: '#FFF6C7', name: t('entities.zap.name', 'Zap Fish') },
+          candy: { color: '#FFE5EE', name: t('entities.candy.name', 'Candy Fish') },
+          moon: { color: '#EEF2FF', name: t('entities.moon.name', 'Moon Fish') },
+          lava: { color: '#FFE3D6', name: t('entities.lava.name', 'Lava Fish') },
+          crystal: { color: '#EEE8FF', name: t('entities.crystal.name', 'Crystal Fish') },
+          leaf: { color: '#FFE9D6', name: t('entities.leaf.name', 'Leaf Fish') },
+          tide: { color: '#E6F4FF', name: t('entities.tide.name', 'Tide Fish') },
+          coral: { color: '#FFF3E0', name: t('entities.coral.name', 'Coral Reef') },
+          gold_doubloon: { color: '#FFF8E1', name: t('entities.gold_doubloon.name', 'Gold Doubloon') },
+          whirlpool: { color: '#E1F5FE', name: t('entities.whirlpool.name', 'Whirlpool') },
+          sunken_boat: { color: '#EFEBE9', name: t('entities.sunken_boat.name', 'Sunken Boat') },
+          shark_skeleton: { color: '#FAFAFA', name: t('entities.shark_skeleton.name', 'Shark Skeleton') },
+          anchor: { color: '#ECEFF1', name: t('entities.anchor.name', 'Rusty Anchor') },
+          shell: { color: '#FFF3E0', name: t('entities.shell.name', 'Sea Shell') },
+          env_bubbles: { color: '#f0f9ff', name: t('entities.env_bubbles.name', 'Bubbles') },
+          king: { color: '#FDF1D5', name: t('entities.king.name', 'King Fish') },
+          galaxy: { color: '#EBE8FF', name: t('entities.galaxy.name', 'Galaxy Fish') },
+          mushroom: { color: '#FCECEC', name: t('entities.mushroom.name', 'Mushroom Fish') }
         };
         const config = configMap[item.type] || { color: '#FFFFFF', name: item.type };
 
@@ -3139,7 +3179,7 @@ export class GameEngine {
 
         // Draw Name (%25 larger than 10px)
         this.ctx.fillStyle = '#334155';
-        this.ctx.font = 'bold 12.5px sans-serif';
+        this.ctx.font = `bold 12.5px ${getFontFamily('body')}`;
         this.ctx.textAlign = 'center';
         this.ctx.fillText(config.name, cardX + cardW / 2, cardY + 102);
 
@@ -3152,15 +3192,16 @@ export class GameEngine {
         this.roundRect(this.ctx, pillX, pillY, pillW, pillH, 11, true, false);
         
         this.ctx.fillStyle = '#3b82f6';
-        this.ctx.font = '900 11.25px sans-serif'; // %25 larger than 9px
-        this.ctx.fillText('INFO', cardX + cardW / 2, pillY + 15.5);
+        const infoText = t('common.info', 'INFO');
+        this.ctx.font = getCanvasFontSize(this.ctx, infoText, pillW - 10, 11.25);
+        this.ctx.fillText(infoText, cardX + cardW / 2, pillY + 15.5);
       }
       this.ctx.restore();
     }
 
     // Ambient: boat water swing
-    const boatBobY = Math.sin(t * 0.04 * 60) * 2.5 + this.effects.boatBobY;
-    const boatRotation = Math.sin(t * 0.035 * 60) * (0.8 * Math.PI / 180);
+    const boatBobY = Math.sin(timeSec * 0.04 * 60) * 2.5 + this.effects.boatBobY;
+    const boatRotation = Math.sin(timeSec * 0.035 * 60) * (0.8 * Math.PI / 180);
 
     // Ambient: olta ucu mikro titreme
     const rodTweak = this.effects.applyRodTipAmbientation(timestamp);
@@ -3190,32 +3231,22 @@ export class GameEngine {
       }
     }
 
-    // 3. Draw Boat & Fisherman (Screen Shake + Zoom transform burada uygulanıyor)
+    // 3. Draw Boat & Fisherman
     this.ctx.save();
-    // Zoom pulse (nadir balık)
-    const zoom = this.effects.currentZoom;
-    if (zoom !== 1) {
-      this.ctx.translate(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-      this.ctx.scale(zoom, zoom);
-      this.ctx.translate(-CANVAS_WIDTH / 2, -CANVAS_HEIGHT / 2);
-    }
-    // Screen shake
     this.effects.applyShake(this.ctx);
 
-    // Boat ambient swing
-    if (this.isArriving) {
-      this.ctx.translate(this.arrivalProgress * 100, boatBobY);
-    } else if (this.isSinking) {
-      // Constant downward motion + Rotation (45-60 degrees) + Opacity
-      const sinkY = this.sinkProgress * 250; // Sinks deeper
-      const sinkRot = this.sinkProgress * (55 * Math.PI / 180); // ~55 degrees
-      const opacity = Math.max(0, 1 - this.sinkProgress * 1.2); // Fade out early
-      
+    // Boat ambient swing & translation
+    if (this.isSinking) {
+      const sinkY = this.sinkProgress * 250;
+      const sinkRot = this.sinkProgress * (55 * Math.PI / 180);
+      const opacity = Math.max(0, 1 - this.sinkProgress * 1.2);
       this.ctx.globalAlpha = opacity;
       this.ctx.translate(CANVAS_WIDTH / 2, SEA_LEVEL_Y + sinkY + boatBobY);
       this.ctx.rotate(sinkRot);
       this.ctx.translate(-CANVAS_WIDTH / 2, -(SEA_LEVEL_Y + sinkY + boatBobY));
       this.ctx.translate(0, SEA_LEVEL_Y + sinkY + boatBobY - (SEA_LEVEL_Y - 40)); 
+    } else if (this.isArriving) {
+      this.ctx.translate(this.arrivalProgress * 100, boatBobY);
     } else {
       this.ctx.translate(0, boatBobY);
       this.ctx.translate(CANVAS_WIDTH / 2, SEA_LEVEL_Y - 40);
@@ -3223,255 +3254,174 @@ export class GameEngine {
       this.ctx.translate(-CANVAS_WIDTH / 2, -(SEA_LEVEL_Y - 40));
     }
 
-    // Detailed Boat
-    const boatSprite = this.spriteManager.getImage('boat');
-    if (boatSprite) {
-      this.ctx.drawImage(boatSprite, CANVAS_WIDTH / 2 - 60, SEA_LEVEL_Y - 20, 120, 60);
-    } else {
-      this.ctx.fillStyle = '#D4A373';
-      this.ctx.strokeStyle = '#5c2d0c';
-      this.ctx.lineWidth = 3;
-      this.ctx.beginPath();
-      this.ctx.moveTo(CANVAS_WIDTH / 2 - 60, SEA_LEVEL_Y);
-      this.ctx.bezierCurveTo(CANVAS_WIDTH / 2 - 60, SEA_LEVEL_Y + 40, CANVAS_WIDTH / 2 + 60, SEA_LEVEL_Y + 40, CANVAS_WIDTH / 2 + 60, SEA_LEVEL_Y);
-      this.ctx.closePath();
-      this.ctx.fill();
-      this.ctx.stroke();
-    }
+    this.drawBoat();
 
-    this.drawFisherman();
-    this.drawFishingRod();
+    // 4. Draw Hook Line & Head
+    if (!this.isHookHidden && !this.isReeledIn) {
+      const rod = this.getRodStats();
+      const rodTip = this.getRodTipPosition();
+      const tipX = rodTip.x + rodTweak.dx;
+      const tipY = rodTip.y + rodTweak.dy;
+      const hookPivot = this.getHookPivotPosition();
+      const pivotX = hookPivot.x;
+      const pivotY = hookPivot.y;
 
-    // Draw Hook Line
-    const rod = this.getRodStats();
-    const rodTip = this.getRodTipPosition();
-    const tipX = rodTip.x + rodTweak.dx;
-    const tipY = rodTip.y + rodTweak.dy;
+      // 4a. TNT Aiming logic
+      if (this.state.hook.state === 'tnt_aiming' && this.state.hook.targetX !== undefined && this.state.hook.targetY !== undefined) {
+        const isTutorialTnt = this.state.level === 1 && this.tutorialManager?.getState().step === 'tnt_action';
+        const gridSize = 240;
+        const cellSize = gridSize / 3;
+        const tntX = this.state.hook.targetX - gridSize / 2;
+        const tntY = this.state.hook.targetY - gridSize / 2;
 
-    const hookPivot = this.getHookPivotPosition();
-    const pivotX = hookPivot.x;
-    const pivotY = hookPivot.y;
+        if (!isTutorialTnt) {
+          this.ctx.fillStyle = 'rgba(255, 50, 50, 0.2)';
+          this.ctx.fillRect(tntX, tntY, gridSize, gridSize);
+          this.ctx.strokeStyle = 'rgba(255, 50, 50, 0.5)';
+          this.ctx.lineWidth = 2;
+          this.ctx.strokeRect(tntX, tntY, gridSize, gridSize);
+        }
 
-    if (this.state.hook.state === 'tnt_aiming' && this.state.hook.targetX !== undefined && this.state.hook.targetY !== undefined) {
-      const isTutorialTnt = this.state.level === 1 && this.tutorialManager?.getState().step === 'tnt_action';
-      const gridSize = 240; // 120 radius Explosion area = 240px width/height
-      const cellSize = gridSize / 3;
-      const tntX = this.state.hook.targetX - gridSize / 2;
-      const tntY = this.state.hook.targetY - gridSize / 2;
+        const tntImg = this.spriteManager.getImage('booster_tnt');
+        if (tntImg) {
+          const maxSide = 200;
+          const ratio = tntImg.width / tntImg.height;
+          let drawW = ratio > 1 ? maxSide : maxSide * ratio;
+          let drawH = ratio > 1 ? maxSide / ratio : maxSide;
+          this.ctx.drawImage(tntImg, this.state.hook.targetX - drawW / 2, this.state.hook.targetY - drawH / 1.8, drawW, drawH);
+        }
+      }
 
-      if (!isTutorialTnt) {
-        this.ctx.fillStyle = 'rgba(255, 50, 50, 0.2)';
-        this.ctx.fillRect(tntX, tntY, gridSize, gridSize);
-
-        this.ctx.strokeStyle = 'rgba(255, 50, 50, 0.5)';
-        this.ctx.lineWidth = 2;
-
+      // 4b. Trajectory or Broken Hook
+      if (this.state.hook.state === 'aiming') {
+        this.harpoonManager.drawTrajectory(this.ctx, hookPivot);
+      } else if (this.state.hookBrokenMs > 0) {
+        const midX = tipX + Math.cos(this.state.hook.angle) * 30;
+        const midY = tipY + Math.sin(this.state.hook.angle) * 30;
+        this.ctx.strokeStyle = '#D64545';
+        this.ctx.lineWidth = rod.lineWidth;
         this.ctx.beginPath();
-        // Verticals
-        this.ctx.moveTo(tntX + cellSize, tntY);
-        this.ctx.lineTo(tntX + cellSize, tntY + gridSize);
-        this.ctx.moveTo(tntX + cellSize * 2, tntY);
-        this.ctx.lineTo(tntX + cellSize * 2, tntY + gridSize);
-
-        // Horizontals
-        this.ctx.moveTo(tntX, tntY + cellSize);
-        this.ctx.lineTo(tntX + gridSize, tntY + cellSize);
-        this.ctx.moveTo(tntX, tntY + cellSize * 2);
-        this.ctx.lineTo(tntX + gridSize, tntY + cellSize * 2);
-
-        // Outer Border
-        this.ctx.rect(tntX, tntY, gridSize, gridSize);
+        this.ctx.moveTo(tipX, tipY);
+        this.ctx.lineTo(midX, midY);
         this.ctx.stroke();
-      }
-
-      // TNT Icon in center - Ultra scale & Perfect Aspect Ratio
-      const tntImg = this.spriteManager.getImage('booster_tnt');
-      if (tntImg) {
-        // Calculate dimensions based on original aspect ratio
-        const maxSide = 200; // Even larger for impact
-        const ratio = tntImg.width / tntImg.height;
-        let drawW, drawH;
-        if (ratio > 1) {
-          drawW = maxSide;
-          drawH = maxSide / ratio;
+      } else if (this.state.hook.state !== 'tnt_aiming') {
+        const isHarpoon = this.state.hook.state === 'harpoon' || this.state.hook.state === 'harpoon_retracting';
+        if (!isHarpoon) {
+           const lineLayers = this.getRodLineLayers();
+           if (this.isArriving) {
+             for (const layer of lineLayers) {
+               this.ctx.strokeStyle = layer.color;
+               this.ctx.lineWidth = layer.width;
+               this.ctx.beginPath();
+               this.ctx.moveTo(tipX, tipY);
+               this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
+               this.ctx.stroke();
+             }
+           } else {
+             for (const layer of lineLayers) {
+               this.ctx.strokeStyle = layer.color;
+               this.ctx.lineWidth = layer.width;
+               // Pivot curve
+               this.ctx.beginPath();
+               this.ctx.moveTo(tipX, tipY);
+               const cpX = (tipX + pivotX) / 2;
+               const cpY = ((tipY + pivotY) / 2) + 30;
+               this.ctx.quadraticCurveTo(cpX, cpY, pivotX, pivotY);
+               this.ctx.stroke();
+               // Line to hook
+               this.ctx.beginPath();
+               this.ctx.moveTo(pivotX, pivotY);
+               this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
+               this.ctx.stroke();
+             }
+           }
+           this.drawHookHead(this.state.hook.x, this.state.hook.y, Math.max(1.5, this.ctx.lineWidth));
         } else {
-          drawH = maxSide;
-          drawW = maxSide * ratio;
+           this.harpoonManager.draw(this.ctx, hookPivot);
         }
-
-        this.ctx.save();
-        this.ctx.shadowBlur = 25;
-        this.ctx.shadowColor = 'rgba(255, 100, 0, 0.6)';
-        this.ctx.drawImage(
-          tntImg,
-          this.state.hook.targetX - drawW / 2,
-          this.state.hook.targetY - drawH / 1.8, // Center-weighted alignment
-          drawW,
-          drawH
-        );
-        this.ctx.restore();
-      } else {
-        // Fallback for missing asset
-        const fallbackSize = 80;
-        this.ctx.fillStyle = isTutorialTnt ? '#666' : '#444';
-        this.ctx.beginPath();
-        this.ctx.arc(this.state.hook.targetX, this.state.hook.targetY, fallbackSize / 2, 0, Math.PI * 2);
-        this.ctx.fill();
       }
     }
+    this.ctx.restore(); // Ends Boat/Hook Block
 
-    if (this.state.hook.state === 'aiming') {
-      this.harpoonManager.drawTrajectory(this.ctx, hookPivot);
-      // No return here - let the function reach ctx.restore() at the end
-    } else if (this.state.hookBrokenMs > 0) {
-      const midX = tipX + Math.cos(this.state.hook.angle) * 30;
-      const midY = tipY + Math.sin(this.state.hook.angle) * 30;
-      this.ctx.strokeStyle = '#D64545';
-      this.ctx.lineWidth = rod.lineWidth;
-      this.ctx.beginPath();
-      this.ctx.moveTo(tipX, tipY);
-      this.ctx.lineTo(midX, midY);
-      this.ctx.stroke();
-    } else if (this.state.hook.state !== 'tnt_aiming') {
-      const isHarpoon = this.state.hook.state === 'harpoon' || this.state.hook.state === 'harpoon_retracting';
-      const isNet = this.state.hook.state === 'net';
-
-      // 1. Draw Rod/Hook Line (ONLY if not harpoon)
-      if (!isHarpoon) {
-        const lineLayers = this.getRodLineLayers();
-        
-        // 1a. Draw Rod to Pivot Line
-        for (const layer of lineLayers) {
-          this.ctx.strokeStyle = isNet ? '#fff' : layer.color;
-          this.ctx.lineWidth = isNet ? 2 : layer.width;
-          this.ctx.beginPath();
-          this.ctx.moveTo(tipX, tipY);
-          const cpX = (tipX + pivotX) / 2;
-          const cpY = ((tipY + pivotY) / 2) + 30;
-          this.ctx.quadraticCurveTo(cpX, cpY, pivotX, pivotY);
-          this.ctx.stroke();
-        }
-
-        // 1b. Draw Pivot to Hook Line
-        for (const layer of lineLayers) {
-          this.ctx.strokeStyle = isNet ? '#fff' : layer.color;
-          this.ctx.lineWidth = isNet ? 2 : layer.width;
-          this.ctx.beginPath();
-          this.ctx.moveTo(pivotX, pivotY);
-          this.ctx.lineTo(this.state.hook.x, this.state.hook.y);
-          this.ctx.stroke();
-        }
-
-        // 1c. Draw Standard Hook Head
-        this.drawHookHead(this.state.hook.x, this.state.hook.y, Math.max(1.5, this.ctx.lineWidth));
-      } else {
-        // 2. Draw Harpoon (Handles its own shaft and head)
-        this.harpoonManager.draw(this.ctx, hookPivot);
-      }
+    const shouldSinkShake = this.isSinking;
+    if (shouldSinkShake) {
+      const shakeX = (Math.random() - 0.5) * 10;
+      const shakeY = (Math.random() - 0.5) * 10;
+      this.ctx.save();
+      this.ctx.translate(shakeX, shakeY);
     }
 
-    if (this.state.hook.state !== 'tnt_aiming') {
-      // Multiple items for Harpoon
+    // 5. Draw Caught Entities
+    if (this.state.hook.state !== 'tnt_aiming' && !this.isReeledIn) {
       if (this.state.hook.caughtEntities && this.state.hook.caughtEntities.length > 0) {
-        const harpoonAngle = this.state.hook.angle;
         this.ctx.save();
-        
         for (let i = 0; i < this.state.hook.caughtEntities.length; i++) {
           const entity = this.state.hook.caughtEntities[i];
-          const shishKebabRotation = harpoonAngle + Math.PI / 2;
-          
-          // Organic Jitter: slight perpendicular offset based on index
-          const jitter = (i % 2 === 0 ? 1 : -1) * 3;
-          const jitterX = Math.cos(shishKebabRotation) * jitter;
-          const jitterY = Math.sin(shishKebabRotation) * jitter;
-
-          if (entity.type === 'sunken_boat') {
-            this.drawEntity(entity.x + jitterX, entity.y + jitterY, entity.radius, entity.color, entity.type, false, entity, shishKebabRotation);
-          } else {
-            this.drawEntity(entity.x + jitterX, entity.y + jitterY, entity.radius, entity.color, entity.type, true, entity, shishKebabRotation);
-          }
+          const rotation = this.state.hook.angle + Math.PI / 2;
+          this.drawEntity(entity.x, entity.y, entity.radius, entity.color, entity.type, true, entity, rotation);
         }
         this.ctx.restore();
-      }
-      // Single item for regular hook
-      else if (this.state.hook.caughtEntity) {
+      } else if (this.state.hook.caughtEntity) {
         const entity = this.state.hook.caughtEntity;
-        if (entity.type === 'sunken_boat') {
-          this.drawEntity(entity.x, entity.y, entity.radius, entity.color, entity.type, false, entity);
-        } else {
-          entity.x = this.state.hook.tipX ?? this.state.hook.x;
-          entity.y = this.state.hook.tipY ?? this.state.hook.y;
-          this.drawEntity(entity.x, entity.y, entity.radius, entity.color, entity.type, true, entity);
-        }
+        entity.x = this.state.hook.tipX ?? this.state.hook.x;
+        entity.y = this.state.hook.tipY ?? this.state.hook.y;
+        this.drawEntity(entity.x, entity.y, entity.radius, entity.color, entity.type, true, entity);
       }
     }
 
+    // 6. Anchor Booster
     const anchorSprite = this.spriteManager.getImage('booster_anchor');
-    if (this.anchorVisualState !== 'inactive' && this.state.startTimerMs <= 0 && anchorSprite && anchorSprite.complete && anchorSprite.naturalWidth > 0) {
+    if (this.anchorVisualState !== 'inactive' && anchorSprite && anchorSprite.complete) {
       const { x: attachX, y: attachY } = this.getAnchorAttachPoint();
-      const width = 120;
-      const height = width * (anchorSprite.naturalHeight / anchorSprite.naturalWidth);
-      const anchorTopY = this.anchorVisualY - height + 24;
-      const ropeEndY = anchorTopY + 8;
-
+      const aW = 120;
+      const aH = aW * (anchorSprite.naturalHeight / anchorSprite.naturalWidth);
       if (this.anchorVisualState !== 'drifting') {
         this.ctx.strokeStyle = '#5c2d0c';
         this.ctx.lineWidth = 3;
         this.ctx.beginPath();
         this.ctx.moveTo(attachX, attachY);
-        this.ctx.lineTo(this.anchorVisualX, ropeEndY);
+        this.ctx.lineTo(this.anchorVisualX, this.anchorVisualY - aH + 32);
         this.ctx.stroke();
       }
-
-      this.ctx.drawImage(anchorSprite, this.anchorVisualX - width / 2, anchorTopY, width, height);
+      this.ctx.drawImage(anchorSprite, this.anchorVisualX - aW / 2, this.anchorVisualY - aH + 24, aW, aH);
     }
 
-    this.ctx.restore();
-
-    // 8. Draw Swimming Entities (whirlpool drawn via DOM element, skip here)
+    // 7. Swimming Entities
     const slowHoldIntensity = this.getHoldSlowIntensity();
     this.ctx.save();
-    if (slowHoldIntensity > 0) {
-      this.effects.applySlowMotionEffect(this.ctx, slowHoldIntensity);
-    }
+    if (slowHoldIntensity > 0) this.effects.applySlowMotionEffect(this.ctx, slowHoldIntensity);
     this.effects.drawUnder(this.ctx);
     for (const fish of this.state.fishes) {
       if (this.state.hook.caughtEntity && this.state.hook.caughtEntity.id === fish.id) continue;
       if (fish.type === 'whirlpool') continue;
-      if (fish.x < -120 || fish.x > CANVAS_WIDTH + 120 || fish.y < SEA_LEVEL_Y - 120 || fish.y > CANVAS_HEIGHT + 120) continue;
-
-      const curse = this.state.activeCurse;
-      const isObstacle = OBJECT_MATRIX[fish.type].isObstacle;
-      const isActuallyFish = !isObstacle && fish.type !== 'env_bubbles' && fish.type !== 'shell' && fish.type !== 'gold_doubloon' && fish.type !== 'sunken_boat' && fish.type !== 'anchor' && fish.type !== 'shark_skeleton';
-
-      if (curse === 'dark_matter' && isObstacle) continue;
-      if ((curse === 'invisible_fish' || curse === 'final_1') && isActuallyFish) continue;
-
+      if (fish.x < -120 || fish.x > CANVAS_WIDTH + 120) continue;
       this.drawEntity(fish.x, fish.y, fish.radius, fish.color, fish.type, false, fish);
     }
     this.ctx.restore();
 
-    // 'blind_spot' curse: Dark overlay at the top
+    // 8. Curse Overlays
     if (this.state.activeCurse === 'blind_spot') {
       const waterHeight = CANVAS_HEIGHT - SEA_LEVEL_Y;
-      const darkHeight = waterHeight * 0.4;
-      const gradient = this.ctx.createLinearGradient(0, SEA_LEVEL_Y, 0, SEA_LEVEL_Y + darkHeight);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.95)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      const gradient = this.ctx.createLinearGradient(0, SEA_LEVEL_Y, 0, SEA_LEVEL_Y + waterHeight * 0.4);
+      gradient.addColorStop(0, 'rgba(0,0,0,0.95)');
+      gradient.addColorStop(1, 'rgba(0,0,0,0)');
       this.ctx.fillStyle = gradient;
-      this.ctx.fillRect(0, SEA_LEVEL_Y, CANVAS_WIDTH, darkHeight);
+      this.ctx.fillRect(0, SEA_LEVEL_Y, CANVAS_WIDTH, waterHeight * 0.4);
     }
 
-    // 9. Efektler (particles, flash overlay)
+    // 9. Particles and Overlays
     this.effects.draw(this.ctx);
-
-    // 10. Vignette (last 10 seconds)
     if (this.state.timeRemaining <= 10) {
-      const intensity = Math.max(0, 1 - this.state.timeRemaining / 10);
-      this.effects.drawVignette(this.ctx, intensity);
+      this.effects.drawVignette(this.ctx, Math.max(0, 1 - this.state.timeRemaining / 10));
+    }
+    this.drawLevelStartOverlay(this.ctx);
+
+    if (shouldSinkShake) {
+      this.ctx.restore();
     }
 
-    this.drawLevelStartOverlay(this.ctx);
+    // RESTORE main save (from 3235 or similar if added back)
+    this.ctx.restore();
   }
 
   /** Draw island arrival animation onto bgCtx (replaces static background while arriving) */
@@ -3547,10 +3497,10 @@ export class GameEngine {
       bx.fillStyle = fillStyle;
 
       bx.beginPath();
-      bx.moveTo(CANVAS_WIDTH, CANVAS_HEIGHT);
-      bx.lineTo(islandX - 100, CANVAS_HEIGHT);
-      bx.bezierCurveTo(islandX - 50, CANVAS_HEIGHT, islandX, SEA_LEVEL_Y + 100, islandX + 20, SEA_LEVEL_Y);
-      bx.bezierCurveTo(islandX + 40, SEA_LEVEL_Y - 30, CANVAS_WIDTH - 50, SEA_LEVEL_Y - 60, CANVAS_WIDTH, SEA_LEVEL_Y - 50);
+      bx.moveTo(CANVAS_WIDTH + 5, CANVAS_HEIGHT + 5);
+      bx.lineTo(islandX - 105, CANVAS_HEIGHT + 5);
+      bx.bezierCurveTo(islandX - 55, CANVAS_HEIGHT + 5, islandX, (SEA_LEVEL_Y + 105) | 0, (islandX + 20) | 0, (SEA_LEVEL_Y) | 0);
+      bx.bezierCurveTo((islandX + 40) | 0, (SEA_LEVEL_Y - 30) | 0, CANVAS_WIDTH - 50, (SEA_LEVEL_Y - 60) | 0, CANVAS_WIDTH + 5, (SEA_LEVEL_Y - 50) | 0);
       bx.closePath();
       bx.fill();
       bx.restore();
@@ -3592,11 +3542,11 @@ export class GameEngine {
     const maxWidth = CANVAS_WIDTH * 0.9;
 
     let fontSize = 52;
-    bx.font = `bold ${fontSize}px Fredoka`;
+    bx.font = `bold ${fontSize}px ${getFontFamily()}`;
     let width = bx.measureText(levelName).width;
     while (width > maxWidth && fontSize > 16) {
       fontSize -= 3;
-      bx.font = `bold ${fontSize}px Fredoka`;
+      bx.font = `bold ${fontSize}px ${getFontFamily()}`;
       width = bx.measureText(levelName).width;
     }
 
@@ -3673,21 +3623,18 @@ export class GameEngine {
     };
   }
 
-  private drawFisherman() {
+  private drawBoat() {
     const { drawX, drawY, displayWidth, displayHeight, spriteKey } = this.getBoatRenderMetrics();
     const sprite = this.spriteManager.getImage(spriteKey);
     if (!sprite || !sprite.complete || sprite.naturalWidth === 0) {
-      this.drawFishermanFallback();
+      this.drawBoatFallback();
       return;
     }
-
-    this.ctx.save();
     // Use bitwise for integer coordinates
     this.ctx.drawImage(sprite, drawX | 0, drawY | 0, displayWidth | 0, displayHeight | 0);
-    this.ctx.restore();
   }
 
-  private drawFishermanFallback() {
+  private drawBoatFallback() {
     // Sprite yüklenemezse eski procedural çizim (yedek)
     const x = CANVAS_WIDTH / 2;
     const y = SEA_LEVEL_Y - 40;
@@ -3747,6 +3694,7 @@ export class GameEngine {
   }
 
   private drawHookHead(x: number, y: number, lineWidth: number) {
+    if (this.isReeledIn || this.isHookHidden) return;
     const hookState = this.state.hook.state;
 
     if (hookState === 'harpoon') {

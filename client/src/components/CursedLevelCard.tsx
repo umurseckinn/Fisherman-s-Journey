@@ -1,153 +1,155 @@
 import React from "react";
 import { X, Skull, AlertTriangle } from "lucide-react";
 import { type CurseType } from "@/game/types";
+import { t } from "@/lib/i18n";
+import { AutoShrinkText } from "@/components/ui/AutoShrinkText";
 
 const CURSE_DETAILS: Record<CurseType, { title: string; stats: Array<{ label: string; value: string }>; story: string }> = {
   none: {
-    title: "No Curse",
+    title: t('curses.none.title', "No Curse"),
     stats: [],
-    story: "The sea feels normal for now. The wind is steady and the water is calm. It is a quiet moment between storms. Enjoy it while it lasts."
+    story: t('curses.none.story', "The sea feels normal for now. The wind is steady and the water is calm. It is a quiet moment between storms. Enjoy it while it lasts.")
   },
   heavy_waters: {
-    title: "Heavy Waters",
-    stats: [{ label: "Weight", value: "All fish weight x1.5" }],
-    story: "The ocean thickens as if it were molasses. Every catch drags harder against the hull and your storage fills faster than usual. Old sailors say these waters are weighted by forgotten treasure. Steady hands and light hauls are the only way through."
+    title: t('curses.heavy_waters.title', "Heavy Waters"),
+    stats: [{ label: t('common.weight', "Weight"), value: "All fish weight x1.5" }],
+    story: t('curses.heavy_waters.story', "The ocean thickens as if it were molasses. Every catch drags harder against the hull and your storage fills faster than usual. Old sailors say these waters are weighted by forgotten treasure. Steady hands and light hauls are the only way through.")
   },
   fast_current: {
-    title: "Fast Current",
-    stats: [{ label: "Speed", value: "All fish speed x1.5" }],
-    story: "A sharp current slices through the sea and everything moves with it. Fish streak past the hook with barely a shadow. Nets feel lighter, but the hunt is far more frantic. It is a level that rewards quick reactions and clean casts."
+    title: t('curses.fast_current.title', "Fast Current"),
+    stats: [{ label: t('common.speed', "Speed"), value: "All fish speed x1.5" }],
+    story: t('curses.fast_current.story', "A sharp current slices through the sea and everything moves with it. Fish streak past the hook with barely a shadow. Nets feel lighter, but the hunt is far more frantic. It is a level that rewards quick reactions and clean casts.")
   },
   blind_spot: {
-    title: "Blind Spot",
-    stats: [{ label: "Visibility", value: "Top 40% of water obscured" }],
-    story: "A cold fog drifts across the surface and swallows the upper sea. What was once clear is now a silhouette. You can feel the fish above, but you cannot see them. The ocean tests your instincts more than your eyes."
+    title: t('curses.blind_spot.title', "Blind Spot"),
+    stats: [{ label: t('common.visibility', "Visibility"), value: "Top 40% of water obscured" }],
+    story: t('curses.blind_spot.story', "A cold fog drifts across the surface and swallows the upper sea. What was once clear is now a silhouette. You can feel the fish above, but you cannot see them. The ocean tests your instincts more than your eyes.")
   },
   reverse_current: {
-    title: "Reverse Current",
-    stats: [{ label: "Direction", value: "30% of fish move right" }],
-    story: "The current curls back on itself, confusing every shoal. Some fish now flee the hook by rushing toward open water. The sea feels like a maze of shifting doors. Trust only what you track with patience."
+    title: t('curses.reverse_current.title', "Reverse Current"),
+    stats: [{ label: t('common.direction', "Direction"), value: "30% of fish move right" }],
+    story: t('curses.reverse_current.story', "The current curls back on itself, confusing every shoal. Some fish now flee the hook by rushing toward open water. The sea feels like a maze of shifting doors. Trust only what you track with patience.")
   },
   double_damage: {
-    title: "Double Damage",
-    stats: [{ label: "Coral", value: "Coral hits cost 2 attempts" }],
-    story: "The reef turns hostile and every mistake cuts twice as deep. Hooks crack and lines strain under the pressure. Veterans treat this curse like a duel with the seabed. Precision becomes your greatest shield."
+    title: t('curses.double_damage.title', "Double Damage"),
+    stats: [{ label: t('common.coral', "Coral"), value: "Coral hits cost 2 attempts" }],
+    story: t('curses.double_damage.story', "The reef turns hostile and every mistake cuts twice as deep. Hooks crack and lines strain under the pressure. Veterans treat this curse like a duel with the seabed. Precision becomes your greatest shield.")
   },
   economic_crisis: {
-    title: "Economic Crisis",
-    stats: [{ label: "Value", value: "All fish value -30%" }],
-    story: "Markets dry up across the coast and prices plunge. Even rare catches feel ordinary in the ledger. The voyage becomes a test of volume, not prestige. Only the clever turn scarcity into profit."
+    title: t('curses.economic_crisis.title', "Economic Crisis"),
+    stats: [{ label: t('common.value', "Value"), value: "All fish value -30%" }],
+    story: t('curses.economic_crisis.story', "Markets dry up across the coast and prices plunge. Even rare catches feel ordinary in the ledger. The voyage becomes a test of volume, not prestige. Only the clever turn scarcity into profit.")
   },
   countdown: {
-    title: "Countdown",
-    stats: [{ label: "Capacity", value: "Storage -5 every 10s" }],
-    story: "Your hold begins to leak as if time itself is corroding it. Every ten seconds the space shrinks and choices become sharper. The ocean whispers to hurry, yet panic only speeds the loss. Fish smart, sell fast, and move on."
+    title: t('curses.countdown.title', "Countdown"),
+    stats: [{ label: t('common.capacity', "Capacity"), value: "Storage -5 every 10s" }],
+    story: t('curses.countdown.story', "Your hold begins to leak as if time itself is corroding it. Every ten seconds the space shrinks and choices become sharper. The ocean whispers to hurry, yet panic only speeds the loss. Fish smart, sell fast, and move on.")
   },
   skeleton_army: {
-    title: "Skeleton Army",
-    stats: [{ label: "Spawn", value: "Skeleton spawn chance 80%" }],
-    story: "Bones rise from the deep like a marching tide. The water fills with pale shapes that sap your haul. Each skeleton is a reminder of what the sea took before. The smart keep their distance and their balance."
+    title: t('curses.skeleton_army.title', "Skeleton Army"),
+    stats: [{ label: t('common.spawn', "Spawn"), value: "Skeleton spawn chance 80%" }],
+    story: t('curses.skeleton_army.story', "Bones rise from the deep like a marching tide. The water fills with pale shapes that sap your haul. Each skeleton is a reminder of what the sea took before. The smart keep their distance and their balance.")
   },
   fish_escape: {
-    title: "Fish Escape",
-    stats: [{ label: "Escape", value: "30% catch escape chance" }],
-    story: "The fish are skittish tonight, slipping free at the last second. Lines go slack and empty hooks return in silence. Legends say the sea is warning you to slow down. Patience is the only cure for a fleeing school."
+    title: t('curses.fish_escape.title', "Fish Escape"),
+    stats: [{ label: t('common.escape', "Escape"), value: "30% catch escape chance" }],
+    story: t('curses.fish_escape.story', "The fish are skittish tonight, slipping free at the last second. Lines go slack and empty hooks return in silence. Legends say the sea is warning you to slow down. Patience is the only cure for a fleeing school.")
   },
   time_bomb: {
-    title: "Time Bomb",
-    stats: [{ label: "Inventory", value: "Random item removed every 8s" }],
-    story: "Your cargo becomes unstable, vanishing as if snatched by unseen hands. Every eight seconds something is lost to the deep. It feels like sailing through a storm of thieves. Catch with urgency and keep your hold lean."
+    title: t('curses.time_bomb.title', "Time Bomb"),
+    stats: [{ label: t('common.inventory', "Inventory"), value: "Random item removed every 8s" }],
+    story: t('curses.time_bomb.story', "Your cargo becomes unstable, vanishing as if snatched by unseen hands. Every eight seconds something is lost to the deep. It feels like sailing through a storm of thieves. Catch with urgency and keep your hold lean.")
   },
   dark_matter: {
-    title: "Dark Matter",
-    stats: [{ label: "Obstacles", value: "Obstacles become invisible" }],
-    story: "The seabed is cloaked in shadow and the world feels incomplete. You can sense the reefs but cannot see them. Every cast risks a sudden stop. The ocean demands memory and caution in equal measure."
+    title: t('curses.dark_matter.title', "Dark Matter"),
+    stats: [{ label: t('common.obstacles', "Obstacles"), value: "Obstacles become invisible" }],
+    story: t('curses.dark_matter.story', "The seabed is cloaked in shadow and the world feels incomplete. You can sense the reefs but cannot see them. Every cast risks a sudden stop. The ocean demands memory and caution in equal measure.")
   },
   chain_reaction: {
-    title: "Chain Reaction",
-    stats: [{ label: "Chain", value: "Caught fish pulls nearby fish" }],
-    story: "When one fish rises, others follow as if bound by fate. The water stirs with sudden, linked motion. It can be a blessing or a burden depending on what you pull. Choose your target wisely and the sea will answer."
+    title: t('curses.chain_reaction.title', "Chain Reaction"),
+    stats: [{ label: t('common.chain', "Chain"), value: "Caught fish pulls nearby fish" }],
+    story: t('curses.chain_reaction.story', "When one fish rises, others follow as if bound by fate. The water stirs with sudden, linked motion. It can be a blessing or a burden depending on what you pull. Choose your target wisely and the sea will answer.")
   },
   invisible_fish: {
-    title: "Invisible Fish",
-    stats: [{ label: "Visibility", value: "Fish are invisible" }],
-    story: "The sea is full of ghosts. You can hear splashes and feel the current shift, but the fish themselves are unseen. Hooks must follow instinct and timing instead of sight. It is a silent test of rhythm and nerve."
+    title: t('curses.invisible_fish.title', "Invisible Fish"),
+    stats: [{ label: t('common.visibility', "Visibility"), value: "Fish are invisible" }],
+    story: t('curses.invisible_fish.story', "The sea is full of ghosts. You can hear splashes and feel the current shift, but the fish themselves are unseen. Hooks must follow instinct and timing instead of sight. It is a silent test of rhythm and nerve.")
   },
   reverse_market: {
-    title: "Reverse Market",
-    stats: [{ label: "Prices", value: "Sell -50%, Buy +50%" }],
-    story: "Merchants flip their ledgers and your profits shrink. Goods cost more, and sales barely cover the trip. The sea feels harsher when every coin is worth less. Only the bold profit in a flipped economy."
+    title: t('curses.reverse_market.title', "Reverse Market"),
+    stats: [{ label: t('common.prices', "Prices"), value: "Sell -50%, Buy +50%" }],
+    story: t('curses.reverse_market.story', "Merchants flip their ledgers and your profits shrink. Goods cost more, and sales barely cover the trip. The sea feels harsher when every coin is worth less. Only the bold profit in a flipped economy.")
   },
   random_loop: {
-    title: "Random Loop",
-    stats: [{ label: "Swing", value: "Hook swing speed changes constantly" }],
-    story: "The line wobbles as if caught in restless winds. The hook’s rhythm never stays the same for long. Every cast is a new puzzle to solve. Flexibility wins over habit in these shifting currents."
+    title: t('curses.random_loop.title', "Random Loop"),
+    stats: [{ label: t('common.swing', "Swing"), value: "Hook swing speed changes constantly" }],
+    story: t('curses.random_loop.story', "The line wobbles as if caught in restless winds. The hook’s rhythm never stays the same for long. Every cast is a new puzzle to solve. Flexibility wins over habit in these shifting currents.")
   },
   reverse_weight: {
-    title: "Reverse Weight",
-    stats: [{ label: "Gauge", value: "Weight meter reversed" }],
-    story: "The scales lie and the hold feels lighter than it is. What looks safe can still sink you. Captains whisper of cursed compasses and reversed tides. Trust your memory, not the gauge."
+    title: t('curses.reverse_weight.title', "Reverse Weight"),
+    stats: [{ label: t('common.gauge', "Gauge"), value: "Weight meter reversed" }],
+    story: t('curses.reverse_weight.story', "The scales lie and the hold feels lighter than it is. What looks safe can still sink you. Captains whisper of cursed compasses and reversed tides. Trust your memory, not the gauge.")
   },
   random_curse: {
-    title: "Random Curse",
-    stats: [{ label: "Cycle", value: "Curse changes every 15s" }],
-    story: "The ocean refuses to keep a single rule. Every fifteen seconds a new danger rises and the old one fades. You must adapt faster than the tide itself. Survive by reading the sea’s sudden moods."
+    title: t('curses.random_curse.title', "Random Curse"),
+    stats: [{ label: t('common.cycle', "Cycle"), value: "Curse changes every 15s" }],
+    story: t('curses.random_curse.story', "The ocean refuses to keep a single rule. Every fifteen seconds a new danger rises and the old one fades. You must adapt faster than the tide itself. Survive by reading the sea’s sudden moods.")
   },
   combo_1: {
-    title: "Combo I: Heavy Waters + Fast Current",
+    title: t('curses.combo_1.title', "Combo I: Heavy Waters + Fast Current"),
     stats: [
-      { label: "Weight", value: "All fish weight x1.5" },
-      { label: "Speed", value: "All fish speed x1.5" }
+      { label: t('common.weight', "Weight"), value: "All fish weight x1.5" },
+      { label: t('common.speed', "Speed"), value: "All fish speed x1.5" }
     ],
-    story: "The sea grows heavy while the fish grow faster, a cruel mismatch. Each catch is harder to secure and harder to keep. The water tests strength and timing at once. Only a perfect rhythm will carry you through."
+    story: t('curses.combo_1.story', "Two curses merge into a single, overwhelming tide. The water is thick and the fish are fast, demanding both strength and speed. Only a true master of the currents can haul these treasures.")
   },
   combo_2: {
-    title: "Combo II: Economic Crisis + Double Damage",
+    title: t('curses.combo_2.title', "Combo II: Economic Crisis + Double Damage"),
     stats: [
-      { label: "Value", value: "All fish value -30%" },
-      { label: "Coral", value: "Coral hits cost 2 attempts" }
+      { label: t('common.value', "Value"), value: "All fish value -30%" },
+      { label: t('common.coral', "Coral"), value: "Coral hits cost 2 attempts" }
     ],
-    story: "Profits fall while the reef grows sharper. Every mistake now costs twice as much in time and value. The sea dares you to keep fishing anyway. Careful navigation is the only way to earn back what is lost."
+    story: t('curses.combo_2.story', "Profits fall while the reef grows sharper. Every mistake now costs twice as much in time and value. The sea dares you to keep fishing anyway. Careful navigation is the only way to earn back what is lost.")
   },
   combo_3: {
-    title: "Combo III: Heavy + Fast + Economic",
+    title: t('curses.combo_3.title', "Combo III: Heavy + Fast + Economic"),
     stats: [
-      { label: "Weight", value: "All fish weight x1.5" },
-      { label: "Speed", value: "All fish speed x1.5" },
-      { label: "Value", value: "All fish value -30%" }
+      { label: t('common.weight', "Weight"), value: "All fish weight x1.5" },
+      { label: t('common.speed', "Speed"), value: "All fish speed x1.5" },
+      { label: t('common.value', "Value"), value: "All fish value -30%" }
     ],
-    story: "This is a storm of every hardship at once. Fish are heavier, faster, and worth less than before. The sea demands courage more than profit. Survive the level and you earn a story worth telling."
+    story: t('curses.combo_3.story', "This is a storm of every hardship at once. Fish are heavier, faster, and worth less than before. The sea demands courage more than profit. Survive the level and you earn a story worth telling.")
   },
   final_1: {
-    title: "Final I: Invisible Fish + Skeleton Army + Double Damage",
+    title: t('curses.final_1.title', "Final I: Invisible Fish + Skeleton Army + Double Damage"),
     stats: [
-      { label: "Visibility", value: "Fish invisible" },
-      { label: "Spawn", value: "Skeleton spawn chance 80%" },
-      { label: "Coral", value: "Coral hits cost 2 attempts" }
+      { label: t('common.visibility', "Visibility"), value: "Fish invisible" },
+      { label: t('common.spawn', "Spawn"), value: "Skeleton spawn chance 80%" },
+      { label: t('common.coral', "Coral"), value: "Coral hits cost 2 attempts" }
     ],
-    story: "The abyss hides its prey and fills the water with bones. You must hook what you cannot see while avoiding what you cannot afford to hit. Every cast feels like a gamble against the deep. This is the ocean at its most unforgiving."
+    story: t('curses.final_1.story', "The abyss hides its prey and fills the water with bones. You must hook what you cannot see while avoiding what you cannot afford to hit. Every cast feels like a gamble against the deep. This is the ocean at its most unforgiving.")
   },
   final_2: {
-    title: "Final II: Countdown + Chain Reaction + Fast Current",
+    title: t('curses.final_2.title', "Final II: Countdown + Chain Reaction + Fast Current"),
     stats: [
-      { label: "Capacity", value: "Storage -5 every 10s" },
-      { label: "Chain", value: "Caught fish pulls nearby fish" },
-      { label: "Speed", value: "All fish speed x1.5" }
+      { label: t('common.capacity', "Capacity"), value: "Storage -5 every 10s" },
+      { label: t('common.chain', "Chain"), value: "Caught fish pulls nearby fish" },
+      { label: t('common.speed', "Speed"), value: "All fish speed x1.5" }
     ],
-    story: "Time compresses and the sea races forward. Your hold shrinks while the fish surge faster than ever. The chain effect can save you or bury you under weight. Choose fast, sell faster, and trust your instincts."
+    story: t('curses.final_2.story', "Time compresses and the sea races forward. Your hold shrinks while the fish surge faster than ever. The chain effect can save you or bury you under weight. Choose fast, sell faster, and trust your instincts.")
   },
   final_3: {
-    title: "Final III: Reverse Market + Fish Escape",
+    title: t('curses.final_3.title', "Final III: Reverse Market + Fish Escape"),
     stats: [
-      { label: "Prices", value: "Sell -50%, Buy +50%" },
-      { label: "Escape", value: "30% catch escape chance" }
+      { label: t('common.prices', "Prices"), value: "Sell -50%, Buy +50%" },
+      { label: t('common.escape', "Escape"), value: "30% catch escape chance" }
     ],
-    story: "The market turns against you and the fish refuse to stay. Every haul feels like it vanishes in your hands. It is a test of persistence more than luck. Push forward and claim your place among the legends."
+    story: t('curses.final_3.story', "The market turns against you and the fish refuse to stay. Every haul feels like it vanishes in your hands. It is a test of persistence more than luck. Push forward and claim your place among the legends.")
   },
   one_chance: {
-    title: "One Chance",
-    stats: [{ label: "Attempts", value: "Single cast only" }],
-    story: "A single cast decides the outcome of the voyage. There is no second chance, no backup line. The sea watches and waits for your move. Choose your moment and let it define the run."
+    title: t('curses.one_chance.title', "One Chance"),
+    stats: [{ label: t('common.attempts', "Attempts"), value: "Single cast only" }],
+    story: t('curses.one_chance.story', "A single cast decides the outcome of the voyage. There is no second chance, no backup line. The sea watches and waits for your move. Choose your moment and let it define the run.")
   }
 };
 
@@ -174,8 +176,10 @@ export const CursedLevelCard: React.FC<CursedLevelCardProps> = ({ curse, onClose
             <Skull className="w-6 h-6 text-red-600" />
           </div>
           <div>
-            <div className="text-xs font-bold text-red-500 uppercase tracking-wider">Cursed Level</div>
-            <h2 className="text-2xl font-bold text-slate-900">{details.title}</h2>
+            <div className="text-xs font-bold text-red-500 uppercase tracking-wider">{t('curses.card.label', "Cursed Level")}</div>
+            <h2 className="text-2xl font-bold text-slate-900">
+               <AutoShrinkText maxFontSize={24}>{details.title}</AutoShrinkText>
+             </h2>
           </div>
         </div>
 
@@ -191,7 +195,7 @@ export const CursedLevelCard: React.FC<CursedLevelCardProps> = ({ curse, onClose
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
           <div className="flex items-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-wider mb-2">
             <AlertTriangle size={14} />
-            Story
+            {t('common.story', "Story")}
           </div>
           <p className="text-slate-600 font-medium leading-relaxed">
             {details.story}
@@ -202,7 +206,7 @@ export const CursedLevelCard: React.FC<CursedLevelCardProps> = ({ curse, onClose
           onClick={onClose}
           className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
-          Start Level
+          {t('curses.card.start', "Start Level")}
         </button>
       </div>
     </div>

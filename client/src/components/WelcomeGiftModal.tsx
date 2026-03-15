@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Gift, Check } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 interface WelcomeGiftModalProps {
     onClaim: () => void;
@@ -7,10 +8,10 @@ interface WelcomeGiftModalProps {
 
 export function WelcomeGiftModal({ onClaim }: WelcomeGiftModalProps) {
     const boosters = [
-        { name: "Harpoon", img: "/assets/boosters/harpoon.png" },
-        { name: "Net", img: "/assets/boosters/net.png" },
-        { name: "TNT", img: "/assets/boosters/tnt.png" },
-        { name: "Anchor", img: "/assets/boosters/the_anchor.png" },
+        { name: t('common.harpoon', "Harpoon"), img: "/assets/boosters/harpoon.png" },
+        { name: t('common.net', "Net"), img: "/assets/boosters/net.png" },
+        { name: t('common.tnt', "TNT"), img: "/assets/boosters/tnt.png" },
+        { name: t('common.anchor_booster', "Anchor"), img: "/assets/boosters/the_anchor.png" },
     ];
 
     return (
@@ -31,10 +32,10 @@ export function WelcomeGiftModal({ onClaim }: WelcomeGiftModalProps) {
                     <Gift className="w-12 h-12 text-blue-700 fill-blue-700/20" />
                 </motion.div>
 
-                <h2 className="text-4xl font-display font-black text-white mb-2 drop-shadow-lg">WELCOME GIFT!</h2>
+                <h2 className="text-4xl font-display font-black text-white mb-2 drop-shadow-lg">{t('ui.shop.welcome_gift', 'WELCOME GIFT!')}</h2>
                 <p className="text-sky-100 font-medium mb-8">
-                    You've reached Level 2!<br />
-                    Enjoy 2 of each booster on us!
+                    {t('ui.shop.level_2_reached', "You've reached Level 2!")}<br />
+                    {t('ui.boosters.all_boosters', 'Enjoy 2 of each booster on us!', { amount: 2 })}
                 </p>
 
                 <div className="grid grid-cols-4 gap-3 mb-10">
@@ -62,7 +63,7 @@ export function WelcomeGiftModal({ onClaim }: WelcomeGiftModalProps) {
                     onClick={onClaim}
                     className="w-full bg-white text-blue-600 py-5 px-8 rounded-2xl font-display font-black text-xl shadow-[0_8px_0_rgb(200,200,200)] hover:shadow-[0_4px_0_rgb(200,200,200)] hover:translate-y-[4px] transition-all flex items-center justify-center gap-2"
                 >
-                    CLAIM NOW
+                    {t('ui.shop.claim_now', 'CLAIM NOW')}
                     <Check className="w-6 h-6" />
                 </motion.button>
             </motion.div>

@@ -1,0 +1,690 @@
+{
+  "common": {
+    "buy": "KAUFEN",
+    "active": "AKTIV",
+    "repair_rod": "Angel reparieren",
+    "game_over": "GAME OVER",
+    "score": "Punktestand",
+    "coins": "Münzen",
+    "fuel": "Treibstoff",
+    "weight": "Gewicht",
+    "storage": "Laderaum",
+    "level": "Level",
+    "region": "Region",
+    "capacity": "Kapazität",
+    "speed": "Tempo",
+    "depth": "Tiefe",
+    "attempts": "Versuche",
+    "protection": "Schutz",
+    "reduction": "Reduzierung",
+    "info": "INFO",
+    "tap_anywhere": "Zum Fortfahren tippen",
+    "kg": "kg",
+    "story": "Geschichte",
+    "ability_effect": "Fähigkeit / Effekt",
+    "type": "Typ",
+    "radius": "Radius",
+    "aspect": "Aspekt",
+    "obstacle": "Hindernis",
+    "catchable": "Fangbar",
+    "close": "Schließen",
+    "visibility": "Sichtbarkeit",
+    "direction": "Richtung",
+    "coral": "Koralle",
+    "curse": "FLUCH",
+    "value": "Wert",
+    "spawn": "Erscheinen",
+    "escape": "Flucht",
+    "inventory": "Inventar",
+    "obstacles": "Hindernisse",
+    "chain": "Kette",
+    "prices": "Preise",
+    "swing": "Schwung",
+    "gauge": "Anzeige",
+    "cycle": "Zyklus",
+    "owned": "Besitzt",
+    "unlocked": "Freigeschaltet",
+    "locked": "Gesperrt",
+    "buy_now": "JETZT KAUFEN",
+    "select": "WÄHLEN",
+    "selected": "AUSGEWÄHLT",
+    "min_level": "Min. Level {level}",
+    "storage_lv": "Laderaum Lv{level}",
+    "rod_lv": "Angel Lv{level}",
+    "storage_max": "Laderaum MAX",
+    "rod_max": "Angel MAX",
+    "effective_stats": "Aktuelle Werte",
+    "start_fishing": "ANGELN STARTEN →",
+    "loading": "Laden...",
+    "hall_of_fame": "Ruhmeshalle",
+    "top_fishermen": "Legendäre Fischer",
+    "no_scores": "Noch keine Punkte. Sei der Erste!",
+    "island": "Insel",
+    "island_level": "Insel Level {level}",
+    "training_bay": "Trainingsbucht",
+    "tutorial_harbor": "Tutorial-Hafen",
+    "unknown_waters": "Unbekannte Gewässer",
+    "deep_sea_market": "Tiefseemarkt",
+    "deep_voyage": "Tiefseereise",
+    "sell_haul": "Fang verkaufen",
+    "fish_count": "{count} Fische",
+    "empty_nets": "Leere Netze...",
+    "sell_all": "Alles verkaufen",
+    "boat_services": "Boot-Service",
+    "refill_fuel": "Tanken",
+    "repair_rod_btn": "Angel reparieren",
+    "needs_fuel": "Treibstoff benötigt",
+    "set_sail_btn": "Setz die Segel!",
+    "end_journey_confirm": "Reise beenden? Alle Fortschritte gehen verloren!",
+    "end_journey_reason": "Treibstoff leer! Reise endete am Markt.",
+    "end_journey_btn": "Reise beenden (Aufgeben)",
+    "you_won": "Gewonnen!",
+    "you_won_msg": "Du hast alle Inseln erreicht. Eine legendäre Reise!",
+    "restart_btn": "NEUSTART",
+    "boss": "BOSS",
+    "checkpoint": "CHECKPOINT",
+    "language": "Sprache",
+    "free": "GRATIS",
+    "most_popular": "BELIEBTESTE",
+    "best_value": "BESTER WERT",
+    "snaps_hook": "Haken bricht!",
+    "danger": "Gefahr!",
+    "boost": "Boost 💨",
+    "harpoon": "Harpune",
+    "net": "Netz",
+    "tnt": "TNT",
+    "anchor_booster": "Anker"
+  },
+  "game": {
+    "over": {
+      "boat_sank": "Das Boot ist gesunken! Es wurde unter der Last zerquetscht.",
+      "no_hooks": "Angel unbrauchbar! Alle Haken sind gebrochen."
+    },
+    "hud": {
+      "weight": "{current} / {max} kg",
+      "score": "{score} 🪙",
+      "storage": "Laderaum",
+      "hook": "Haken",
+      "storage_almost_full": "LADERAUM FAST VOLL! ⚠️",
+      "boat_sinking": "BOOT SINKT! LADERAUM VOLL! 🚨"
+    },
+    "feedback": {
+      "legendary": "LEGENDÄR!",
+      "rod_broken": "ANGEL GEBROCHEN!",
+      "combo_2": "2 IN FOLGE!",
+      "combo_3": "COMBO x3!",
+      "combo_5": "IN FAHRT x5!",
+      "combo_7": "UNAUFHALTBAR x7!",
+      "combo_poseidon": "POSEIDON! x{combo}",
+      "weight_reduced": "-1 kg"
+    }
+  },
+  "ui": {
+    "storage_full": "Laderaum voll!",
+    "out_of_fuel": "Treibstoff leer!",
+    "rod_broken": "Angel gebrochen!",
+    "level_complete": "Level abgeschlossen!",
+    "next_level": "Nächstes Level",
+    "try_again": "Nochmal versuchen",
+    "back_to_home": "Home",
+    "garage": "Garage",
+    "leaderboard": "Bestenliste",
+    "settings": "Einstellungen",
+    "repair_cost": "Reparaturkosten",
+    "unlock_cost": "Freischaltkosten",
+    "insufficient_balance": "Guthaben reicht nicht!",
+    "need_fuel_msg": "Du brauchst {cost} 🪙 für Treibstoff. Nutze eine Pass-Karte oder wähle eine Option.",
+    "use_pass_card": "Pass-Karte nutzen",
+    "get_pass_cards": "Mehr Pass-Karten",
+    "watch_ad": "Werbung sehen (+50 🪙)",
+    "back_to_market": "Zurück zum Markt",
+    "give_up": "Aufgeben (Reise beenden)",
+    "repair_needed": "Reparatur nötig!",
+    "need_repair_msg": "Du brauchst {cost} 🪙 für die Angel. Wähle eine Option.",
+    "get_more_doubloons": "Mehr Dublonen",
+    "watch_ad_amount": "Werbung sehen (+{amount} 🪙)",
+    "island_select": "Insel wählen",
+    "explorer_mode": "🗺️ ENTDECKER-MODUS",
+    "prev_stage": "Vorherige",
+    "next_stage": "Nächste",
+    "set_sail": "Segel setzen!",
+    "level_locked_msg": "Level gesperrt! Schließe erst vorherige Level ab.",
+    "tutorial": "Tutorial",
+    "new_region": "Neue Region",
+    "back_to_level_select": "ZUR LEVEL-AUSWAHL",
+    "island_clear": "Insel geklärt!",
+    "refueling_msg": "Tanken für die nächste Reise...",
+    "current_gold": "Aktuelle Golddublonen",
+    "fuel_cost": "Treibstoffkosten",
+    "remaining": "Restlich",
+    "travel_to_island": "Reise zu Insel {island}",
+    "rod_broken_title": "Oje! Angel gebrochen!",
+    "boat_sunk_title": "Zu schwer! Boot gesunken!",
+    "out_of_fuel_title": "Gestrandet! Kein Sprit!",
+    "island_reached": "Insel {island} erreicht",
+    "new_record": "NEUER REKORD!",
+    "total_score": "GESAMTPUNKTE",
+    "base_score": "Basispunkte",
+    "depth_bonus": "Tiefenbonus",
+    "king_bounty": "Königsgeld",
+    "vault_earnings": "Tresorgewinn",
+    "menu": "MENÜ",
+    "retry": "WIEDERHOLEN",
+    "play_tutorial": "TUTORIAL SPIELEN",
+    "play_game": "SPIEL STARTEN",
+    "levels_title": "LEVEL",
+    "admin_mode_msg": "Admin-Modus Auswahl",
+    "unlocked_up_to": "Freigeschaltet bis L{level}",
+    "admin_mode": "Admin-Modus",
+    "select_level": "Level wählen",
+    "reset_confirm": "Bist du sicher? Alle Fortschritte werden gelöscht!",
+    "reset_progress": "Fortschritt löschen",
+    "logo_text": "Des Fischers Ruder",
+    "shop": {
+      "pass_pouch": "Basis-Passbeutel",
+      "pass_sack": "Beliebter Passsack",
+      "pass_chest": "Kapitäns-Passtruhe",
+      "doubloon_pouch": "Fischer-Dublonenbeutel",
+      "doubloon_sack": "Experten-Dublonensack",
+      "doubloon_chest": "Kapitäns-Dublonentruhe",
+      "doubloon_hoard": "Poseidons Dublonenschatz",
+      "welcome_gift": "Willkommensgeschenk!",
+      "level_2_reached": "Level 2 erreicht!",
+      "claim_gift": "GESCHENK HOLEN",
+      "claim_now": "JETZT HOLEN"
+    },
+    "boosters": {
+      "out_of": "Kein {booster} mehr?",
+      "mega_pack": "Mega-Pack",
+      "epic_pack": "Epic-Pack",
+      "all_boosters": "{amount}x ALLE Booster",
+      "single_booster": "{amount}x {booster}",
+      "how_it_works": "Wie es funktioniert",
+      "tips": "Tipps",
+      "harpoon": {
+        "phrase": "Erlege störrische Beute mühelos!",
+        "summary": "Feuert eine Harpune ab, um ein Ziel sofort zu fangen.",
+        "usage": [
+          "Tippen zum Starten; sie durchbohrt alles und fängt das erste Ziel.",
+          "Bestens für wertvolle Fische oder enge Stellen.",
+          "Harpunen-Fänge zählen während des Boosts nicht zum Ladegewicht."
+        ],
+        "tips": [
+          "Nutze sie, wenn das Ziel auf einer Linie mit dem Boot ist.",
+          "Ideal für brenzlige Momente, wenn die Zeit knapp ist."
+        ]
+      },
+      "net": {
+        "phrase": "Sammle alles in deinem Weg ein!",
+        "summary": "Wirft ein weites Netz aus, das Fische im Umkreis fängt.",
+        "usage": [
+          "Tippen zum Auswerfen; alles im Kreis wird gesammelt.",
+          "Perfekt für dichte Schwärme.",
+          "Netz-Fänge zählen während des Boosts nicht zum Ladegewicht."
+        ],
+        "tips": [
+          "Warte auf eine Gruppe, bevor du feuerst.",
+          "Nutze ruhige Momente für große Gruppen."
+        ]
+      },
+      "tnt": {
+        "phrase": "Spreng den Meeresboden frei!",
+        "summary": "Sprengt einen 3x3 Bereich frei und sammelt Beute ein.",
+        "usage": [
+          "Tippen zum Platzieren; die Explosion räumt sofort auf.",
+          "Ideal für Zonen mit vielen Hindernissen.",
+          "TNT-Fänge zählen während des Boosts nicht zum Ladegewicht."
+        ],
+        "tips": [
+          "Dort abwerfen, wo die Hindernisse am dichtesten sind.",
+          "Nutze es, um Wege zu öffnen, wenn du feststeckst."
+        ]
+      },
+      "anchor": {
+        "phrase": "Friere die Zeit ein!",
+        "summary": "Hält die Zeit kurz an, damit du sicher sammeln kannst.",
+        "usage": [
+          "Tippen zum Aktivieren; Zeit vergeht langsamer.",
+          "Bestens für präzises Sammeln und Ausweichen.",
+          "Anker-Fänge zählen während des Boosts nicht zum Ladegewicht."
+        ],
+        "tips": [
+          "Aktiviere ihn kurz vor einem riskanten Wurf.",
+          "Nutze ihn zur Stabilisierung bei wenigen Haken."
+        ]
+      }
+    }
+  },
+  "garage": {
+    "current_stats": "Aktuelle Werte",
+    "storage": "Laderaum",
+    "swing": "Schwung",
+    "depth": "Tiefe",
+    "casts": "Würfe",
+    "coral": "Koralle",
+    "owned": "Besitzt",
+    "start_fishing": "ANGELN STARTEN →"
+  },
+  "leaderboard": {
+    "loading": "Lade Punkte...",
+    "no_scores": "Noch keine Punkte. Sei der Erste!",
+    "island": "Insel"
+  },
+  "upgrades": {
+    "storage_capacity": "Laderaum-Kapazität",
+    "swing_speed": "Schwung-Tempo",
+    "cast_speed": "Wurf-Tempo",
+    "return_speed": "Einhol-Tempo",
+    "hook_depth": "Angel-Tiefe",
+    "cast_attempts": "Wurf-Versuche",
+    "coral_protection": "Korallen-Schutz",
+    "kelp_duration": "Algen-Dauer"
+  },
+  "vehicles": {
+    "t1": { "name": "Das Dingi", "captain": "Bobber Bill" },
+    "t2": { "name": "Der bemalte Kahn", "captain": "Wagemutiger Danny" },
+    "t3": { "name": "Das Glasfaserboot", "captain": "Experte Eddie" },
+    "t4": { "name": "Der Motorkreuzer", "captain": "Kapitän Ken" },
+    "t5": { "name": "Der Speedster", "captain": "Turbo Trev" },
+    "t6": { "name": "Der Trawler", "captain": "Seefahrer Sam" },
+    "t7": { "name": "Das Kapitänsschiff", "captain": "Kapitän Theo" },
+    "t8": { "name": "Das Forschungsschiff", "captain": "Professor Pippa" },
+    "t9": { "name": "Der Korsar", "captain": "Schwarzer Cam" },
+    "t10": { "name": "Die Legende", "captain": "Der legendäre Fischer" }
+  },
+  "regions": {
+    "r1": "Morgenbucht",
+    "r2": "Dämmerungsriff",
+    "r3": "Flüsternde Atolle",
+    "r4": "Abyss-Blau",
+    "r5": "Sturmstraße",
+    "r6": "Aurora-Tiefen",
+    "r7": "Blutmond",
+    "r8": "Chaos-Wirbel",
+    "r9": "Goldenes Heiligtum",
+    "r10": "Ende der Legende"
+  },
+  "levels": {
+    "1": "Morgenlauf",
+    "2": "Tempo-Überraschung",
+    "3": "Algengarten",
+    "4": "Erster Markt",
+    "5": "Süßigkeiten-Fund",
+    "6": "Tempo-Test",
+    "7": "Truhen-Freude",
+    "8": "Mondsturz",
+    "9": "Gewichtsdruck",
+    "10": "Gold-Level",
+    "11": "Anker-Falle",
+    "12": "Lava-Versuchung",
+    "13": "Verschnaufpause",
+    "14": "Flutsturm",
+    "15": "Korallenhölle",
+    "16": "Blattgeflüster",
+    "17": "Skelett-Nacht",
+    "18": "Strudel-Aufstieg",
+    "19": "Letzter Atemzug",
+    "20": "BOSS: Bucht-Königin",
+    "21": "Korallenschock",
+    "22": "Doppel-Koralle",
+    "23": "Tempo-Hölle",
+    "24": "Verschnaufpause",
+    "25": "Galaxie-Tor",
+    "26": "Skelett-Korridor",
+    "27": "Doppel-Strudel",
+    "28": "Angel-Prüfung",
+    "29": "Verschnaufpause",
+    "30": "BOSS: Gold-Koralle",
+    "31": "Tiefen-Öffnung",
+    "32": "Kapazitätskrise",
+    "33": "Regenfalle",
+    "34": "Verschnaufpause",
+    "35": "Königsgeflüster",
+    "36": "Dunkle Tiefen",
+    "37": "Pilztanz",
+    "38": "Galaxie-Jagd",
+    "39": "Letzter Zug",
+    "40": "BOSS: Tiefblaues Biest",
+    "41": "Sturmtor",
+    "42": "Doppel-Skelett",
+    "43": "Kapazitätsschock",
+    "44": "Verschnaufpause",
+    "45": "Königssaison",
+    "46": "Dunkler Korridor",
+    "47": "Pilzwald",
+    "48": "Galaxie-Sturm",
+    "49": "Letzte Prüfung",
+    "50": "BOSS: Sturmfürst",
+    "51": "Aurora-Öffnung",
+    "52": "Dunkle Jagd",
+    "53": "Verschnaufpause",
+    "54": "Königswoge",
+    "55": "Korallen-Labyrinth",
+    "56": "Warp-Krieg",
+    "57": "Stille Gefahr",
+    "58": "Aurora-Sturm",
+    "59": "Chaos-Nacht",
+    "60": "BOSS: Aurora-Drache",
+    "61": "Blutmond",
+    "62": "Fluch: Schweres Wasser",
+    "63": "Fluch: Schnelle Strömung",
+    "64": "Verschnaufpause",
+    "65": "Fluch: Blinder Fleck",
+    "66": "Fluch: Gegenströmung",
+    "67": "Fluch: Doppelschaden",
+    "68": "Verschnaufpause",
+    "69": "Fluch: Wirtschaftskrise",
+    "70": "BOSS: Blutmond-Bestie",
+    "71": "Dimensionstor",
+    "72": "Fluch: Kettenreaktion",
+    "73": "Fluch: Unsichtbare Fische",
+    "74": "Verschnaufpause",
+    "75": "Fluch: Countdown",
+    "76": "Fluch: Rückwärts-Markt",
+    "77": "Fluch: Skelett-Armee",
+    "78": "Verschnaufpause",
+    "79": "Alles Aktiv",
+    "80": "BOSS: Chaosfürst",
+    "81": "Goldene Dunkelheit",
+    "82": "Kombifluch I",
+    "83": "Kombifluch II",
+    "84": "Verschnaufpause",
+    "85": "Fluch: Zeitdruck",
+    "86": "Fluch: Rückwärts-Gewicht",
+    "87": "Fluch: Fischflucht",
+    "88": "Verschnaufpause",
+    "89": "Alle Flüche",
+    "90": "BOSS: Goldener Drache",
+    "91": "Die letzte Reise beginnt",
+    "92": "Fluch: Zeitbombe",
+    "93": "Fluch: Dunkle Materie",
+    "94": "Letzter Atemzug",
+    "95": "Kombifluch: Finale I",
+    "96": "Kombifluch: Finale II",
+    "97": "Kombifluch: Finale III",
+    "98": "Stiller Sturm",
+    "99": "Eine Chance",
+    "100": "FINAL BOSS: Legendenfürst"
+  },
+  "tutorial": {
+    "storage": "Achte auf den Laderaum! Wenn das Boot zu schwer wird, sinkt es.",
+    "tnt": "Zieh das TNT, um den Bereich zu sprengen!",
+    "net": "Tippen, um das Netz auszuwerfen!",
+    "harpoon": "Ziel mit der Harpune auf schnelle Fische!",
+    "anchor": "Tipp ins Meer, um den Anker zu werfen!",
+    "garage_rod": "Eine stärkere Angel fängt größere Fische!\nTipp hier zum Upgraden.",
+    "garage_storage": "Kein Platz mehr?\nTipp hier, um den Laderaum zu erweitern.",
+    "garage_next_boat": "Genug Dublonen für ein besseres Schiff!\nTipp auf den Pfeil.",
+    "garage_buy_boat": "Das ist {boat}!\nTipp zum Kaufen für bessere Werte."
+  },
+  "region_intros": {
+    "r1": {
+      "title": "Morgenbucht",
+      "story": "Hier atmet jeder Seefahrer zum ersten Mal durch. Unter der ruhigen Oberfläche warten Wracks auf Neulinge. Wenn das erste Licht die seichten Wasser trifft, setzen angehende Legenden zum ersten Mal die Segel."
+    },
+    "r2": {
+      "title": "Dämmerungsriff",
+      "story": "Leuchtende Korallen erhellen das dunkle Wasser. Willkommen im geheimnisvollen Dämmerungsriff. Geflüster vergessener Meeresbewohner hallt durch die Gezeiten. Rüste dich aus und stelle dich den Schatten im Korallenlabyrinth (Level 11-20)."
+    },
+    "r3": {
+      "title": "Flüsternde Atolle",
+      "story": "Wunderschön, aber gnadenlos. Riesige Korallenlabyrinthe verbergen Schätze und hungrige Kreaturen. Nur wer scharfe Instinkte hat, kommt weiter."
+    },
+    "r4": {
+      "title": "Abyss-Blau",
+      "story": "Hier verblasst das Licht. Die Wellen weichen stillen, tödlichen Strudeln. Nur wer der Dunkelheit trotzt, findet die Geheimnisse dieser blauen Hölle."
+    },
+    "r5": {
+      "title": "Sturmstraße",
+      "story": "Der Himmel ist ewig schwarz, das Meer ewig zornig. Riesige Wellen zerquetschen Schiffe. Überleben ist hier kein Glück, sondern ein Sieg gegen die Natur."
+    },
+    "r6": {
+      "title": "Aurora-Tiefen",
+      "story": "Ein mystisches Reich, erhellt von Lichtern wie am Nordhimmel. Die Strömungen folgen alten Zaubern. Achte auf das Leuchten, es führt dich."
+    },
+    "r7": {
+      "title": "Blutmond",
+      "story": "Ein finsteres Rot badet die Landschaft. Geister und Bestien lauern hier. Nur wer zahllose Schlachten überlebt hat, hält der Verderbnis stand (Level 61-70)."
+    },
+    "r8": {
+      "title": "Chaos-Wirbel",
+      "story": "Zeit und Richtung versinken hier. Endlose Strömungen ziehen Schiffe in eine Spirale. Wenn Kompasse verrücktspielen, musst du deinen eigenen Geist beherrschen."
+    },
+    "r9": {
+      "title": "Goldenes Heiligtum",
+      "story": "Die letzte Prüfung für jene, die Geschichte schreiben. Jede Meile ist ein Kampf. Wer dies schafft, ist kein Seemann mehr, sondern eine Legende."
+    },
+    "r10": {
+      "title": "Ende der Legende",
+      "story": "Die Erde bebt, der Himmel bricht. Du stehst vor der letzten Schlacht. Götter sind hier gefallen. Deine Fähigkeiten müssen perfekt sein für das Ende (Level 91-100)."
+    }
+  },
+  "entities": {
+    "bubble": {
+      "name": "Blasenfisch",
+      "story": "Treiben wie Laternen an der Oberfläche. Seeleute sagen, sie markieren sicheres Wasser. Sie bilden schimmernde Sternbilder im Meer.",
+      "effect": "Harmloser Fang mit wenig Wert und Gewicht."
+    },
+    "sakura": {
+      "name": "Sakurafisch",
+      "story": "Blühen im Frühling im seichten Wasser. Ihre Spur führt zu sicheren Passagen. Ein Glücksbringer für jede Reise.",
+      "effect": "Hinterlässt Blüten und ist sehr schnell."
+    },
+    "zap": {
+      "name": "Zap-Fisch",
+      "story": "Geboren in Gewittern, tragen sie den Donner in sich. Ein einziger Schlag kann den ganzen Fang des Tages ändern.",
+      "effect": "Schockt das Boot für 3s; andere Fische entkommen leichter."
+    },
+    "candy": {
+      "name": "Candy-Fisch",
+      "story": "Sammeln sich bei warmen Strömungen. Ihr Geschmack soll das Herz und den Laderaum leichter machen.",
+      "effect": "Reduziert Boot-Gewicht um 1 (bis zu 3x)."
+    },
+    "moon": {
+      "name": "Mondfisch",
+      "story": "Leuchten bei klarem Nachthimmel. Sie lauschen Gezeiten, die nur sie hören können. Sie bewachen geheime Pfade.",
+      "effect": "Verlangsamt alle anderen Fische um 40% für 10s."
+    },
+    "lava": {
+      "name": "Lavafisch",
+      "story": "Schwimmen bei kochenden Schloten. Sie sind wie lebende Glut aus den tiefsten Gräben.",
+      "effect": "Verursacht Brennen (+1 Gewicht pro Sekunde für 5s)."
+    },
+    "tide": {
+      "name": "Gezeitenfisch",
+      "story": "Rasen wie Torpedos am Rand von Stürmen. Ein falscher Zug und sie verschwinden im Sprühnebel.",
+      "effect": "Schüttelt das Boot; Chance auf Item-Drop."
+    },
+    "leaf": {
+      "name": "Blattfisch",
+      "story": "Leicht wie Algen, verschwinden sie bei Gefahr. Sie garantieren Wohlstand für die ganze Reise.",
+      "effect": "Erhöht Marktwert permanent um 10% (bis zu 30%)."
+    },
+    "crystal": {
+      "name": "Kristallfisch",
+      "story": "Wachsen in Mineralhöhlen. Ihr Körper bricht das Licht in seltsamen Farben. Schönheit und Risiko zugleich.",
+      "effect": "Wert schwankt beim Fang: +50, 0 oder -30 Dublonen."
+    },
+    "galaxy": {
+      "name": "Galaxiefisch",
+      "story": "Schwimmen zwischen Strömungen und Sternen. Sie hinterlassen violetten Nebel. Wer sie findet, wird belohnt.",
+      "effect": "Zufälliger Bonus: +100 Dublonen oder +10% Sprit."
+    },
+    "mushroom": {
+      "name": "Pilzfisch",
+      "story": "Treiben durch glitzernde Sporen. Ihr Zauber verdoppelt den Wert eines bereits gefangenen Schatzes.",
+      "effect": "Verdoppelt den Marktwert eines zufälligen Fischs im Inventar."
+    },
+    "king": {
+      "name": "Königsfisch",
+      "story": "Eine lebende Legende. Das Meer wird still, wenn er vorbeizieht. Er zu fangen ist wie eine Krönung.",
+      "effect": "Versetzt kleine Fische in Panik; +20% Marktwert."
+    },
+    "coral": {
+      "name": "Korallenriff",
+      "story": "Stille Wächter des Bodens. Haken kommen oft gebrochen zurück. Sie sind heilige Grenzen.",
+      "effect": "Bricht einen Haken bei Kontakt."
+    },
+    "sea_kelp": {
+      "name": "Algen",
+      "story": "Wie sanfte Bänder, aber sie können eine Leine mit Kraft festhalten. Lass sie lieber ziehen.",
+      "effect": "Verheddert den Haken kurz ohne Schaden."
+    },
+    "sea_kelp_horizontal": {
+      "name": "Treibalgen",
+      "story": "Verstecken sich im Schlamm. Sie können die Leine ohne Warnung zur Seite ziehen.",
+      "effect": "Verheddert den Haken kurz ohne Schaden."
+    },
+    "sea_rock": {
+      "name": "Meeresfelsen",
+      "story": "Alte Knochen der Küste. Sie lassen die Leine sofort zurückschnellen.",
+      "effect": "Lässt den Haken sofort abprallen."
+    },
+    "sea_rock_large": {
+      "name": "Großer Felsen",
+      "story": "Wände unter Wasser. Sie teilen Strömungen und stoppen jeden Wurf.",
+      "effect": "Lässt den Haken sofort abprallen."
+    },
+    "gold_doubloon": {
+      "name": "Golddublone",
+      "story": "Treiben wie gefallene Sterne aus Wracks. Sie locken Gierige in die Gefahr.",
+      "effect": "Bringt +10kg Gewicht, aber viel Gold."
+    },
+    "whirlpool": {
+      "name": "Strudel",
+      "story": "Wunden im Ozean. Überlebe ihn und das Meer wird deinen Namen kennen.",
+      "effect": "Kann das Boot versenken, wenn der Haken zu lange feststeckt."
+    },
+    "sunken_boat": {
+      "name": "Wrack",
+      "story": "Gräber alter Reisen. Jedes Wrack ist eine Warnung der Geschichte.",
+      "effect": "Solides Hindernis, extrem schwer und blockiert den Weg."
+    },
+    "shark_skeleton": {
+      "name": "Haifischskelett",
+      "story": "Verfallene Relikte der Tiefe. Knochen zu fangen bringt nur Bedauern.",
+      "effect": "Bringt unnötiges Gewicht und -10 Gold."
+    },
+    "env_bubbles": {
+      "name": "Blasen",
+      "story": "Steigen aus Schloten auf. Sie geben der Ausrüstung einen seltsamen Auftrieb.",
+      "effect": "Boostet Haken-Tempo; reduziert Inventargewicht permanent um 1kg."
+    },
+    "anchor": {
+      "name": "Rostiger Anker",
+      "story": "Relikte überstandener Stürme. Ihn zu heben testet Geduld und Kraft.",
+      "effect": "Stoppt das Boot sofort; reduziert Spritverbrauch."
+    },
+    "shell": {
+      "name": "Muschel",
+      "story": "Verstecken sich im Sand. Jede erzählt eine andere Geschichte der Gezeiten.",
+      "effect": "Gibt +20 Golddublonen beim Fang."
+    }
+  },
+  "curses": {
+    "none": {
+      "title": "Kein Fluch",
+      "story": "Das Meer ist ruhig. Ein guter Tag zum Angeln."
+    },
+    "heavy_waters": {
+      "title": "Schweres Wasser",
+      "story": "Das Wasser wird dick wie Melasse. Alles ist schwerer, der Raum wird schneller voll."
+    },
+    "fast_current": {
+      "title": "Schnelle Strömung",
+      "story": "Fische rasen vorbei. Nur schnelle Reaktionen führen hier zum Erfolg."
+    },
+    "blind_spot": {
+      "title": "Blinder Fleck",
+      "story": "Kalter Nebel schluckt die Sicht. Vertrau deinen Instinkten mehr als deinen Augen."
+    },
+    "reverse_current": {
+      "title": "Gegenströmung",
+      "story": "Die Strömung dreht sich. Fische fliehen zum offenen Meer. Ein Labyrinth der Türen."
+    },
+    "double_damage": {
+      "title": "Doppelschaden",
+      "story": "Jeder Fehler schmerzt doppelt. Präzision ist dein einziger Schutz."
+    },
+    "economic_crisis": {
+      "title": "Wirtschaftskrise",
+      "story": "Märkte trocknen aus. Nur wer Masse macht, macht hier noch Gewinn."
+    },
+    "countdown": {
+      "title": "Countdown",
+      "story": "Der Laderaum schrumpft alle 10 Sekunden. Beeil dich, bevor alles weg ist."
+    },
+    "skeleton_army": {
+      "title": "Skelett-Armee",
+      "story": "Knochen steigen auf und zehren an deinem Fang. Halte Abstand!"
+    },
+    "fish_escape": {
+      "title": "Fischflucht",
+      "story": "Fische sind scheu und schlüpfen im letzten Moment weg. Geduld ist hier der Schlüssel."
+    },
+    "time_bomb": {
+      "title": "Zeitbombe",
+      "story": "Deine Fracht verschwindet alle 8 Sekunden. Fang schnell, bevor es zu spät ist."
+    },
+    "dark_matter": {
+      "title": "Dunkle Materie",
+      "story": "Das Meer ist im Schatten. Jedes Auswerfen birgt das Risiko eines abrupten Stopps."
+    },
+    "chain_reaction": {
+      "title": "Kettenreaktion",
+      "story": "Ein Fisch zieht andere mit sich. Wähle dein Ziel weise."
+    },
+    "invisible_fish": {
+      "title": "Unsichtbare Fische",
+      "story": "Du hörst das Plitschen, siehst sie ama nicht. Ein Test für Rhythmus und Nerven."
+    },
+    "reverse_market": {
+      "title": "Rückwärts-Markt",
+      "story": "Preise steigen, Gewinne sinken. Nur die Mutigen machen hier Dublonen."
+    },
+    "random_loop": {
+      "title": "Zufallsschleife",
+      "story": "Der Haken wackelt unvorhersehbar. Flexibilität schlägt hier Gewohnheit."
+    },
+    "reverse_weight": {
+      "title": "Rückwärts-Gewicht",
+      "story": "Die Waage lügt. Vertrau deinem Gedächtnis, nicht der Anzeige."
+    },
+    "random_curse": {
+      "title": "Zufallsfluch",
+      "story": "Alle 15 Sekunden ändert sich die Gefahr. Pass dich schneller an als die Flut."
+    },
+    "combo_1": {
+      "title": "Kombi I: Schwer & Schnell",
+      "story": "Dickes Wasser und schnelle Fische. Kraft und Tempo sind gefragt."
+    },
+    "combo_2": {
+      "title": "Kombi II: Krise & Gefahr",
+      "story": "Weniger Gewinn, mehr Schaden. Nur vorsichtige Seefahrer bestehen hier."
+    },
+    "combo_3": {
+      "title": "Kombi III: Das Trio",
+      "story": "Fische sind schwer, schnell und wertlos. Überlebe und werde zur Legende."
+    },
+    "final_1": {
+      "title": "Finale I: Geister & Knochen",
+      "story": "Unsichtbare Beute und Skelette. Jeder Wurf ist ein Glücksspiel."
+    },
+    "final_2": {
+      "title": "Finale II: Zeitrausch",
+      "story": "Die Zeit rennt, der Raum schrumpft, die Fische rasen. Vertrau deinem Instinkt."
+    },
+    "final_3": {
+      "title": "Finale III: Der letzte Widerstand",
+      "story": "Der Markt ist gegen dich, Fische fliehen. Zeig Beharrlichkeit und werde zur Legende."
+    },
+    "one_chance": {
+      "title": "Eine Chance",
+      "story": "Ein einziger Wurf entscheidet alles. Wähle deinen Moment weise."
+    },
+    "card": {
+      "label": "Verfluchtes Level",
+      "start": "Level starten"
+    }
+  }
+}

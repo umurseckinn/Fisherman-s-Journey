@@ -1,0 +1,690 @@
+{
+  "common": {
+    "buy": "SATIN AL",
+    "active": "AKTİF",
+    "repair_rod": "Oltayı Tamir Et",
+    "game_over": "OYUN BİTTİ",
+    "score": "Skor",
+    "coins": "Altın",
+    "fuel": "Yakıt",
+    "weight": "Ağırlık",
+    "storage": "Depo",
+    "level": "Seviye",
+    "region": "Bölge",
+    "capacity": "Kapasite",
+    "speed": "Hız",
+    "depth": "Derinlik",
+    "attempts": "Hak",
+    "protection": "Koruma",
+    "reduction": "Azaltma",
+    "info": "BİLGİ",
+    "tap_anywhere": "Devam etmek için ekrana dokun",
+    "kg": "kg",
+    "story": "Hikaye",
+    "ability_effect": "Yetenek / Etki",
+    "type": "Tür",
+    "radius": "Yarıçap",
+    "aspect": "Görünüm",
+    "obstacle": "Engel",
+    "catchable": "Avlanabilir",
+    "close": "Kapat",
+    "visibility": "Görünürlük",
+    "direction": "Yön",
+    "coral": "Mercan",
+    "curse": "LANET",
+    "value": "Değer",
+    "spawn": "Belirme",
+    "escape": "Kaçış",
+    "inventory": "Envanter",
+    "obstacles": "Engeller",
+    "chain": "Zincir",
+    "prices": "Fiyatlar",
+    "swing": "Salınım",
+    "gauge": "Gösterge",
+    "cycle": "Döngü",
+    "owned": "Sahip Olundu",
+    "unlocked": "Açık",
+    "locked": "Kilitli",
+    "buy_now": "SATIN AL",
+    "select": "SEÇ",
+    "selected": "SEÇİLDİ",
+    "min_level": "Min Seviye {level}",
+    "storage_lv": "Depo Sv{level}",
+    "rod_lv": "Olta Sv{level}",
+    "storage_max": "Depo MAX",
+    "rod_max": "Olta MAX",
+    "effective_stats": "Güncel İstatistikler",
+    "start_fishing": "BALIK TUTMAYA BAŞLA →",
+    "loading": "Yükleniyor...",
+    "hall_of_fame": "Efsaneler Listesi",
+    "top_fishermen": "En iyi efsanevi balıkçılar",
+    "no_scores": "Henüz skor yok. İlk sen ol!",
+    "island": "Ada",
+    "island_level": "{level}. Ada Seviyesi",
+    "training_bay": "Eğitim Koyu",
+    "tutorial_harbor": "Eğitim Limanı",
+    "unknown_waters": "Bilinmeyen Sular",
+    "deep_sea_market": "Derin Deniz Pazarı",
+    "deep_voyage": "Derin Yolculuk",
+    "sell_haul": "Avını Sat",
+    "fish_count": "{count} Balık",
+    "empty_nets": "Ağlar boş...",
+    "sell_all": "Hepsini Sat",
+    "boat_services": "Tekne Servisleri",
+    "refill_fuel": "Yakıt Doldur",
+    "repair_rod_btn": "Oltayı Tamir Et",
+    "needs_fuel": "Yakıt Lazım",
+    "set_sail_btn": "Yelken Aç!",
+    "end_journey_confirm": "Yolculuğu bitir? Tüm ilerlemen kaybolacak!",
+    "end_journey_reason": "Yakıt bitti! Yolculuk markette sonlandı.",
+    "end_journey_btn": "Yolculuğu Bitir (Pes Et)",
+    "you_won": "Kazandın",
+    "you_won_msg": "Tüm adalara ulaştın. Efsanevi bir yolculuktu!",
+    "restart_btn": "YENİDEN BAŞLA",
+    "boss": "PATRON",
+    "checkpoint": "KONTROL NOKTASI",
+    "language": "Dil",
+    "free": "ÜCRETSİZ",
+    "most_popular": "EN POPÜLER",
+    "best_value": "EN İYİ FİYAT",
+    "snaps_hook": "Kancayı koparır!",
+    "danger": "Tehlike!",
+    "boost": "Hızlandırma 💨",
+    "harpoon": "Zıpkın",
+    "net": "Ağ",
+    "tnt": "TNT",
+    "anchor_booster": "Çapa"
+  },
+  "game": {
+    "over": {
+      "boat_sank": "Tekne battı! Ağır yük altında ezildi.",
+      "no_hooks": "Olta kullanılamaz durumda! Tüm iğneler kırıldı."
+    },
+    "hud": {
+      "weight": "{current} / {max} kg",
+      "score": "{score} 🪙",
+      "storage": "Depo",
+      "hook": "Kanca",
+      "storage_almost_full": "DEPO NEREDEYSE DOLU! ⚠️",
+      "boat_sinking": "TEKNE BATIYOR! DEPO DOLU! 🚨"
+    },
+    "feedback": {
+      "legendary": "EFSANEVİ!",
+      "rod_broken": "OLTA KIRILDI!",
+      "combo_2": "ÜST ÜSTE x2!",
+      "combo_3": "KOMBO x3!",
+      "combo_5": "ALEV ALDI x5!",
+      "combo_7": "DURDURULAMAZ x7!",
+      "combo_poseidon": "POSEIDON! x{combo}",
+      "weight_reduced": "-1 kg"
+    }
+  },
+  "ui": {
+    "storage_full": "Depo Dolu!",
+    "out_of_fuel": "Yakıt Bitti!",
+    "rod_broken": "Olta Kırıldı!",
+    "level_complete": "Bölüm Tamamlandı!",
+    "next_level": "Sonraki Bölüm",
+    "try_again": "Tekrar Dene",
+    "back_to_home": "Ana Sayfa",
+    "garage": "Garaj",
+    "leaderboard": "Liderlik Tablosu",
+    "settings": "Ayarlar",
+    "repair_cost": "Tamir Maliyeti",
+    "unlock_cost": "Açma Maliyeti",
+    "insufficient_balance": "Yetersiz Bakiye!",
+    "need_fuel_msg": "Yakıt almak için {cost} 🪙 gerekiyor. Lütfen Geçiş Kartı kullanın veya bir seçenek seçin.",
+    "use_pass_card": "Geçiş Kartı Kullan",
+    "get_pass_cards": "Daha Fazla Geçiş Kartı Al",
+    "watch_ad": "Reklam İzle (+50 🪙)",
+    "back_to_market": "Markete Dön",
+    "give_up": "Vazgeç (Yolculuğu Bitir)",
+    "repair_needed": "Tamir Gerekiyor!",
+    "need_repair_msg": "Oltayı tamir etmek için {cost} 🪙 gerekiyor. Devam etmek için bir seçenek seçin.",
+    "get_more_doubloons": "Daha Fazla Dublon Al",
+    "watch_ad_amount": "Reklam İzle (+{amount} 🪙)",
+    "island_select": "Ada Seçimi",
+    "explorer_mode": "🗺️ KAŞİF MODU",
+    "prev_stage": "Önceki Sayfa",
+    "next_stage": "Sonraki Sayfa",
+    "set_sail": "Yelken Aç!",
+    "level_locked_msg": "Bu seviyeye henüz erişiminiz yok! Önceki seviyeleri tamamlamalısınız.",
+    "tutorial": "Eğitim",
+    "new_region": "Yeni Bölge",
+    "back_to_level_select": "BÖLÜM SEÇİMİNE DÖN",
+    "island_clear": "Ada Temizlendi!",
+    "refueling_msg": "Sonraki yolculuk için yakıt alınıyor...",
+    "current_gold": "Mevcut Altın Dublonlar",
+    "fuel_cost": "Yakıt Maliyeti",
+    "remaining": "Kalan",
+    "travel_to_island": "{island}. Adaya Git",
+    "rod_broken_title": "Eyvah! Olta Kırıldı!",
+    "boat_sunk_title": "Aşırı Yük! Tekne Battı!",
+    "out_of_fuel_title": "Yolda Kaldık! Yakıt Bitti!",
+    "island_reached": "{island}. Adaya Ulaşıldı",
+    "new_record": "YENİ REKOR!",
+    "total_score": "TOPLAM SKOR",
+    "base_score": "Temel Skor",
+    "depth_bonus": "Derinlik Bonusu",
+    "king_bounty": "Kral Ödülü",
+    "vault_earnings": "Kasa Kazancı",
+    "menu": "MENÜ",
+    "retry": "TEKRAR DENE",
+    "play_tutorial": "EĞİTİMİ OYNA",
+    "play_game": "OYUNA BAŞLA",
+    "levels_title": "BÖLÜMLER",
+    "admin_mode_msg": "Admin modu seçimi",
+    "unlocked_up_to": "L{level} seviyesine kadar açık",
+    "admin_mode": "Admin Modu",
+    "select_level": "Bölüm Seç",
+    "reset_confirm": "Emin misiniz? Tüm ilerlemeniz sıfırlanacak!",
+    "reset_progress": "İlerlemeyi Sıfırla",
+    "logo_text": "Kayıkçının Küreği",
+    "shop": {
+      "pass_pouch": "Temel Geçiş Kesesi",
+      "pass_sack": "Popüler Geçiş Kesesi",
+      "pass_chest": "Kaptan Geçiş Sandığı",
+      "doubloon_pouch": "Balıkçı Dublon Kesesi",
+      "doubloon_sack": "Uzman Dublon Kesesi",
+      "doubloon_chest": "Kaptan Dublon Sandığı",
+      "doubloon_hoard": "Poseidon'un Dublon Hazinesi",
+      "welcome_gift": "Hoş Geldin Hediyesi!",
+      "level_2_reached": "Seviye 2'ye ulaştın!",
+      "claim_gift": "HEDİYEYİ AL",
+      "claim_now": "ŞİMDİ AL"
+    },
+    "boosters": {
+      "out_of": "{booster} bitti mi?",
+      "mega_pack": "Mega Paket",
+      "epic_pack": "Epik Paket",
+      "all_boosters": "{amount}x TÜM Destekleyiciler",
+      "single_booster": "{amount}x {booster}",
+      "how_it_works": "Nasıl çalışır?",
+      "tips": "İpuçları",
+      "harpoon": {
+        "phrase": "O inatçı avları zahmetsizce zıpkınlayın!",
+        "summary": "Tek bir hedefi anında yakalamak için düz bir mızrak fırlatır.",
+        "usage": [
+          "Fırlatmak için dokunun; ileri doğru delip geçer ve ilk geçerli hedefi yakalar.",
+          "Yüksek değerli balıklar veya hassasiyetin önemli olduğu dar koridorlar için en iyisidir.",
+          "Zıpkınla yakalananlar, destekleyici tarafından taşındığı sürece depolama ağırlığına eklenmez."
+        ],
+        "tips": [
+          "Hedef teknenin hattıyla hizalandığında kullanın.",
+          "Zamanın az olduğu kritik anlardan kaçmak için harikadır."
+        ]
+      },
+      "net": {
+        "phrase": "Yolunuzdaki her şeyi toplayın!",
+        "summary": "Yarıçapındaki birden fazla balığı toplayan geniş bir ağ atar.",
+        "usage": [
+          "Kullanmak için dokunun; daire içindeki her şey toplanır.",
+          "Yoğun sürüler ve üst üste binmiş doğuşlar için mükemmeldir.",
+          "Ağ ile yakalananlar, destekleyici tarafından taşındığı sürece depolama ağırlığına eklenmez."
+        ],
+        "tips": [
+          "Değeri en üst düzeye çıkarmak için tetiklemeden önce bir küme bekleyin.",
+          "Büyük grupları süpürmek için yavaş anlarla birleştirin."
+        ]
+      },
+      "tnt": {
+        "phrase": "Patlayıcı bir patlama ile deniz yatağını temizleyin!",
+        "summary": "Engelleri temizlemek ve ganimet toplamak için 3x3'lük bir alanı patlatır.",
+        "usage": [
+          "Yerleştirmek için dokunun; patlama alanı anında temizler.",
+          "Ağır engel bölgeleri ve engellenmiş yollar için idealdir.",
+          "TNT ile toplananlar, destekleyici tarafından taşındığı sürece depolama ağırlığına eklenmez."
+        ],
+        "tips": [
+          "Maksimum etki için engellerin en yoğun olduğu yere bırakın.",
+          "Sıkıştığınızda rotaları açmak için kullanın."
+        ]
+      },
+      "anchor": {
+        "phrase": "Zamanı dondurun ve istediğinizi yakalayın!",
+        "summary": "Güvenli bir şekilde nişan alıp toplayabilmeniz için zamanı kısa süreliğine dondurur.",
+        "usage": [
+          "Etkinleştirmek için dokunun; zaman yavaşlar ve hareket yönetilebilir hale gelir.",
+          "Hassas yakalamalar ve tehlikelerden kaçınmak için en iyisidir.",
+          "Çapa ile toplananlar, destekleyici tarafından taşındığı sürece depolama ağırlığına eklenmez."
+        ],
+        "tips": [
+          "Riskli bir atıştan hemen önce tetikleyin.",
+          "Kancalar azaldığında stabilize etmek için kullanın."
+        ]
+      }
+    }
+  },
+  "garage": {
+    "current_stats": "Güncel Etkin İstatistikler",
+    "storage": "Depo",
+    "swing": "Salınım",
+    "depth": "Derinlik",
+    "casts": "Atış Hakları",
+    "coral": "Mercan",
+    "owned": "Sahip Olundu",
+    "start_fishing": "BALIK TUTMAYA BAŞLA →"
+  },
+  "leaderboard": {
+    "loading": "Skorlar yükleniyor...",
+    "no_scores": "Henüz skor yok. İlk sen ol!",
+    "island": "Ada"
+  },
+  "upgrades": {
+    "storage_capacity": "Depo Kapasitesi",
+    "swing_speed": "Salınım Hızı",
+    "cast_speed": "Fırlatma Hızı",
+    "return_speed": "Geri Çekme Hızı",
+    "hook_depth": "Olta Derinliği",
+    "cast_attempts": "Atış Hakkı",
+    "coral_protection": "Mercan Koruması",
+    "kelp_duration": "Yosun Süresi"
+  },
+  "vehicles": {
+    "t1": { "name": "Dingy", "captain": "Bobber Bill" },
+    "t2": { "name": "Boyalı Sandal", "captain": "Cesur Danny" },
+    "t3": { "name": "Fiberglas", "captain": "Uzman Eddie" },
+    "t4": { "name": "Motorlu Kruvazör", "captain": "Kaptan Ken" },
+    "t5": { "name": "Hız Teknesi", "captain": "Turbo Trev" },
+    "t6": { "name": "Trol Teknesi", "captain": "Sam Amca" },
+    "t7": { "name": "Kaptanın Gemisi", "captain": "Kaptan Theo" },
+    "t8": { "name": "Araştırma Gemisi", "captain": "Profesör Pippa" },
+    "t9": { "name": "Korsan Gemisi", "captain": "Kara Cam" },
+    "t10": { "name": "Efsane", "captain": "Efsanevi Balıkçı" }
+  },
+  "regions": {
+    "r1": "Şafak Koyu",
+    "r2": "Alacakaranlık Resifi",
+    "r3": "Fısıltı Atolleri",
+    "r4": "Abisal Mavi",
+    "r5": "Fırtına Geçidi",
+    "r6": "Aurora Derinlikleri",
+    "r7": "Kızıl Ay",
+    "r8": "Kaos Girdabı",
+    "r9": "Altın Mabedi",
+    "r10": "Efsanenin Sonu"
+  },
+  "levels": {
+    "1": "Sabah Seferi",
+    "2": "Hız Sürprizi",
+    "3": "Yosun Bahçesi",
+    "4": "İlk Market",
+    "5": "Şeker Keşfi",
+    "6": "Hız Testi",
+    "7": "Sandık Keyfi",
+    "8": "Ay Batımı",
+    "9": "Ağırlık Baskısı",
+    "10": "Altın Seviye",
+    "11": "Çapa Tuzağı",
+    "12": "Lav Cazibesi",
+    "13": "Nefes Molası",
+    "14": "Gelgit Fırtınası",
+    "15": "Mercan Cehennemi",
+    "16": "Yaprak Fısıltısı",
+    "17": "İskelet Gecesi",
+    "18": "Girdap Yükseliyor",
+    "19": "Son Nefes",
+    "20": "BOSS: Koy Kraliçesi",
+    "21": "Mercan Şoku",
+    "22": "Çifte Mercan",
+    "23": "Hız Cehennemi",
+    "24": "Nefes Molası",
+    "25": "Galaksi Kapısı",
+    "26": "İskelet Koridoru",
+    "27": "Çifte Girdap",
+    "28": "Olta Denemesi",
+    "29": "Nefes Molası",
+    "30": "BOSS: Altın Mercan",
+    "31": "Derin Açılış",
+    "32": "Kapasite Krizi",
+    "33": "Yağmur Tuzağı",
+    "34": "Nefes Molası",
+    "35": "Kral Fısıltısı",
+    "36": "Karanlık Derinlikler",
+    "37": "Mantar Dansı",
+    "38": "Galaksi Avı",
+    "39": "Son Hamle",
+    "40": "BOSS: Derin Mavi Canavar",
+    "41": "Fırtına Kapısı",
+    "42": "Çifte İskelet",
+    "43": "Kapasite Şoku",
+    "44": "Nefes Molası",
+    "45": "Kral Mevsimi",
+    "46": "Karanlık Koridor",
+    "47": "Mantar Ormanı",
+    "48": "Galaksi Fırtınası",
+    "49": "Son Deneme",
+    "50": "BOSS: Fırtına Lordu",
+    "51": "Aurora Açılışı",
+    "52": "Karanlık Av",
+    "53": "Nefes Molası",
+    "54": "Kral Dalgası",
+    "55": "Mercan Labirenti",
+    "56": "Warp Savaşı",
+    "57": "Sessiz Tehlike",
+    "58": "Aurora Fırtınası",
+    "59": "Kaos Gecesi",
+    "60": "BOSS: Aurora Ejderhası",
+    "61": "Kızıl Ay",
+    "62": "Lanet: Ağır Sular",
+    "63": "Lanet: Hızlı Akıntı",
+    "64": "Nefes Molası",
+    "65": "Lanet: Kör Nokta",
+    "66": "Lanet: Ters Akıntı",
+    "67": "Lanet: Çifte Hasar",
+    "68": "Nefes Molası",
+    "69": "Lanet: Ekonomik Kriz",
+    "70": "BOSS: Kızıl Ay Canavarı",
+    "71": "Boyut Kapısı",
+    "72": "Lanet: Zincirleme Reaksiyon",
+    "73": "Lanet: Görünmez Balık",
+    "74": "Nefes Molası",
+    "75": "Lanet: Geri Sayım",
+    "76": "Lanet: Ters Market",
+    "77": "Lanet: İskelet Ordusu",
+    "78": "Nefes Molası",
+    "79": "Her Şey Aktif",
+    "80": "BOSS: Kaos Lordu",
+    "81": "Altın Karanlık",
+    "82": "Birleşik Lanet I",
+    "83": "Birleşik Lanet II",
+    "84": "Nefes Molası",
+    "85": "Lanet: Zaman Baskısı",
+    "86": "Lanet: Ters Ağırlık",
+    "87": "Lanet: Balık Kaçışı",
+    "88": "Nefes Molası",
+    "89": "Tüm Lanetler",
+    "90": "BOSS: Altın Ejderha",
+    "91": "Son Yolculuk Başlıyor",
+    "92": "Lanet: Zaman Bombası",
+    "93": "Lanet: Karanlık Madde",
+    "94": "Son Nefes",
+    "95": "Birleşik Lanet: Final I",
+    "96": "Birleşik Lanet: Final II",
+    "97": "Birleşik Lanet: Final III",
+    "98": "Sessiz Fırtına",
+    "99": "Tek Şans",
+    "100": "FİNAL BOSS: Efsane Lordu"
+  },
+  "tutorial": {
+    "storage": "Depo sınırına dikkat et! Tekne çok ağırlaşırsa batar.",
+    "tnt": "Alanı temizlemek için TNT'yi sürükle!",
+    "net": "Ağı yaymak için dokun!",
+    "harpoon": "Hızlı balıkları yakalamak için zıpkını nişan al!",
+    "anchor": "Demir atmak için denize dokun!",
+    "garage_rod": "Daha güçlü bir olta daha büyük balıklar yakalar!\nOltanı geliştirmek için buraya dokun.",
+    "garage_storage": "Yeriniz mi bitiyor?\nTeknenizin deposunu genişletmek için buraya dokunun.",
+    "garage_next_boat": "Daha iyi bir tekne için yeterince kazandınız!\nSonraki tekneyi görmek için oka dokunun.",
+    "garage_buy_boat": "{boat} ile tanışın!\nSatın almak ve daha iyi özelliklerle yelken açmak için dokunun."
+  },
+  "region_intros": {
+    "r1": {
+      "title": "Şafak Koyu",
+      "story": "Burası her denizcinin ilk nefesini aldığı yerdir. Sakin görünümünün altında acemileri bekleyen antik batıklar yatar. Şafağın ilk ışıkları sığ sulara vurduğunda, efsane olmayı hayal edenler yelkenlerini ilk kez burada açarlar."
+    },
+    "r2": {
+      "title": "Alacakaranlık Resifi",
+      "story": "Parlayan mercanlar karanlık suları aydınlatarak gizemli Alacakaranlık Resifi'ne vardığınızı haber verir. Güzel ama tehlikeli uçurumlara daldıkça, unutulmuş deniz sakinlerinin fısıltıları dalgalarda yankılanır. Sığ suları fethettiğine göre, buradaki büyülü yaratıklar gelişen yeteneklerini test edecek."
+    },
+    "r3": {
+      "title": "Fısıltı Atolleri",
+      "story": "Göz kamaştırıcı renkleriyle büyüleyici olan bu sular, aslında doğanın en acımasız savaş alanlarından biridir. Yüzeyin altındaki devasa mercan labirentleri hem eşsiz hazineleri hem de kana susamış deniz yaratıklarını gizler."
+    },
+    "r4": {
+      "title": "Abisal Mavi",
+      "story": "Burası ışığın yavaşça solduğu, okyanusun karanlık kalbine inen sınırdır. Yüzeyin tanıdık dalgaları yerini sessiz ve ölümcül girdaplara bırakır. Sadece karanlıkla yüzleşecek kadar cesur olanlar bu mavi cehennemin sırlarını açığa çıkarabilir."
+    },
+    "r5": {
+      "title": "Fırtına Geçidi",
+      "story": "Gökyüzünün sonsuza dek siyah, denizin ise ebediyen öfkeli olduğu bir geçittir. Devasa dalgalar en sağlam gemileri bile ezmek için bekler. Bu geçitten sağ çıkmak bir şans meselesi değil, doğanın gazabına karşı kazanılmış mutlak bir zaferdir."
+    },
+    "r6": {
+      "title": "Aurora Derinlikleri",
+      "story": "Kuzey gökyüzünü taklit eden parıldayan su altı ışıklarıyla aydınlatılan mistik bir diyar. Buradaki akıntılar tuhaf, ritmik desenlerle hareket eder ve sessizlik antik büyüyle ağırlaşmıştır. Işığı takip et, çünkü o sadece layık olanlara rehberlik eder."
+    },
+    "r7": {
+      "title": "Kızıl Ay",
+      "story": "Uğursuz bir kırmızı parıltı çorak manzarayı kaplar ve Kızıl Ay'ın altına adım atmaya cüret eden herkesi uyarır. İntikamcı ruhlar ve kabus gibi canavarlar, senin gibi deneyimli bir savaşçının kokusunu alarak bu lanetli topraklarda dolaşır."
+    },
+    "r8": {
+      "title": "Kaos Girdabı",
+      "story": "Burası zamanın ve yönün okyanusun dibine battığı mistik bir diyardır. Devasa, hiç bitmeyen akıntılar gemileri sonsuz bir sarmala sürükler. Pusulaların çıldırdığı bu sularda denizi değil, kendi zihnini fethetmelisin."
+    },
+    "r9": {
+      "title": "Altın Mabedi",
+      "story": "Sadece adlarını tarihe altın harflerle yazdıracak olanların erişebileceği son sınav. Her bir mil, hayatta kalmak için verilen destansı bir savaştır. Bu koşuyu tamamlayanlar artık sadece birer denizci değil, yaşayan birer efsanedir."
+    },
+    "r10": {
+      "title": "Efsanenin Sonu",
+      "story": "Son savaş alanı olan Efsanenin Sonu'nun önünde durduğunuzda yer sarsılır ve gökyüzü parçalanır. Burası tanrıların düştüğü ve tarihin en büyük kahramanlarının kaderleriyle yüzleştiği kıyamet arenasıdır. Buradaki her canavar düşman dünyayı sarsacak güçtedir."
+    }
+  },
+  "entities": {
+    "bubble": {
+      "name": "Bubble Fish",
+      "story": "Bubble Fish yüzeyde yaşayan fenerler gibi sürüklenir. Pulları ışığı yakalar ve cam gibi parlar. Denizciler, deniz sakinleştiğinde güvenli suyu işaret etmek için toplandıklarını söylerler.",
+      "effect": "Düşük değerli ve hafif, zararsız bir av."
+    },
+    "sakura": {
+      "name": "Sakura Fish",
+      "story": "Sakura Fish her bahar gelgitinde sığlıklarda açar. Sert suları bile sakinleştiren yumuşak, taç yaprağı benzeri kıvrımlarla hareket ederler. Eski kaptanlar onlara okyanusun şans tılsımı derler.",
+      "effect": "Taç yapraklarından bir iz bırakır ve sığ suda hızlı hareket eder."
+    },
+    "zap": {
+      "name": "Zap Fish",
+      "story": "Zap Fish fırtına kuşaklarının içinde doğar ve gök gürültüsünü yanlarında taşır. Vücutları döndüklerinde kıvılcım saçar, suyu ani parlamalarla aydınlatır.",
+      "effect": "Tekneyi 3 saniye boyunca şok eder, diğer balıklara %50 kaçma şansı verir."
+    },
+    "candy": {
+      "name": "Candy Fish",
+      "story": "Candy Fish tatlı yosunların yetiştiği sıcak akıntıların etrafında toplanır. Parlak renkleri rakiplerine bir uyarı, dalgıçlara ise bir fenerdir.",
+      "effect": "Yakalama başına tekne ağırlığını 1 azaltır, en fazla 3 kez."
+    },
+    "moon": {
+      "name": "Moon Fish",
+      "story": "Moon Fish gece gökyüzü açık olduğunda parlar. Sanki sadece kendilerinin duyabildiği gelgitleri dinliyormuş gibi yavaş bir ritimle süzülürler.",
+      "effect": "Diğer tüm balıkları 10 saniye boyunca %40 yavaşlatır."
+    },
+    "lava": {
+      "name": "Lava Fish",
+      "story": "Lava Fish suyun kaynadığı bacaların etrafında yüzer. Isıları arkalarında titreyen bir hava izi bırakır ve varlıkları metalin gıcırdamasına neden olur.",
+      "effect": "Yanma uygular, 5 saniye boyunca saniye başına +1 ağırlık ekler."
+    },
+    "tide": {
+      "name": "Tide Fish",
+      "story": "Tide Fish fırtınaların kenarında torpido gibi yarışır. Yüzgeçleri akıntıda keskin çizgiler açar ve hızları yırtıcıları bile şaşırtır.",
+      "effect": "Tekneyi sallar ve %20 şansla rastgele bir eşya düşürür."
+    },
+    "leaf": {
+      "name": "Leaf Fish",
+      "story": "Leaf Fish görüldüklerinden çok fısıldanırlar. Hafif yosunlar gibi nazik girdaplarda süzülürler ve ilk tehlike belirtisinde kaybolurlar.",
+      "effect": "Yakalama başına pazar değerini kalıcı olarak %10 artırır, en fazla %30."
+    },
+    "crystal": {
+      "name": "Crystal Fish",
+      "story": "Crystal Fish minerallerin çiçek gibi açtığı yavaş mağaralarda büyür. Vücutları ışığı her dönüşte değişen tuhaf renklere kırar.",
+      "effect": "Yakalama anında değer değişir: +50, 0 veya -30 Altın Dublon."
+    },
+    "galaxy": {
+      "name": "Galaxy Fish",
+      "story": "Galaxy Fish akıntılar ve yıldızlar arasında yüzdüğü söylenir. Gözden kaybolup bir anda tekrar belirirler, geride sadece menekşe rengi bir pus bırakırlar.",
+      "effect": "Rastgele bonus verir: +100 Altın Dublon veya +%10 yakıt."
+    },
+    "mushroom": {
+      "name": "Mushroom Fish",
+      "story": "Mushroom Fish kar gibi parıldayan derin sporların arasından süzülür. Yüzgeçleri gövdeye tutunan hafif bir sis bırakır.",
+      "effect": "Envanterdeki rastgele bir balığın pazar değerini ikiye katlar."
+    },
+    "king": {
+      "name": "King Fish",
+      "story": "King Fish yaşayan bir efsanedir ve geçtiği yerde deniz sessizleşir. Pulları dövülmüş zırh gibi altın tonlu ve ağırdır.",
+      "effect": "Küçük balıkları paniğe sevk eder ve pazar değerlerini %20 artırır."
+    },
+    "coral": {
+      "name": "Mercan Resifi",
+      "story": "Mercan Resifi kümeleri deniz yatağının sessiz koruyucularıdır. Loş ışıkta kemik ve cam gibi parlarlar. Onlara dokunan kancalar genellikle kırık veya karışmış olarak döner.",
+      "effect": "Temas halinde bir olta atış hakkını kırar."
+    },
+    "sea_kelp": {
+      "name": "Deniz Yosunu",
+      "story": "Deniz Yosunu okyanus tabanında yavaş şeritler gibi sallanır. Nazik görünür ama bir misinayı şaşırtıcı bir güçle kavrayabilir.",
+      "effect": "Hasar vermeden kancayı kısa süreliğine takar."
+    },
+    "sea_kelp_horizontal": {
+      "name": "Yüzen Yosun",
+      "story": "Yatay Yosun alüvyonun içinde saklanan düz tabakalar halinde büyür. Bir misinayı yakalayabilir ve uyarı yapmadan yana çekebilir.",
+      "effect": "Hasar vermeden kancayı kısa süreliğine takar."
+    },
+    "sea_rock": {
+      "name": "Deniz Kayası",
+      "story": "Deniz Kayaları kıyı şeridinin eski kemikleridir. Bir olta onlara çarpıp kamıştaki gerginliği koparana kadar sessizce otururlar.",
+      "effect": "Çarpma anında kancayı anında geri fırlatır."
+    },
+    "sea_rock_large": {
+      "name": "Büyük Deniz Kayası",
+      "story": "Büyük Deniz Kayaları duvar gibi yükselen gizli resiflerdir. Kütleleri güçlü bir atışı bile yolunda durdurabilir.",
+      "effect": "Çarpma anında kancayı anında geri fırlatır."
+    },
+    "gold_doubloon": {
+      "name": "Altın Dublon",
+      "story": "Altın Dublonlar batıklardan düşen yıldızlar gibi sürüklenir. Karanlıkta parıldarlar ve açgözlüleri tehlikeye çekerler.",
+      "effect": "+10 kg ağırlık ekler ancak seviyeye göre yüksek altın verir."
+    },
+    "whirlpool": {
+      "name": "Girdap",
+      "story": "Girdaplar okyanustaki yaralardır, görüşten daha hızlı dönerler. Güverteyi sarsan düşük bir kükreme ile uğuldarlar.",
+      "effect": "Kanca çok uzun süre kapana kısılırsa tekneyi batırabilir."
+    },
+    "sunken_boat": {
+      "name": "Batık Tekne",
+      "story": "Batık Tekneler eski yolculukların mezarlarıdır. Gövdeleri akıntıda gıcırdar ve gölgeleri derinlerde çok uzağa uzanır.",
+      "effect": "Katı engel, son derece ağır ve güvenli hareketi engeller."
+    },
+    "shark_skeleton": {
+      "name": "Köpekbalığı İskeleti",
+      "story": "Köpekbalığı İskeletleri derinliklerde lanetli kalıntılar gibi sürüklenir. Dalgaların altında verilen savaşların hikayesini anlatırlar.",
+      "effect": "İstenmeyen ağırlık ekler ve altını 10 azaltır."
+    },
+    "env_bubbles": {
+      "name": "Baloncuklar",
+      "story": "Kabarcıklar gizli bacalardan kümeler halinde yükselir. Zararsız görünürler ama dokundukları her şeyin kaldırma kuvvetini değiştirirler.",
+      "effect": "Kanca hızını artırır ve mevcut envanter ağırlığını kalıcı olarak 1 kg azaltır."
+    },
+    "anchor": {
+      "name": "Paslı Çapa",
+      "story": "Paslı Çapalar bir zamanlar gemilerin sakin denizler için dua ettiği yerlerde yatar. Hayatta kalınan ve kaybedilen fırtınaların kalıntılarıdır.",
+      "effect": "Tekneyi anında durdurur ve yakıt tüketimini azaltır."
+    },
+    "shell": {
+      "name": "Deniz Kabuğu",
+      "story": "Deniz Kabukları yumuşak kumun içinde saklanır, bir misinanın nazik dokunuşunu beklerler. Bazıları gizli bir ışık tutuyormuş gibi hafifçe parlar.",
+      "effect": "Yakalama anında +20 Altın Dublon verir."
+    }
+  },
+  "curses": {
+    "none": {
+      "title": "Lanet Yok",
+      "story": "Deniz sakin ve balık bol. Yolculuk için mükemmel bir gün."
+    },
+    "heavy_waters": {
+      "title": "Ağır Sular",
+      "story": "Okyanus sanki pekmezmiş gibi koyulaşır. Her av teknenin gövdesine daha sert asılır ve deponuz normalden daha hızlı dolar."
+    },
+    "fast_current": {
+      "title": "Hızlı Akıntı",
+      "story": "Keskin bir akıntı denizi yarıp geçer ve her şey onunla birlikte hareket eder. Balıklar kancanın yanından zar zor seçilen bir gölge gibi geçerler."
+    },
+    "blind_spot": {
+      "title": "Kör Nokta",
+      "story": "Soğuk bir sis yüzeye çöker ve yukarıdaki denizi yutar. Bir zamanlar net olan her şey artık bir silüettir."
+    },
+    "reverse_current": {
+      "title": "Ters Akıntı",
+      "story": "Akıntı kendi üzerine kıvrılarak her sürünün kafasını karıştırır. Bazı balıklar artık açık suya doğru hücum ederek kancadan kaçar."
+    },
+    "double_damage": {
+      "title": "Çifte Hasar",
+      "story": "Resif düşman kesilir ve her hata iki kat daha derine iner. Kancalar çatlar ve misinalar baskı altında gerilir."
+    },
+    "economic_crisis": {
+      "title": "Ekonomik Kriz",
+      "story": "Kıyı boyunca pazarlar kurur ve fiyatlar düşer. Nadir avlar bile defterde sıradan görünür."
+    },
+    "countdown": {
+      "title": "Geri Sayım",
+      "story": "Ambarınız sanki zaman onu aşındırıyormuş gibi sızdırmaya başlar. Her on saniyede bir alan daralır ve seçimler daha keskin hale gelir."
+    },
+    "skeleton_army": {
+      "title": "İskelet Ordusu",
+      "story": "Kemikler derinlerden yürüyen bir gelgit gibi yükselir. Su, yükünüzü tüketen soluk şekillerle dolar."
+    },
+    "fish_escape": {
+      "title": "Balık Kaçışı",
+      "story": "Bu gece balıklar ürkek, son saniyede kurtulup kaçıyorlar. Misinalar gevşiyor ve boş kancalar sessizce geri dönüyor."
+    },
+    "time_bomb": {
+      "title": "Zaman Bombası",
+      "story": "Kargonuz dengesizleşiyor, görünmez eller tarafından kapılmış gibi yok oluyor. Her sekiz saniyede bir şey derinliklerde kayboluyor."
+    },
+    "dark_matter": {
+      "title": "Karanlık Madde",
+      "story": "Deniz yatağı gölgelerle kaplı ve dünya eksik hissettiriyor. Resifleri hissedebiliyorsun ama göremiyorsun."
+    },
+    "chain_reaction": {
+      "title": "Zincirleme Reaksiyon",
+      "story": "Bir balık yükseldiğinde, diğerleri sanki kadere bağlıymış gibi onu takip eder. Su ani ve bağlantılı bir hareketle çalkalanır."
+    },
+    "invisible_fish": {
+      "title": "Görünmez Balık",
+      "story": "Deniz hayaletlerle dolu. Sıçramaları duyabiliyor ve akıntının değiştiğini hissedebiliyorsun ama balıkların kendileri görünmüyor."
+    },
+    "reverse_market": {
+      "title": "Ters Pazar",
+      "story": "Tüccarlar defterlerini ters çevirir ve kârınız küçülür. Mallar daha pahalıya mal olur ve satışlar yolculuğu zar zor karşılar."
+    },
+    "random_loop": {
+      "title": "Rastgele Döngü",
+      "story": "Misina sanki huzursuz rüzgarlara yakalanmış gibi yalpalar. Kancanın ritmi asla uzun süre aynı kalmaz."
+    },
+    "reverse_weight": {
+      "title": "Ters Ağırlık",
+      "story": "Teraziler yalan söyler ve ambar olduğundan daha hafif hissettirir. Güvenli görünen şeyler yine de sizi batırabilir."
+    },
+    "random_curse": {
+      "title": "Rastgele Lanet",
+      "story": "Okyanus tek bir kurala bağlı kalmayı reddediyor. Her on beş saniyede bir yeni bir tehlike yükselir ve eskisi kaybolur."
+    },
+    "combo_1": {
+      "title": "Kombo I: Ağır Sular + Hızlı Akıntı",
+      "story": "İki lanet birleşerek tek ve ezici bir gelgit oluşturuyor. Su yoğun ve balıklar hızlı, hem güç hem de hız gerektiriyor."
+    },
+    "combo_2": {
+      "title": "Kombo II: Ekonomik Kriz + Çifte Hasar",
+      "story": "Pazar çökerken resifler daha da keskinleşiyor. Her hata artık zaman ve değer olarak iki katına mal oluyor."
+    },
+    "combo_3": {
+      "title": "Kombo III: Ağır + Hızlı + Ekonomik",
+      "story": "Bu, tüm zorlukların aynı anda yaşandığı bir fırtına. Balıklar daha ağır, daha hızlı ve eskisinden daha değersiz."
+    },
+    "final_1": {
+      "title": "Final I: Görünmez Balık + İskelet Ordusu + Çifte Hasar",
+      "story": "Abis avını gizler ve suyu kemiklerle doldurur. Çarpmayı göze alamayacağınız şeylerden kaçınırken göremediğiniz şeyleri yakalamalısınız."
+    },
+    "final_2": {
+      "title": "Final II: Geri Sayım + Zincirleme Reaksiyon + Hızlı Akıntı",
+      "story": "Zaman daralıyor ve deniz ileriye doğru yarışıyor. Balıklar her zamankinden daha hızlı akın ederken ambarınız küçülüyor."
+    },
+    "final_3": {
+      "title": "Final III: Ters Pazar + Balık Kaçışı",
+      "story": "Pazar size karşı dönüyor ve balıklar kalmayı reddediyor. Her çekiş ellerinizde yok olup gidiyor gibi."
+    },
+    "one_chance": {
+      "title": "Tek Şans",
+      "story": "Tek bir atış yolculuğun sonucunu belirler. İkinci bir şans, yedek bir misina yok. Deniz izliyor ve hamleni bekliyor."
+    },
+    "card": {
+      "label": "Lanetli Bölüm",
+      "start": "Bölüme Başla"
+    }
+  }
+}

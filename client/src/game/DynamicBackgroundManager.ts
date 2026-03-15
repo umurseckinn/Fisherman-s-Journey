@@ -251,7 +251,7 @@ export class DynamicBackgroundManager {
 
         if (this.flashOpacity > 0) {
             ctx.fillStyle = `rgba(255, 255, 255, ${this.flashOpacity})`;
-            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctx.fillRect(-5, -5, CANVAS_WIDTH + 10, CANVAS_HEIGHT + 10);
         }
 
         this.drawFloor(ctx);
@@ -262,13 +262,15 @@ export class DynamicBackgroundManager {
         skyGrad.addColorStop(0, theme.skyTop);
         skyGrad.addColorStop(1, theme.skyBottom);
         ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, CANVAS_WIDTH, SEA_LEVEL_Y);
+        // Overdraw horizontally and at the top edge
+        ctx.fillRect(-5, -5, CANVAS_WIDTH + 10, (SEA_LEVEL_Y | 0) + 5);
 
         const seaGrad = ctx.createLinearGradient(0, SEA_LEVEL_Y, 0, CANVAS_HEIGHT);
         seaGrad.addColorStop(0, theme.seaTop);
         seaGrad.addColorStop(1, theme.seaBottom);
         ctx.fillStyle = seaGrad;
-        ctx.fillRect(0, SEA_LEVEL_Y, CANVAS_WIDTH, CANVAS_HEIGHT - SEA_LEVEL_Y);
+        // Overdraw horizontally and at the bottom edge
+        ctx.fillRect(-5, (SEA_LEVEL_Y | 0), CANVAS_WIDTH + 10, (CANVAS_HEIGHT - SEA_LEVEL_Y + 10) | 0);
     }
 
     private drawGodRays(ctx: CanvasRenderingContext2D, theme: BackgroundTheme) {
@@ -320,17 +322,19 @@ export class DynamicBackgroundManager {
             ctx.fillStyle = theme.bubbleColor;
 
             if (theme.particleType === 'dust') {
-                ctx.fillRect(p.x, p.y, p.size * 0.5, p.size * 0.5);
+                ctx.fillRect(p.x | 0, p.y | 0, (p.size * 0.5) | 0, (p.size * 0.5) | 0);
             } else if (theme.particleType === 'tempest') {
                 ctx.strokeStyle = theme.bubbleColor;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p.x - 5, p.y + 15);
+                const px = p.x | 0;
+                const py = p.y | 0;
+                ctx.moveTo(px, py);
+                ctx.lineTo(px - 5, py + 15);
                 ctx.stroke();
             } else {
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size * 0.8, 0, Math.PI * 2);
+                ctx.arc(p.x | 0, p.y | 0, (p.size * 0.8) | 0, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
                 ctx.stroke();
@@ -341,13 +345,14 @@ export class DynamicBackgroundManager {
 
     private drawFloor(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
-        ctx.moveTo(0, CANVAS_HEIGHT - 20);
-        ctx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - 20);
+        const floorY = (CANVAS_HEIGHT - 20) | 0;
+        ctx.moveTo(-5, floorY);
+        ctx.lineTo(CANVAS_WIDTH + 5, floorY);
         ctx.strokeStyle = 'rgba(255, 240, 180, 0.5)';
         ctx.lineWidth = 4;
         ctx.stroke();
 
         ctx.fillStyle = 'rgba(26, 15, 10, 0.8)';
-        ctx.fillRect(0, CANVAS_HEIGHT - 18, CANVAS_WIDTH, 18);
+        ctx.fillRect(-5, (CANVAS_HEIGHT - 18) | 0, CANVAS_WIDTH + 10, 23); // Extra height to cover bottom edge
     }
 }

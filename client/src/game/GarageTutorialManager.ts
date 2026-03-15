@@ -5,6 +5,8 @@
  * Features fixed backdrop, spotlight targeting, and floating instructional text.
  */
 
+import { t } from "../lib/i18n";
+
 export type GarageStep = 'none' | 'rod_intro' | 'storage_intro' | 'boat_step_1' | 'boat_step_2';
 
 export class GarageTutorialManager {
@@ -104,19 +106,21 @@ export class GarageTutorialManager {
         switch (this.activeStep) {
             case 'rod_intro':
                 targetId = 'rod-upgrade-btn';
-                text = "A stronger rod catches bigger fish!\nTap here to upgrade your Rod.";
+                text = t('tutorial.garage_rod', "A stronger rod catches bigger fish!\nTap here to upgrade your Rod.");
                 break;
             case 'storage_intro':
                 targetId = 'storage-upgrade-btn';
-                text = "Running out of space?\nTap here to expand your boat's storage.";
+                text = t('tutorial.garage_storage', "Running out of space?\nTap here to expand your boat's storage.");
                 break;
             case 'boat_step_1':
                 targetId = 'next-boat-btn';
-                text = "Earned enough for a better vessel!\nTap the arrow to see the next boat.";
+                text = t('tutorial.garage_next_boat', "Earned enough for a better vessel!\nTap the arrow to see the next boat.");
                 break;
             case 'boat_step_2':
                 targetId = 'buy-boat-btn';
-                text = "Meet The Painted Skiff!\nTap to purchase and set sail with better stats.";
+                // Find boat name
+                const boatName = document.querySelector('#buy-boat-btn .boat-name')?.textContent || "The Painted Skiff";
+                text = t('tutorial.garage_buy_boat', "Meet {boat}!\nTap to purchase and set sail with better stats.", { boat: boatName });
                 break;
         }
 

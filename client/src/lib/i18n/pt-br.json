@@ -1,0 +1,690 @@
+{
+  "common": {
+    "buy": "COMPRAR",
+    "active": "ATIVO",
+    "repair_rod": "Reparar Vara",
+    "game_over": "FIM DE JOGO",
+    "score": "Pontuação",
+    "coins": "Moedas",
+    "fuel": "Combustível",
+    "weight": "Peso",
+    "storage": "Carga",
+    "level": "Nível",
+    "region": "Região",
+    "capacity": "Capacidade",
+    "speed": "Velocidade",
+    "depth": "Profundidade",
+    "attempts": "Tentativas",
+    "protection": "Proteção",
+    "reduction": "Redução",
+    "info": "INFO",
+    "tap_anywhere": "Toque em qualquer lugar para continuar",
+    "kg": "kg",
+    "story": "História",
+    "ability_effect": "Habilidade / Efeito",
+    "type": "Tipo",
+    "radius": "Raio",
+    "aspect": "Aspecto",
+    "obstacle": "Obstáculo",
+    "catchable": "Capturável",
+    "close": "Fechar",
+    "visibility": "Visibilidade",
+    "direction": "Direção",
+    "coral": "Coral",
+    "curse": "MALDIÇÃO",
+    "value": "Valor",
+    "spawn": "Surgimento",
+    "escape": "Fuga",
+    "inventory": "Inventário",
+    "obstacles": "Obstáculos",
+    "chain": "Corrente",
+    "prices": "Preços",
+    "swing": "Balanço",
+    "gauge": "Medidor",
+    "cycle": "Ciclo",
+    "owned": "Possuído",
+    "unlocked": "Desbloqueado",
+    "locked": "Bloqueado",
+    "buy_now": "COMPRAR AGORA",
+    "select": "SELECIONAR",
+    "selected": "SELECIONADO",
+    "min_level": "Nível Mín. {level}",
+    "storage_lv": "Carga Nív{level}",
+    "rod_lv": "Vara Nív{level}",
+    "storage_max": "Carga MÁX",
+    "rod_max": "Vara MÁX",
+    "effective_stats": "Atributos Atuais",
+    "start_fishing": "COMEÇAR A PESCAR →",
+    "loading": "Carregando...",
+    "hall_of_fame": "Salão da Fama",
+    "top_fishermen": "Melhores pescadores lendários",
+    "no_scores": "Sem pontuações ainda. Seja o primeiro!",
+    "island": "Ilha",
+    "island_level": "Nível da Ilha {level}",
+    "training_bay": "Baía de Treinamento",
+    "tutorial_harbor": "Porto do Tutorial",
+    "unknown_waters": "Águas Desconhecidas",
+    "deep_sea_market": "Mercado do Mar Profundo",
+    "deep_voyage": "Viagem Profunda",
+    "sell_haul": "Venda sua Pesca",
+    "fish_count": "{count} Peixes",
+    "empty_nets": "Redes vazias...",
+    "sell_all": "Vender Tudo",
+    "boat_services": "Serviços do Barco",
+    "refill_fuel": "Abastecer",
+    "repair_rod_btn": "Reparar Vara",
+    "needs_fuel": "Precisa de Combustível",
+    "set_sail_btn": "Zarpar!",
+    "end_journey_confirm": "Encerrar jornada atual? Todo o progresso será perdido!",
+    "end_journey_reason": "Sem Combustível! A jornada terminou no mercado.",
+    "end_journey_btn": "Encerrar Jornada (Desistir)",
+    "you_won": "Você Venceu",
+    "you_won_msg": "Você chegou a todas as ilhas. Foi uma jornada lendária!",
+    "restart_btn": "REINICIAR",
+    "boss": "CHEFE",
+    "checkpoint": "CHECKPOINT",
+    "language": "Idioma",
+    "free": "GRÁTIS",
+    "most_popular": "MAIS POPULAR",
+    "best_value": "MELHOR VALOR",
+    "snaps_hook": "Quebra o anzol!",
+    "danger": "Perigo!",
+    "boost": "Impulso 💨",
+    "harpoon": "Arpão",
+    "net": "Rede",
+    "tnt": "Dinamite",
+    "anchor_booster": "Âncora"
+  },
+  "game": {
+    "over": {
+      "boat_sank": "O barco afundou! Ele foi esmagado pelo excesso de carga.",
+      "no_hooks": "Vara de pesca inutilizável! Todos os anzóis quebraram."
+    },
+    "hud": {
+      "weight": "{current} / {max} kg",
+      "score": "{score} 🪙",
+      "storage": "Carga",
+      "hook": "Anzol",
+      "storage_almost_full": "CARGA QUASE CHEIA! ⚠️",
+      "boat_sinking": "BARCO AFUNDANDO! CARGA CHEIA! 🚨"
+    },
+    "feedback": {
+      "legendary": "LENDÁRIO!",
+      "rod_broken": "VARA QUEBRADA!",
+      "combo_2": "2 SEGUIDOS!",
+      "combo_3": "COMBO x3!",
+      "combo_5": "PEGANDO FOGO x5!",
+      "combo_7": "IMPARÁVEL x7!",
+      "combo_poseidon": "POSEIDON! x{combo}",
+      "weight_reduced": "-1 kg"
+    }
+  },
+  "ui": {
+    "storage_full": "Carga Cheia!",
+    "out_of_fuel": "Sem Combustível!",
+    "rod_broken": "Vara Quebrada!",
+    "level_complete": "Nível Concluído!",
+    "next_level": "Próximo Nível",
+    "try_again": "Tentar Novamente",
+    "back_to_home": "Início",
+    "garage": "Garagem",
+    "leaderboard": "Ranking",
+    "settings": "Configurações",
+    "repair_cost": "Custo de Reparo",
+    "unlock_cost": "Custo de Desbloqueio",
+    "insufficient_balance": "Saldo Insuficiente!",
+    "need_fuel_msg": "Você precisa de {cost} 🪙 para comprar combustível. Use um Cartão de Passe ou escolha uma opção.",
+    "use_pass_card": "Usar Cartão de Passe",
+    "get_pass_cards": "Obter Mais Cartões",
+    "watch_ad": "Ver Anúncio (+50 🪙)",
+    "back_to_market": "Voltar ao Mercado",
+    "give_up": "Desistir (Encerrar Jornada)",
+    "repair_needed": "Reparo Necessário!",
+    "need_repair_msg": "Você precisa de {cost} 🪙 para reparar a vara. Escolha uma opção para continuar.",
+    "get_more_doubloons": "Obter Mais Dobrões",
+    "watch_ad_amount": "Ver Anúncio (+{amount} 🪙)",
+    "island_select": "Seleção de Ilha",
+    "explorer_mode": "🗺️ MODO EXPLORADOR",
+    "prev_stage": "Fase Ant.",
+    "next_stage": "Próxima Fase",
+    "set_sail": "Zarpar!",
+    "level_locked_msg": "Você ainda não tem acesso a este nível! Complete os níveis anteriores primeiro.",
+    "tutorial": "Tutorial",
+    "new_region": "Nova Região",
+    "back_to_level_select": "VOLTAR À SELEÇÃO DE NÍVEL",
+    "island_clear": "Ilha Concluída!",
+    "refueling_msg": "Abastecendo para a próxima viagem...",
+    "current_gold": "Dobrões de Ouro Atuais",
+    "fuel_cost": "Custo de Combustível",
+    "remaining": "Restante",
+    "travel_to_island": "Viajar para Ilha {island}",
+    "rod_broken_title": "Ops! Vara Quebrada!",
+    "boat_sunk_title": "Excesso de Peso! Barco Afundou!",
+    "out_of_fuel_title": "À Deriva! Sem Combustível!",
+    "island_reached": "Ilha {island} Alcançada",
+    "new_record": "NOVO RECORDE!",
+    "total_score": "PONTUAÇÃO TOTAL",
+    "base_score": "Pontuação Base",
+    "depth_bonus": "Bônus de Profundidade",
+    "king_bounty": "Recompensa Real",
+    "vault_earnings": "Ganhos do Cofre",
+    "menu": "MENU",
+    "retry": "TENTAR",
+    "play_tutorial": "JOGAR TUTORIAL",
+    "play_game": "JOGAR",
+    "levels_title": "NÍVEIS",
+    "admin_mode_msg": "Seleção de modo admin",
+    "unlocked_up_to": "Desbloqueado até N{level}",
+    "admin_mode": "Modo Admin",
+    "select_level": "Selecionar Nível",
+    "reset_confirm": "Tem certeza? Isso resetará todo o seu progresso!",
+    "reset_progress": "Resetar Progresso",
+    "logo_text": "O Canto do Pescador",
+    "shop": {
+      "pass_pouch": "Bolsa de Passe Básica",
+      "pass_sack": "Saco de Passe Popular",
+      "pass_chest": "Baú de Passe do Capitão",
+      "doubloon_pouch": "Bolsa de Dobrões do Pescador",
+      "doubloon_sack": "Saco de Dobrões do Especialista",
+      "doubloon_chest": "Baú de Dobrões do Capitão",
+      "doubloon_hoard": "Tesouro de Dobrões de Poseidon",
+      "welcome_gift": "Presente de Boas-Vindas!",
+      "level_2_reached": "Você chegou ao Nível 2!",
+      "claim_gift": "RESGATAR PRESENTE",
+      "claim_now": "RESGATAR AGORA"
+    },
+    "boosters": {
+      "out_of": "Sem {booster}?",
+      "mega_pack": "Mega Pacote",
+      "epic_pack": "Pacote Épico",
+      "all_boosters": "{amount}x TODOS os Impulsos",
+      "single_booster": "{amount}x {booster}",
+      "how_it_works": "Como funciona",
+      "tips": "Dicas",
+      "harpoon": {
+        "phrase": "Arpoeie aquelas capturas teimosas sem esforço!",
+        "summary": "Dispara um arpão reto para pegar um único alvo instantaneamente.",
+        "usage": [
+          "Toque para lançar; ele perfura para frente e pega o primeiro alvo válido.",
+          "Ideal para peixes valiosos ou corredores apertados onde a precisão importa.",
+          "As capturas do arpão não adicionam peso à carga enquanto transportadas pelo impulso."
+        ],
+        "tips": [
+          "Use enquanto o alvo estiver alinhado com a linha do barco.",
+          "Ótimo para momentos críticos quando o tempo está acabando."
+        ]
+      },
+      "net": {
+        "phrase": "Recolha tudo em seu caminho!",
+        "summary": "Lança uma rede ampla que reúne vários peixes em seu raio.",
+        "usage": [
+          "Toque para implantar; tudo dentro do círculo é coletado.",
+          "Perfeito para cardumes densos e surgimentos acumulados.",
+          "As capturas da rede não adicionam peso à carga enquanto transportadas pelo impulso."
+        ],
+        "tips": [
+          "Espere por um grupo antes de ativar para maximizar o valor.",
+          "Combine com momentos lentos para varrer grandes grupos."
+        ]
+      },
+      "tnt": {
+        "phrase": "Limpe o fundo do mar com uma explosão!",
+        "summary": "Detona uma área 3x3 para limpar obstáculos e pegar saques.",
+        "usage": [
+          "Toque para colocar; a explosão limpa a grade instantaneamente.",
+          "Ideal para zonas com muitos obstáculos e caminhos bloqueados.",
+          "As capturas da dinamite não adicionam peso à carga enquanto transportadas pelo impulso."
+        ],
+        "tips": [
+          "Solte onde os obstáculos são mais densos para máximo impacto.",
+          "Use para abrir rotas quando estiver preso."
+        ]
+      },
+      "anchor": {
+        "phrase": "Congele o tempo e pegue o que quiser!",
+        "summary": "Congele o tempo brevemente para mirar e coletar com segurança.",
+        "usage": [
+          "Toque para ativar; o tempo desacelera e o movimento torna-se controlável.",
+          "Melhor para capturas precisas e evitar perigos.",
+          "As capturas da âncora não adicionam peso à carga enquanto transportadas pelo impulso."
+        ],
+        "tips": [
+          "Ative logo antes de um lançamento arriscado.",
+          "Use para estabilizar quando os anzóis estiverem acabando."
+        ]
+      }
+    }
+  },
+  "garage": {
+    "current_stats": "Atributos Atuais",
+    "storage": "Carga",
+    "swing": "Balanço",
+    "depth": "Profundidade",
+    "casts": "Lançamentos",
+    "coral": "Coral",
+    "owned": "Possuído",
+    "start_fishing": "COMEÇAR A PESCAR →"
+  },
+  "leaderboard": {
+    "loading": "Carregando pontuações...",
+    "no_scores": "Sem pontuações ainda. Seja o primeiro!",
+    "island": "Ilha"
+  },
+  "upgrades": {
+    "storage_capacity": "Capacidade de Carga",
+    "swing_speed": "Velocidade de Balanço",
+    "cast_speed": "Velocidade de Lançamento",
+    "return_speed": "Velocidade de Retorno",
+    "hook_depth": "Profundidade do Anzol",
+    "cast_attempts": "Tentativas de Lançamento",
+    "coral_protection": "Proteção contra Coral",
+    "kelp_duration": "Duração das Algas"
+  },
+  "vehicles": {
+    "t1": { "name": "O Barquinho", "captain": "Bill Boia" },
+    "t2": { "name": "O Esquife Pintado", "captain": "Danny Ousado" },
+    "t3": { "name": "O de Fibra de Vidro", "captain": "Eddie Experiente" },
+    "t4": { "name": "O Cruzador a Motor", "captain": "Capitão Ken" },
+    "t5": { "name": "O Velocista", "captain": "Trev Turbo" },
+    "t6": { "name": "A Traineira", "captain": "Sam Marinheiro" },
+    "t7": { "name": "O Navio do Capitão", "captain": "Capitão Theo" },
+    "t8": { "name": "O Navio de Pesquisa", "captain": "Professora Pippa" },
+    "t9": { "name": "O Corsário", "captain": "Cam Negro" },
+    "t10": { "name": "A Lenda", "captain": "O Pescador Lendário" }
+  },
+  "regions": {
+    "r1": "Enseada do Alvorecer",
+    "r2": "Recife do Crepúsculo",
+    "r3": "Atóis Sussurrantes",
+    "r4": "Azul Abissal",
+    "r5": "Estreito da Tempestade",
+    "r6": "Profundezas da Aurora",
+    "r7": "Lua Carmesim",
+    "r8": "Vórtice do Caos",
+    "r9": "Santuário Dourado",
+    "r10": "Fim da Lenda"
+  },
+  "levels": {
+    "1": "Corrida Matinal",
+    "2": "Surpresa Veloz",
+    "3": "Jardim de Algas",
+    "4": "Primeiro Mercado",
+    "5": "Descoberta Doce",
+    "6": "Teste de Velocidade",
+    "7": "Delícia do Baú",
+    "8": "Queda da Lua",
+    "9": "Pressão do Peso",
+    "10": "Nível Dourado",
+    "11": "Armadilha de Âncora",
+    "12": "Tentação de Lava",
+    "13": "Respiro",
+    "14": "Tempestade de Maré",
+    "15": "Inferno de Coral",
+    "16": "Sussurro das Folhas",
+    "17": "Noite de Esqueleto",
+    "18": "O Redemoinho Sobe",
+    "19": "Último Suspiro",
+    "20": "CHEFE: Rainha da Enseada",
+    "21": "Choque de Coral",
+    "22": "Coral Duplo",
+    "23": "Inferno de Velocidade",
+    "24": "Respiro",
+    "25": "Portão da Galáxia",
+    "26": "Corredor de Esqueleto",
+    "27": "Redemoinho Duplo",
+    "28": "Prova da Vara",
+    "29": "Respiro",
+    "30": "CHEFE: Coral Dourado",
+    "31": "Abertura Profunda",
+    "32": "Crise de Capacidade",
+    "33": "Armadilha de Chuva",
+    "34": "Respiro",
+    "35": "Sussurro do Rei",
+    "36": "Profundezas Sombrias",
+    "37": "Dança dos Cogumelos",
+    "38": "Caça Galáctica",
+    "39": "Movimento Final",
+    "40": "CHEFE: Fera Azul Profunda",
+    "41": "Portão da Tempestade",
+    "42": "Esqueleto Duplo",
+    "43": "Choque de Capacidade",
+    "44": "Respiro",
+    "45": "Temporada do Rei",
+    "46": "Corredor Escuro",
+    "47": "Floresta de Cogumelos",
+    "48": "Tempestade Galáctica",
+    "49": "Prova Final",
+    "50": "CHEFE: Senhor da Tempestade",
+    "51": "Abertura da Aurora",
+    "52": "Caça Sombria",
+    "53": "Respiro",
+    "54": "Onda do Rei",
+    "55": "Labirinto de Coral",
+    "56": "Guerra de Dobra",
+    "57": "Perigo Silencioso",
+    "58": "Tempestade de Aurora",
+    "59": "Noite de Caos",
+    "60": "CHEFE: Dragão da Aurora",
+    "61": "Lua Carmesim",
+    "62": "Maldição: Águas Pesadas",
+    "63": "Maldição: Corrente Rápida",
+    "64": "Respiro",
+    "65": "Maldição: Ponto Cego",
+    "66": "Maldição: Corrente Reversa",
+    "67": "Maldição: Dano Duplo",
+    "68": "Respiro",
+    "69": "Maldição: Crise Econômica",
+    "70": "CHEFE: Fera da Lua Carmesim",
+    "71": "Portão Dimensional",
+    "72": "Maldição: Reação em Cadeia",
+    "73": "Maldição: Peixe Invisível",
+    "74": "Respiro",
+    "75": "Maldição: Contagem Regressiva",
+    "76": "Maldição: Mercado Reverso",
+    "77": "Maldição: Exército de Esqueletos",
+    "78": "Respiro",
+    "79": "Tudo Ativo",
+    "80": "CHEFE: Senhor do Caos",
+    "81": "Escuridão Dourada",
+    "82": "Maldição Combinada I",
+    "83": "Maldição Combinada II",
+    "84": "Respiro",
+    "85": "Maldição: Pressão de Tempo",
+    "86": "Maldição: Peso Reverso",
+    "87": "Maldição: Fuga de Peixes",
+    "88": "Respiro",
+    "89": "Todas as Maldições",
+    "90": "CHEFE: Dragão Dourado",
+    "91": "A Viagem Final Começa",
+    "92": "Maldição: Bomba Relógio",
+    "93": "Maldição: Matéria Escura",
+    "94": "Último Suspiro",
+    "95": "Maldição Combinada: Final I",
+    "96": "Maldição Combinada: Final II",
+    "97": "Maldição Combinada: Final III",
+    "98": "Tempestade Silenciosa",
+    "99": "Uma Chance",
+    "100": "CHEFE FINAL: Senhor das Lendas"
+  },
+  "tutorial": {
+    "storage": "Cuidado com o limite de Carga! Se o seu barco ficar muito pesado, ele afundará.",
+    "tnt": "Arraste a Dinamite para limpar a área!",
+    "net": "Toque para lançar a rede!",
+    "harpoon": "Mire o arpão para pegar peixes velozes!",
+    "anchor": "Toque no mar para soltar a âncora!",
+    "garage_rod": "Uma vara mais forte pega peixes maiores!\nToque aqui para melhorar sua Vara.",
+    "garage_storage": "Ficando sem espaço?\nToque aqui para expandir a carga do seu barco.",
+    "garage_next_boat": "Ganhou o suficiente para um navio melhor!\nToque na seta para ver o próximo barco.",
+    "garage_buy_boat": "Conheça o {boat}!\nToque para comprar e zarpar com melhores atributos."
+  },
+  "region_intros": {
+    "r1": {
+      "title": "Enseada do Alvorecer",
+      "story": "É aqui que todo marinheiro respira pela primeira vez. Sob seu exterior calmo encontram-se antigos naufrágios esperando por novatos. Quando a primeira luz do amanhecer atinge as águas rasas, aqueles que sonham em se tornar lendas içam suas velas aqui pela primeiríssima vez."
+    },
+    "r2": {
+      "title": "Recife do Crepúsculo",
+      "story": "Os corais brilhantes iluminam as águas escuras, marcando sua chegada ao misterioso Recife do Crepúsculo. Sussurros de antigos habitantes do mar ecoam pelas marés enquanto você mergulha mais fundo no belo, porém traiçoeiro, abismo. Agora que você domina o raso, as criaturas encantadas aqui testarão suas crescentes habilidades de combate. Equipe seu traje de mergulho e prepare-se para enfrentar as sombras à espreita nos vibrantes labirintos de coral. Clique aqui para mergulhar na aventura e conquistar os segredos submersos esperando entre os níveis 11 e 20!"
+    },
+    "r3": {
+      "title": "Os Atóis Sussurrantes",
+      "story": "Hipnotizantes com suas cores deslumbrantes, estas águas são, na verdade, um dos campos de batalha mais implacáveis da natureza. Os enormes labirintos de coral abaixo da superfície escondem tesouros inigualáveis e criaturas marinhas sedentas. Apenas aqueles com instintos aguçados podem seguir em frente."
+    },
+    "r4": {
+      "title": "O Azul Abissal",
+      "story": "Esta é a fronteira onde a luz desaparece lentamente, descendo ao coração sombrio do oceano. As ondas familiares da superfície dão lugar a redemoinhos silenciosos e mortais. Apenas aqueles corajosos o suficiente para enfrentar a escuridão podem desenterrar os segredos deste inferno azul."
+    },
+    "r5": {
+      "title": "Estreito da Tempestade",
+      "story": "É uma passagem onde o céu é eternamente negro e o mar é eternamente furioso. Ondas colossais esperam para esmagar até os navios mais resistentes. Sobreviver a este estreito não é uma questão de sorte, mas uma vitória absoluta conquistada contra a fúria da natureza."
+    },
+    "r6": {
+      "title": "Profundezas da Aurora",
+      "story": "Um reino místico iluminado por luzes subaquáticas cintilantes que imitam o céu do norte. As correntes aqui se movem em padrões estranhos e rítmicos, e o silêncio é pesado com magia antiga. Observe o brilho, pois ele guia os dignos."
+    },
+    "r7": {
+      "title": "Lua Carmesim",
+      "story": "Um brilho vermelho sinistro banha a paisagem estéril, avisando a todos que ousam pisar sob a Lua Carmesim. Espíritos vingativos e feras de pesadelo vagam por estas terras assombradas, atraídos pelo cheiro de um guerreiro experiente como você. Apenas aqueles que sobreviveram a inúmeras batalhas podem esperar resistir à corrupção enlouquecedora deste reino sombrio. Afie suas melhores armas e prepare sua mente para as terríveis provações que esperam nas sombras. Entre no luar sangrento hoje e prove seu valor nos desafios mortais dos níveis 61 a 70!"
+    },
+    "r8": {
+      "title": "Vórtice do Caos",
+      "story": "Este é un reino místico onde o tempo e a direção afundam no fundo do oceano. Correntes massivas e intermináveis arrastam os navios para uma espiral sem fim. Nestas águas onde as bússolas enlouquecem, você deve conquistar não o mar, mas sua própria mente."
+    },
+    "r9": {
+      "title": "Santuário Dourado",
+      "story": "A prova final acessível apenas para aqueles que escreverão seus nomes na história com letras de ouro. Cada milha é uma batalha épica pela sobrevivência. Aqueles que completam esta corrida não são mais meros marinheiros, mas lendas vivas."
+    },
+    "r10": {
+      "title": "Fim da Lenda",
+      "story": "A terra treme e os céus se partem enquanto você finalmente está diante do campo de batalha definitivo, o Fim da Lenda. Esta é a arena apocalíptica onde deuses caíram e os maiores heróis da história encontraram seu destino. Cada inimigo monstruoso aqui possui um poder que acaba com o mundo, exigindo perfeição absoluta e domínio tático de suas habilidades. Reúna seus artefatos mais lendários e forme suas alianças mais fortes, pois esta expedição final decidirá o destino de tudo. Aceite seu destino supremo agora e reivindique sua glória eterna conquistando os desafios supremos dos níveis 91 a 100!"
+    }
+  },
+  "entities": {
+    "bubble": {
+      "name": "Peixe Bolha",
+      "story": "Os Peixes Bolha flutuam perto da superfície como lanternas vivas. Suas escamas captam a luz e brilham com um reflexo vítreo. Os marinheiros dizem que eles se reúnem quando o mar está calmo para marcar águas seguras. Eles raramente viajam sozinhos, transformando a superfície em uma constelação flutuante.",
+      "effect": "Captura inofensiva com baixo valor e peso leve."
+    },
+    "sakura": {
+      "name": "Peixe Sakura",
+      "story": "Os Peixes Sakura florescem no raso a cada maré de primavera. Eles se movem em redemoinhos suaves, como pétalas, que acalmam até as águas agitadas. Antigos capitães os chamam de amuleto da sorte do oceano porque seu rastro aponta para passagens seguras. Dizem que pegar um torna a próxima jornada mais gentil.",
+      "effect": "Deixa um rastro de pétalas e move-se rapidamente em águas rasas."
+    },
+    "zap": {
+      "name": "Peixe Zap",
+      "story": "Os Peixes Zap nascem dentro de faixas de tempestade e carregam o trovão com eles. Seus corpos soltam faíscas quando giram, iluminando a água em flashes repentinos. Os pescadores os respeitam porque um único choque pode mudar a pesca do dia. Eles nunca desaceleram, a menos que o próprio mar o faça.",
+      "effect": "Dá choque no barco por 3s, dando 50% de chance de fuga a outros peixes."
+    },
+    "candy": {
+      "name": "Peixe Doce",
+      "story": "Os Peixes Doce reúnem-se em torno de correntes quentes onde crescem algas doces. Suas cores vibrantes são um aviso para os rivais e um farol para os mergulhadores. Alguns dizem que seu sabor pode alegrar tanto o coração quanto o casco. Um cardume calmo de Peixes Doce geralmente sinaliza uma rica rota de profundidade média.",
+      "effect": "Reduz o peso do barco em 1 ao capturar, até 3 vezes."
+    },
+    "moon": {
+      "name": "Peixe Lua",
+      "story": "Os Peixes Lua brilham sempre que o céu noturno está limpo. Eles deslizam com um ritmo lento, como se estivessem ouvindo marés que só eles podem ouvir. Marinheiros das profundezas acreditam que eles guardam caminhos escondidos entre regiões. Quando um Peixe Lua sobe, todo o mar parece respirar mais devagar.",
+      "effect": "Desacelera todos os outros peixes em 40% por 10s."
+    },
+    "lava": {
+      "name": "Peixe Lava",
+      "story": "Os Peixes Lava nadam por fendas onde a água ferve. Seu calor deixa um rastro de ar cintilante, e sua presença faz o metal ranger. Lendas afirmam que eles são forjados em tempestades vulcânicas sob a fossa. Pegar um parece segurar uma brasa viva.",
+      "effect": "Aplica queimação, adicionando +1 de peso por segundo durante 5s."
+    },
+    "tide": {
+      "name": "Peixe Maré",
+      "story": "Os Peixes Maré correm como torpedos na borda das tempestades. Suas barbatanas cortam linhas nítidas através da corrente, e sua velocidade assusta até os predadores. Marinheiros os rastreiam para prever mudanças repentinas na pressão da água. Um movimento errado e eles desaparecem na espuma.",
+      "effect": "Sacoalha o barco e tem 20% de chance de soltar um item aleatório."
+    },
+    "leaf": {
+      "name": "Peixe Folha",
+      "story": "Ouve-se falar mais dos Peixes Folha do que se vê. Eles cavalgam redemoinhos suaves, leves como algas à deriva, e desaparecem ao primeiro sinal de perigo. Antigas tripulações acreditavam que um Peixe Folha garante prosperidade para toda a viagem. Sua presença vira o mercado a seu favor.",
+      "effect": "Aumenta permanentemente o valor de mercado em 10% por captura, até 30%."
+    },
+    "crystal": {
+      "name": "Peixe Cristal",
+      "story": "Os Peixes Cristal crescem em cavernas lentas onde os minerais florescem como flores. Seus corpos refratam a luz em cores estranhas que mudam a cada curva. Os mercadores discutem sobre seu valor porque não há duas capturas iguais. Eles são beleza e risco envoltos em um só.",
+      "effect": "O valor muda na captura: +50, 0 ou -30 Dobrões de Ouro."
+    },
+    "galaxy": {
+      "name": "Peixe Galáxia",
+      "story": "Dizem que os Peixes Galáxia nadam entre as correntes e as estrelas. Eles piscam fora de vista e reaparecem em um instante, deixando apenas um rastro de névoa violeta. Exploradores os perseguem por sorte, não apenas por lucro. Se um te encontrar, o mar geralmente recompensa sua coragem.",
+      "effect": "Concede um bônus aleatório: +100 Dobrões de Ouro ou +10% de combustível."
+    },
+    "mushroom": {
+      "name": "Peixe Cogumelo",
+      "story": "Os Peixes Cogumelo flutuam através de esporos profundos que brilham como neve. Suas barbatanas deixam uma névoa tênue que se agarra ao casco. Diários antigos os descrevem como “a colheita do abismo”. Quando pegos, sua magia estranha dobra um tesouro já possuído.",
+      "effect": "Dobra o valor de mercado de um peixe aleatório no inventário."
+    },
+    "king": {
+      "name": "Peixe Rei",
+      "story": "O Peixe Rei é uma lenda viva, e o mar fica em silêncio quando ele passa. Suas escamas têm tons dourados e são pesadas como uma armadura forjada. Peixes pequenos se espalham em seu rastro, como se ele comandasse a corrente. Içar um é reivindicar uma coroa para a viagem.",
+      "effect": "Apavora peixes pequenos e aumenta os valores de mercado em 20%."
+    },
+    "coral": {
+      "name": "Recife de Coral",
+      "story": "Os aglomerados de Recifes de Coral são guardiões silenciosos do fundo do mar. Eles brilham como osso e vidro na luz fraca. Anzóis que os tocam geralmente retornam quebrados ou emaranhados. Os marinheiros os tratam como fronteiras sagradas, não troféus.",
+      "effect": "Quebra uma tentativa de anzol ao contato."
+    },
+    "sea_kelp": {
+      "name": "Algas Marinhas",
+      "story": "As Algas Marinhas balançam como fitas lentas pelo fundo do oceano. Parecem gentis, mas podem segurar uma linha com uma força surpreendente. Muitos anzóis foram perdidos em seu arrasto silencioso. Os sábios as deixam passar e observam a corrente.",
+      "effect": "Prende o anzol brevemente sem causar danos."
+    },
+    "sea_kelp_horizontal": {
+      "name": "Alga Flutuante",
+      "story": "As Algas Horizontais crescem em folhas planas que se escondem no sedimento. Podem prender uma linha e puxá-la lateralmente sem aviso. Os mergulhadores dizem que elas marcam antigos caminhos de inundação pelo fundo do mar. Um lançamento cuidadoso passa direto; um apressado fica preso.",
+      "effect": "Prende o anzol brevemente sem causar danos."
+    },
+    "sea_rock": {
+      "name": "Pedra Marinha",
+      "story": "As Pedras Marinhas são os ossos antigos da costa. Elas ficam quietas até que uma linha as atinge e rompe a tensão da vara. As tripulações as evitam porque desperdiçam tempo e tentativas. O mar as mantém como obstáculos silenciosos.",
+      "effect": "Faz o anzol ricochetear instantaneamente no impacto."
+    },
+    "sea_rock_large": {
+      "name": "Pedra Marinha Grande",
+      "story": "As Pedras Marinhas Grandes são recifes escondidos que se erguem como paredes. Sua massa pode parar até mesmo um lançamento forte em seu caminho. Os capitães as mapeiam porque elas dividem as correntes de formas imprevisíveis. Elas nunca se movem, mas moldam toda a caçada.",
+      "effect": "Faz o anzol ricochetear instantaneamente no impacto."
+    },
+    "gold_doubloon": {
+      "name": "Dobrão de Ouro",
+      "story": "Dobrões de Ouro derivam de naufrágios como estrelas caídas. Eles brilham no escuro e atraem os gananciosos para perto do perigo. Cada um carrega uma história de uma viagem perdida. Quando você pega um, o mar exige um preço mais alto.",
+      "effect": "Adiciona +10 kg de peso, mas concede ouro escalonado pelo nível."
+    },
+    "whirlpool": {
+      "name": "Redemoinho",
+      "story": "Os Redemoinhos são feridas no oceano, girando mais rápido do que a visão alcança. Eles zumbem com um rugido baixo que faz o convés vibrar. Muitas tripulações perseguiram tesouros em sua espiral e nunca retornaram. Sobreviva a um redemoinho e o mar lembrará seu nome.",
+      "effect": "Pode afundar o barco se o anzol ficar preso por muito tempo."
+    },
+    "sunken_boat": {
+      "name": "Barco Afundado",
+      "story": "Barcos Afundados são túmulos de antigas viagens. Seus cascos rangem na corrente e suas sombras se alongam nas profundezas. Eles bloqueiam linhas limpas e tentam mergulhos imprudentes. Cada naufrágio é um aviso esculpido na história.",
+      "effect": "Obstáculo sólido, extremamente pesado, e bloqueia o movimento seguro."
+    },
+    "shark_skeleton": {
+      "name": "Esqueleto de Tubarão",
+      "story": "Esqueletos de Tubarão derivam como relíquias assombradas pelas profundezas. Contam uma história de batalhas travadas e perdidas sob as ondas. Seus ossos irregulares prendem anzóis e emaranham linhas. Uma captura de ossos traz apenas arrependimento e uma pequena penalidade.",
+      "effect": "Adiciona peso indesejado e reduz o ouro em 10."
+    },
+    "env_bubbles": {
+      "name": "Bolhas",
+      "story": "Bolhas sobem em aglomerados de fendas escondidas. Parecem inofensivas, mas mudam a flutuabilidade de tudo o que tocam. Mergulhadores as perseguem pela estranha sustentação que dão ao equipamento. Pegar uma parece o mar empurrando você para cima.",
+      "effect": "Aumenta a velocidade do anzol e reduz permanentemente o peso do inventário atual em 1 kg."
+    },
+    "anchor": {
+      "name": "Âncora Enferrujada",
+      "story": "Âncoras Enferrujadas jazem onde os navios outrora rezaram por mares calmos. São relíquias de tempestades sobrevividas e tempestades perdidas. Puxar uma parece levantar um pedaço do próprio mar. Pesadas e valiosas, elas testam tanto a paciência quanto a força.",
+      "effect": "Para o barco instantaneamente e reduz o consumo de combustível."
+    },
+    "shell": {
+      "name": "Concha Marinha",
+      "story": "As Conchas Marinhas escondem-se na areia macia, esperando pelo toque gentil de uma linha. Algumas brilham fracamente, como se guardassem uma luz secreta. Colecionadores as valorizam porque cada uma guarda uma história diferente da maré. São pequenas, mas o mar muitas vezes recompensa os curiosos.",
+      "effect": "Concede +20 Dobrões de Ouro na captura."
+    }
+  },
+  "curses": {
+    "none": {
+      "title": "Sem Maldição",
+      "story": "O mar está calmo e os peixes são abundantes. Um dia perfeito para uma viagem."
+    },
+    "heavy_waters": {
+      "title": "Águas Pesadas",
+      "story": "O oceano engrossa como se fosse melaço. Cada captura arrasta-se com mais força contra o casco e sua carga enche mais rápido que o normal. Marinheiros antigos dizem que estas águas são pesadas por tesouros esquecidos. Mãos firmes e pescas leves são a única saída."
+    },
+    "fast_current": {
+      "title": "Corrente Rápida",
+      "story": "Uma corrente afiada corta o mar e tudo se move com ela. Os peixes passam velozes pelo anzol, quase sem deixar rastro. As redes parecem mais leves, mas a caçada é muito mais frenética. É um nível que recompensa reações rápidas e lançamentos limpos."
+    },
+    "blind_spot": {
+      "title": "Ponto Cego",
+      "story": "Uma névoa fria paira sobre a superfície e engole a parte superior do mar. O que antes era claro agora é apenas uma silhueta. Você pode sentir os peixes acima, mas não consegue vê-los. O oceano testa seus instintos mais do que seus olhos."
+    },
+    "reverse_current": {
+      "title": "Corrente Reversa",
+      "story": "A corrente volta-se sobre si mesma, confundindo cada cardume. Alguns peixes agora fogem do anzol correndo em direção ao mar aberto. O mar parece um labirinto de portas que se movem. Confie apenas no que você rastreia com paciência."
+    },
+    "double_damage": {
+      "title": "Dano Duplo",
+      "story": "O recife torna-se hostil e cada erro custa o dobro. Anzóis racham e linhas esticam sob a pressão. Veteranos tratam esta maldição como um duelo com o fundo do mar. A precisão torna-se seu maior escudo."
+    },
+    "economic_crisis": {
+      "title": "Crise Econômica",
+      "story": "Os mercados secam ao longo da costa e os preços despencam. Mesmo as capturas raras parecem comuns no livro de contas. A viagem torna-se um teste de volume, não de prestígio. Apenas os astutos transformam a escassez em lucro."
+    },
+    "countdown": {
+      "title": "Contagem Regressiva",
+      "story": "Sua carga começa a vazar como se o próprio tempo a estivesse corroendo. A cada dez segundos, o espaço diminui e as escolhas tornam-se mais difíceis. O oceano sussurra para se apressar, mas o pânico apenas acelera a perda. Pesque com inteligência, venda rápido e siga em frente."
+    },
+    "skeleton_army": {
+      "title": "Exército de Esqueletos",
+      "story": "Ossos erguem-se das profundezas como uma maré marchante. A água enche-se de formas pálidas que sugam sua pesca. Cada esqueleto é um lembrete do que o mar levou antes. Os espertos mantêm sua distância e seu equilíbrio."
+    },
+    "fish_escape": {
+      "title": "Fuga de Peixes",
+      "story": "Os peixes estão assustados esta noite, soltando-se no último segundo. As linhas afrouxam e anzóis vazios retornam em silêncio. Lendas dizem que o mar está avisando para desacelerar. Paciência é a única cura para um cardume em fuga."
+    },
+    "time_bomb": {
+      "title": "Bomba Relógio",
+      "story": "Sua carga torna-se instável, desaparecendo como se fosse arrebatada por mãos invisíveis. A cada oito segundos, algo é perdido para as profundezas. Parece navegar por uma tempestade de ladrões. Capture com urgência e mantenha sua carga enxuta."
+    },
+    "dark_matter": {
+      "title": "Matéria Escura",
+      "story": "O fundo do mar está envolto em sombras e o mundo parece incompleto. Você pode sentir os recifes, mas não consegue vê-los. Cada lançamento arrisca uma parada repentina. O oceano exige memória e cautela em medidas iguais."
+    },
+    "chain_reaction": {
+      "title": "Reação em Cadeia",
+      "story": "Quando um peixe sobe, outros o seguem como se estivessem ligados pelo destino. A água agita-se com um movimento súbito e vinculado. Pode ser uma bênção ou um fardo, dependendo do que você puxar. Escolha seu alvo sabiamente e o mar responderá."
+    },
+    "invisible_fish": {
+      "title": "Peixe Invisível",
+      "story": "O mar está cheio de fantasmas. Você pode ouvir os salpicos e sentir a corrente mudar, mas os peixes em si não são vistos. Os anzóis devem seguir o instinto e o tempo em vez da visão. É um teste silencioso de ritmo e coragem."
+    },
+    "reverse_market": {
+      "title": "Mercado Reverso",
+      "story": "Os mercadores viram seus livros e seus lucros diminuem. As mercadorias custam mais e as vendas mal cobrem a viagem. O mar parece mais cruel quando cada moeda vale menos. Apenas os ousados lucram em uma economia invertida."
+    },
+    "random_loop": {
+      "title": "Loop Aleatório",
+      "story": "A linha balança como se fosse pega por ventos inquietos. O ritmo do anzol nunca permanece o mesmo por muito tempo. Cada lançamento é um novo quebra-cabeça para resolver. A flexibilidade vence o hábito nestas correntes inconstantes."
+    },
+    "reverse_weight": {
+      "title": "Peso Reverso",
+      "story": "As balanças mentem e a carga parece mais leve do que é. O que parece seguro ainda pode afundar você. Capitães sussurram de bússolas amaldiçoadas e marés invertidas. Confie na sua memória, não no medidor."
+    },
+    "random_curse": {
+      "title": "Maldição Aleatória",
+      "story": "O oceano recusa-se a manter uma única regra. A cada quinze segundos, um novo perigo surge e o antigo desaparece. Você deve se adaptar mais rápido que a própria maré. Sobreviva lendo os humores repentinos do mar."
+    },
+    "combo_1": {
+      "title": "Combo I: Águas Pesadas + Corrente Rápida",
+      "story": "Duas maldições fundem-se em uma maré única e avassaladora. A água é espessa e os peixes são rápidos, exigindo força e velocidade. Apenas um verdadeiro mestre das correntes pode içar estes tesouros."
+    },
+    "combo_2": {
+      "title": "Combo II: Crise Econômica + Dano Duplo",
+      "story": "Os lucros caem enquanto o recife torna-se mais afiado. Cada erro agora custa o dobro em tempo e valor. O mar desafia você a continuar pescando de qualquer maneira. A navegação cuidadosa é a única maneira de recuperar o que foi perdido."
+    },
+    "combo_3": {
+      "title": "Combo III: Pesado + Rápido + Econômico",
+      "story": "Esta é uma tempestade de todas as dificuldades ao mesmo tempo. Os peixes são mais pesados, mais rápidos e valem menos que antes. O mar exige coragem mais do que lucro. Sobreviva ao nível e você ganhará uma história que vale a pena contar."
+    },
+    "final_1": {
+      "title": "Final I: Peixe Invisível + Exército de Esqueletos + Dano Duplo",
+      "story": "O abismo esconde suas presas e enche a água de ossos. Você deve fisgar o que não consegue ver enquanto evita o que não pode se dar ao luxo de atingir. Cada lançamento parece uma aposta contra as profundezas. Este é o oceano em seu estado mais implacável."
+    },
+    "final_2": {
+      "title": "Final II: Contagem Regressiva + Reação em Cadeia + Corrente Rápida",
+      "story": "O tempo comprime-se e o mar corre para frente. Sua carga diminui enquanto os peixes surgem mais rápidos do que nunca. O efeito em cadeia pode salvá-lo ou enterrá-lo sob o peso. Escolha rápido, venda mais rápido e confie em seus instintos."
+    },
+    "final_3": {
+      "title": "Final III: Mercado Reverso + Fuga de Peixes",
+      "story": "O mercado vira-se contra você e os peixes recusam-se a ficar. Cada pesca parece desaparecer em suas mãos. É um teste de persistência mais do que de sorte. Siga em frente e reivindique seu lugar entre as lendas."
+    },
+    "one_chance": {
+      "title": "Uma Chance",
+      "story": "Um único lançamento decide o resultado da viagem. Não há segunda chance, nem linha reserva. O mar observa e espera pelo seu movimento. Escolha o seu momento e deixe que ele defina a corrida."
+    },
+    "card": {
+      "label": "Nível Amaldiçoado",
+      "start": "Começar Nível"
+    }
+  }
+}

@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Fuel, ArrowRight } from "lucide-react";
+import { t } from "@/lib/i18n";
+import { AutoShrinkText } from "@/components/ui/AutoShrinkText";
 
 interface LevelCompleteModalProps {
   score: number;
@@ -20,25 +22,27 @@ export function LevelCompleteModal({ score, island, nextFuelCost, onNextLevel }:
           <span className="text-4xl">🏝️</span>
         </div>
         
-        <h2 className="text-3xl font-display font-bold text-foreground mb-2">Island Clear!</h2>
+        <h2 className="text-3xl font-display font-bold text-foreground mb-2">
+          <AutoShrinkText maxFontSize={30}>{t('ui.island_clear', 'Island Clear!')}</AutoShrinkText>
+        </h2>
         <p className="text-muted-foreground mb-6">
-          Refueling for the next trip...
+          {t('ui.refueling_msg', 'Refueling for the next trip...')}
         </p>
 
         <div className="space-y-4 mb-8">
           <div className="flex justify-between items-center p-3 bg-muted/30 rounded-xl">
-            <span className="text-muted-foreground">Current Gold Doubloons</span>
+            <span className="text-muted-foreground">{t('ui.current_gold', 'Current Gold Doubloons')}</span>
             <span className="font-mono font-bold text-xl text-green-600 flex items-center gap-1"><img src="/assets/environment/gold_doubloon.png" alt="" className="w-5 h-5 object-contain" />{score}</span>
           </div>
           <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl border border-red-100">
             <div className="flex items-center gap-2 text-red-600 font-bold">
-              <Fuel className="w-5 h-5" /> Fuel Cost
+              <Fuel className="w-5 h-5" /> {t('ui.fuel_cost', 'Fuel Cost')}
             </div>
             <span className="font-mono font-bold text-xl text-red-600 flex items-center gap-1">-<img src="/assets/environment/gold_doubloon.png" alt="" className="w-5 h-5 object-contain" />{nextFuelCost}</span>
           </div>
           <div className="h-px bg-border my-2" />
           <div className="flex justify-between items-center p-3 bg-secondary/10 rounded-xl border border-secondary/20">
-            <span className="font-bold text-secondary-foreground">Remaining</span>
+            <span className="font-bold text-secondary-foreground">{t('ui.remaining', 'Remaining')}</span>
             <span className="font-mono font-bold text-2xl text-secondary-foreground flex items-center gap-1">
               <img src="/assets/environment/gold_doubloon.png" alt="" className="w-5 h-5 object-contain" />{score - nextFuelCost}
             </span>
@@ -49,7 +53,7 @@ export function LevelCompleteModal({ score, island, nextFuelCost, onNextLevel }:
           onClick={onNextLevel}
           className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-secondary to-yellow-500 text-secondary-foreground py-4 px-6 rounded-xl font-bold shadow-lg shadow-yellow-500/20 hover:shadow-xl hover:-translate-y-1 transition-all"
         >
-          Travel to Island {island + 1}
+          <AutoShrinkText maxFontSize={18}>{t('ui.travel_to_island', 'Travel to Island {island}', { island: island + 1 })}</AutoShrinkText>
           <ArrowRight className="w-5 h-5" />
         </button>
       </motion.div>

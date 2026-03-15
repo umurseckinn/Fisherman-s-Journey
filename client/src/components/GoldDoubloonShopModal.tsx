@@ -17,13 +17,13 @@ interface DoubloonPackage {
   highlight?: 'popular' | 'best';
 }
 
+import { t } from "@/lib/i18n";
+
 const DOUBLOON_PACKAGES: DoubloonPackage[] = [
-  { id: 'sailor', name: "Sailor's Doubloon Pouch", doubloons: 1000, price: 0.99 },
-  { id: 'fisherman', name: "Fisherman's Doubloon Sack", doubloons: 3300, price: 2.99 },
-  { id: 'navigator', name: "Navigator's Doubloon Box", doubloons: 5800, price: 4.99 },
-  { id: 'captain', name: "Captain's Doubloon Chest", doubloons: 12500, price: 9.99, badge: 'MOST POPULAR', highlight: 'popular' },
-  { id: 'admiral', name: "Admiral's Doubloon Vault", doubloons: 26000, price: 19.99 },
-  { id: 'poseidon', name: "Poseidon's Doubloon Hoard", doubloons: 75000, price: 49.99, badge: 'BEST VALUE', highlight: 'best' },
+  { id: 'basic', name: t('ui.shop.doubloon_pouch', "Fisherman's Doubloon Pouch"), doubloons: 1000, price: 0.99 },
+  { id: 'popular', name: t('ui.shop.doubloon_sack', "Expert's Doubloon Sack"), doubloons: 3500, price: 2.99 },
+  { id: 'captain', name: t('ui.shop.doubloon_chest', "Captain's Doubloon Chest"), doubloons: 12500, price: 9.99, badge: t('common.most_popular', 'MOST POPULAR'), highlight: 'popular' },
+  { id: 'poseidon', name: t('ui.shop.doubloon_hoard', "Poseidon's Doubloon Hoard"), doubloons: 75000, price: 49.99, badge: t('common.best_value', 'BEST VALUE'), highlight: 'best' },
 ];
 
 export function GoldDoubloonShopModal({ isOpen, onClose, onPurchase, isFuelShop }: GoldDoubloonShopModalProps) {

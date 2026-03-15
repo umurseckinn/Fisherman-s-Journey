@@ -2,6 +2,8 @@
 // VEHICLE DATA — from master_prompt.md
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { t } from '@/lib/i18n';
+
 export interface VehicleSprite {
   file: string;
   nativeWidth: number;
@@ -101,8 +103,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't1',
     tier: 1,
-    name: 'The Dinghy',
-    captain: 'Bobber Bill',
+    name: t('vehicles.t1.name', 'The Dinghy'),
+    captain: t('vehicles.t1.captain', 'Bobber Bill'),
     file: 'the_dinghy.png',
     unlockCost: 0,
     minLevel: 1,
@@ -127,8 +129,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't2',
     tier: 2,
-    name: 'The Painted Skiff',
-    captain: 'Daring Danny',
+    name: t('vehicles.t2.name', 'The Painted Skiff'),
+    captain: t('vehicles.t2.captain', 'Daring Danny'),
     file: 'the_painted_skiff.png',
     unlockCost: 450,
     minLevel: 1,
@@ -154,8 +156,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't3',
     tier: 3,
-    name: 'The Fiberglass',
-    captain: 'Expert Eddie',
+    name: t('vehicles.t3.name', 'The Fiberglass'),
+    captain: t('vehicles.t3.captain', 'Expert Eddie'),
     file: 'the_fiberglass.png',
     unlockCost: 1200,
     minLevel: 6,
@@ -180,8 +182,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't4',
     tier: 4,
-    name: 'The Motor Cruiser',
-    captain: 'Captain Ken',
+    name: t('vehicles.t4.name', 'The Motor Cruiser'),
+    captain: t('vehicles.t4.captain', 'Captain Ken'),
     file: 'the_motor_cruiser.png',
     unlockCost: 2800,
     minLevel: 11,
@@ -207,8 +209,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't5',
     tier: 5,
-    name: 'The Speedster',
-    captain: 'Turbo Trev',
+    name: t('vehicles.t5.name', 'The Speedster'),
+    captain: t('vehicles.t5.captain', 'Turbo Trev'),
     file: 'the_speedster.png',
     unlockCost: 4500,
     minLevel: 16,
@@ -234,8 +236,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't6',
     tier: 6,
-    name: 'The Trawler',
-    captain: 'Seafarer Sam',
+    name: t('vehicles.t6.name', 'The Trawler'),
+    captain: t('vehicles.t6.captain', 'Seafarer Sam'),
     file: 'the_trawler.png',
     unlockCost: 3000,
     minLevel: 21,
@@ -261,8 +263,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't7',
     tier: 7,
-    name: "The Captain's Vessel",
-    captain: 'Captain Theo',
+    name: t('vehicles.t7.name', "The Captain's Vessel"),
+    captain: t('vehicles.t7.captain', 'Captain Theo'),
     file: 'the_captains_vessel.png',
     unlockCost: 4667,
     minLevel: 31,
@@ -288,8 +290,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't8',
     tier: 8,
-    name: 'The Research Vessel',
-    captain: 'Professor Pippa',
+    name: t('vehicles.t8.name', 'The Research Vessel'),
+    captain: t('vehicles.t8.captain', 'Professor Pippa'),
     file: 'the_research_vessel.png',
     unlockCost: 7000,
     minLevel: 41,
@@ -315,8 +317,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't9',
     tier: 9,
-    name: 'The Corsair',
-    captain: 'Black Cam',
+    name: t('vehicles.t9.name', 'The Corsair'),
+    captain: t('vehicles.t9.captain', 'Black Cam'),
     file: 'the_corsair.png',
     unlockCost: 10834,
     minLevel: 61,
@@ -342,8 +344,8 @@ export const VEHICLES: VehicleData[] = [
   {
     id: 't10',
     tier: 10,
-    name: 'The Legend',
-    captain: 'The Legendary Fisher',
+    name: t('vehicles.t10.name', 'The Legend'),
+    captain: t('vehicles.t10.captain', 'The Legendary Fisher'),
     file: 'the_legend.png',
     unlockCost: 17500,
     minLevel: 81,

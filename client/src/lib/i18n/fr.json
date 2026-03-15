@@ -1,0 +1,690 @@
+{
+  "common": {
+    "buy": "ACHETER",
+    "active": "ACTIF",
+    "repair_rod": "Réparer la canne",
+    "game_over": "PARTIE TERMINÉE",
+    "score": "Score",
+    "coins": "Pièces",
+    "fuel": "Carburant",
+    "weight": "Poids",
+    "storage": "Cale",
+    "level": "Niveau",
+    "region": "Région",
+    "capacity": "Capacité",
+    "speed": "Vitesse",
+    "depth": "Profondeur",
+    "attempts": "Tentatives",
+    "protection": "Protection",
+    "reduction": "Réduction",
+    "info": "INFO",
+    "tap_anywhere": "Appuyez n'importe où pour continuer",
+    "kg": "kg",
+    "story": "Histoire",
+    "ability_effect": "Capacité / Effet",
+    "type": "Type",
+    "radius": "Rayon",
+    "aspect": "Aspect",
+    "obstacle": "Obstacle",
+    "catchable": "Capturable",
+    "close": "Fermer",
+    "visibility": "Visibilité",
+    "direction": "Direction",
+    "coral": "Corail",
+    "curse": "MALÉDICTION",
+    "value": "Valeur",
+    "spawn": "Apparition",
+    "escape": "Fuite",
+    "inventory": "Inventaire",
+    "obstacles": "Obstacles",
+    "chain": "Chaîne",
+    "prices": "Prix",
+    "swing": "Oscillation",
+    "gauge": "Jauge",
+    "cycle": "Cycle",
+    "owned": "Possédé",
+    "unlocked": "Débloqué",
+    "locked": "Verrouillé",
+    "buy_now": "ACHETER MAINTENANT",
+    "select": "SÉLECTIONNER",
+    "selected": "SÉLECTIONNÉ",
+    "min_level": "Niveau min. {level}",
+    "storage_lv": "Cale Niv.{level}",
+    "rod_lv": "Canne Niv.{level}",
+    "storage_max": "Cale MAX",
+    "rod_max": "Canne MAX",
+    "effective_stats": "Stats Actuelles",
+    "start_fishing": "COMMENCER À PÊCHER →",
+    "loading": "Chargement...",
+    "hall_of_fame": "Panthéon",
+    "top_fishermen": "Meilleurs pêcheurs légendaires",
+    "no_scores": "Aucun score pour le moment. Soyez le premier !",
+    "island": "Île",
+    "island_level": "Île Niveau {level}",
+    "training_bay": "Baie d'Entraînement",
+    "tutorial_harbor": "Port du Tutoriel",
+    "unknown_waters": "Eaux Inconnues",
+    "deep_sea_market": "Marché des Profondeurs",
+    "deep_voyage": "Voyage Profond",
+    "sell_haul": "Vendre votre pêche",
+    "fish_count": "{count} Poissons",
+    "empty_nets": "Filets vides...",
+    "sell_all": "Tout Vendre",
+    "boat_services": "Services du Bateau",
+    "refill_fuel": "Faire le plein",
+    "repair_rod_btn": "Réparer la canne",
+    "needs_fuel": "Besoin de carburant",
+    "set_sail_btn": "Prendre la mer !",
+    "end_journey_confirm": "Terminer le voyage ? Tout progrès sera perdu !",
+    "end_journey_reason": "Plus de carburant ! Voyage terminé au marché.",
+    "end_journey_btn": "Terminer le voyage (Abandonner)",
+    "you_won": "Vous avez gagné",
+    "you_won_msg": "Vous avez atteint toutes les îles. C'était un voyage légendaire !",
+    "restart_btn": "RECOMMENCER",
+    "boss": "BOSS",
+    "checkpoint": "POINT DE PASSAGE",
+    "language": "Langue",
+    "free": "GRATUIT",
+    "most_popular": "LE PLUS POPULAIRE",
+    "best_value": "MEILLEUR PRIX",
+    "snaps_hook": "L'hameçon casse !",
+    "danger": "Danger !",
+    "boost": "Boost 💨",
+    "harpoon": "Harpon",
+    "net": "Filet",
+    "tnt": "TNT",
+    "anchor_booster": "Ancre"
+  },
+  "game": {
+    "over": {
+      "boat_sank": "Le bateau a coulé ! Il a été écrasé sous une lourde charge.",
+      "no_hooks": "Canne inutilisable ! Tous les hameçons sont brisés."
+    },
+    "hud": {
+      "weight": "{current} / {max} kg",
+      "score": "{score} 🪙",
+      "storage": "Cale",
+      "hook": "Hameçon",
+      "storage_almost_full": "CALE PRESQUE PLEINE ! ⚠️",
+      "boat_sinking": "LE BATEAU COULE ! CALE PLEINE ! 🚨"
+    },
+    "feedback": {
+      "legendary": "LÉGENDAIRE !",
+      "rod_broken": "CANNE BRISÉE !",
+      "combo_2": "2 D'AFFILÉE !",
+      "combo_3": "COMBO x3 !",
+      "combo_5": "EN FEU x5 !",
+      "combo_7": "INARRÊTABLE x7 !",
+      "combo_poseidon": "POSEIDON ! x{combo}",
+      "weight_reduced": "-1 kg"
+    }
+  },
+  "ui": {
+    "storage_full": "Cale Pleine !",
+    "out_of_fuel": "Plus de Carburant !",
+    "rod_broken": "Canne Brisée !",
+    "level_complete": "Niveau Terminé !",
+    "next_level": "Niveau Suivant",
+    "try_again": "Réessayer",
+    "back_to_home": "Accueil",
+    "garage": "Garage",
+    "leaderboard": "Classement",
+    "settings": "Paramètres",
+    "repair_cost": "Coût de Réparation",
+    "unlock_cost": "Coût de Déblocage",
+    "insufficient_balance": "Solde Insuffisant !",
+    "need_fuel_msg": "Il vous faut {cost} 🪙 pour le carburant. Utilisez une Carte Pass ou choisissez une option.",
+    "use_pass_card": "Utiliser Carte Pass",
+    "get_pass_cards": "Plus de Cartes Pass",
+    "watch_ad": "Voir une Pub (+50 🪙)",
+    "back_to_market": "Retour au Marché",
+    "give_up": "Abandonner (Fin du Voyage)",
+    "repair_needed": "Réparation Nécessaire !",
+    "need_repair_msg": "Il vous faut {cost} 🪙 pour réparer la canne. Choisissez une option.",
+    "get_more_doubloons": "Plus de Doublons",
+    "watch_ad_amount": "Voir une Pub (+{amount} 🪙)",
+    "island_select": "Sélection d'Île",
+    "explorer_mode": "🗺️ MODE EXPLORATEUR",
+    "prev_stage": "Étape Préc.",
+    "next_stage": "Étape Suiv.",
+    "set_sail": "Prendre la mer !",
+    "level_locked_msg": "Niveau verrouillé ! Terminez les niveaux précédents d'abord.",
+    "tutorial": "Tutoriel",
+    "new_region": "Nouvelle Région",
+    "back_to_level_select": "RETOUR À LA SÉLECTION",
+    "island_clear": "Île Terminée !",
+    "refueling_msg": "Ravitaillement en cours...",
+    "current_gold": "Doublons d'Or Actuels",
+    "fuel_cost": "Coût Carburant",
+    "remaining": "Restant",
+    "travel_to_island": "Voyage vers l'Île {island}",
+    "rod_broken_title": "Mince ! Canne brisée !",
+    "boat_sunk_title": "Trop lourd ! Bateau coulé !",
+    "out_of_fuel_title": "En panne ! Plus de carburant !",
+    "island_reached": "Île {island} Atteinte",
+    "new_record": "NOUVEAU RECORD !",
+    "total_score": "SCORE TOTAL",
+    "base_score": "Score de Base",
+    "depth_bonus": "Bonus Profondeur",
+    "king_bounty": "Prime Royale",
+    "vault_earnings": "Gains du Coffre",
+    "menu": "MENU",
+    "retry": "RÉESSAYER",
+    "play_tutorial": "JOUER TUTORIEL",
+    "play_game": "JOUER",
+    "levels_title": "NIVEAUX",
+    "admin_mode_msg": "Sélection mode Admin",
+    "unlocked_up_to": "Débloqué jusqu'à L{level}",
+    "admin_mode": "Mode Admin",
+    "select_level": "Choisir Niveau",
+    "reset_confirm": "Êtes-vous sûr ? Tout le progrès sera réinitialisé !",
+    "reset_progress": "Réinitialiser Progrès",
+    "logo_text": "Au Fil de l'Eau",
+    "shop": {
+      "pass_pouch": "Bourse Pass de Base",
+      "pass_sack": "Sac de Pass Populaire",
+      "pass_chest": "Coffre de Pass du Capitaine",
+      "doubloon_pouch": "Bourse de Doublons",
+      "doubloon_sack": "Sac de Doublons d'Expert",
+      "doubloon_chest": "Coffre de Doublons du Capitaine",
+      "doubloon_hoard": "Trésor de Poseidon",
+      "welcome_gift": "Cadeau de Bienvenue !",
+      "level_2_reached": "Niveau 2 Atteint !",
+      "claim_gift": "RÉCUPÉRER CADEAU",
+      "claim_now": "MAINTENANT"
+    },
+    "boosters": {
+      "out_of": "Plus de {booster} ?",
+      "mega_pack": "Mega Pack",
+      "epic_pack": "Epic Pack",
+      "all_boosters": "{amount}x TOUS les Boosters",
+      "single_booster": "{amount}x {booster}",
+      "how_it_works": "Comment ça marche",
+      "tips": "Conseils",
+      "harpoon": {
+        "phrase": "Harponnez vos proies sans effort !",
+        "summary": "Lance un harpon droit pour attraper une cible instantanément.",
+        "usage": [
+          "Appuyez pour lancer ; il transperce tout et attrape la première cible.",
+          "Idéal pour les poissons précieux ou les passages étroits.",
+          "Les prises au harpon ne comptent pas dans le poids de la cale pendant le boost."
+        ],
+        "tips": [
+          "Utilisez quand la cible est alignée avec le bateau.",
+          "Parfait pour les moments critiques quand le temps presse."
+        ]
+      },
+      "net": {
+        "phrase": "Ramassez tout sur votre passage !",
+        "summary": "Lance un large filet qui ramasse les poissons aux alentours.",
+        "usage": [
+          "Appuyez pour déployer ; tout dans le cercle est collecté.",
+          "Parfait pour les bancs denses.",
+          "Les prises au filet ne comptent pas dans le poids de la cale pendant le boost."
+        ],
+        "tips": [
+          "Attendez un groupe avant de lancer.",
+          "Utilisez les moments calmes pour les grands groupes."
+        ]
+      },
+      "tnt": {
+        "phrase": "Nettoyez le fond marin par une explosion !",
+        "summary": "Fait exploser une zone 3x3 pour dégager les obstacles.",
+        "usage": [
+          "Appuyez pour placer ; l'explosion nettoie tout instantanément.",
+          "Idéal pour les zones avec beaucoup d'obstacles.",
+          "Les objets ramassés par TNT ne comptent pas dans le poids pendant le boost."
+        ],
+        "tips": [
+          "Lâchez-le là où les obstacles sont les plus denses.",
+          "Utilisez-le pour ouvrir des routes quand vous êtes coincé."
+        ]
+      },
+      "anchor": {
+        "phrase": "Figez le temps !",
+        "summary": "Arrête brièvement le temps pour collecter en sécurité.",
+        "usage": [
+          "Appuyez pour activer ; le temps s'écoule plus lentement.",
+          "Idéal pour les prises précises et éviter les dangers.",
+          "Les objets ramassés à l'ancre ne comptent pas dans le poids pendant le boost."
+        ],
+        "tips": [
+          "Activez-le juste avant un lancer risqué.",
+          "Utilisez-le pour stabiliser quand les hameçons sont bas."
+        ]
+      }
+    }
+  },
+  "garage": {
+    "current_stats": "Stats Actuelles",
+    "storage": "Cale",
+    "swing": "Oscillation",
+    "depth": "Profondeur",
+    "casts": "Lancers",
+    "coral": "Corail",
+    "owned": "Possédé",
+    "start_fishing": "COMMENCER À PÊCHER →"
+  },
+  "leaderboard": {
+    "loading": "Chargement des scores...",
+    "no_scores": "Aucun score. Soyez le premier !",
+    "island": "Île"
+  },
+  "upgrades": {
+    "storage_capacity": "Capacité de Cale",
+    "swing_speed": "Vitesse d'Oscillation",
+    "cast_speed": "Vitesse de Lancer",
+    "return_speed": "Vitesse de Remontée",
+    "hook_depth": "Profondeur d'Hameçon",
+    "cast_attempts": "Tentatives de Lancer",
+    "coral_protection": "Protection Corail",
+    "kelp_duration": "Durée Algues"
+  },
+  "vehicles": {
+    "t1": { "name": "Le Dinghy", "captain": "Bill Flotteur" },
+    "t2": { "name": "Le Skiff Peint", "captain": "Danny l'Audacieux" },
+    "t3": { "name": "La Coque en Fibre", "captain": "Eddie l'Expert" },
+    "t4": { "name": "Le Croiseur à Moteur", "captain": "Capitaine Ken" },
+    "t5": { "name": "Le Bolide des Mers", "captain": "Turbo Trev" },
+    "t6": { "name": "Le Chalutier", "captain": "Sam le Marin" },
+    "t7": { "name": "Le Navire du Capitaine", "captain": "Capitaine Theo" },
+    "t8": { "name": "Le Navire de Recherche", "captain": "Professeur Pippa" },
+    "t9": { "name": "Le Corsaire", "captain": "Cam le Noir" },
+    "t10": { "name": "La Légende", "captain": "Le Pêcheur Légendaire" }
+  },
+  "regions": {
+    "r1": "Crique de l'Aube",
+    "r2": "Récif du Crépuscule",
+    "r3": "Atolls Murmurants",
+    "r4": "Bleu Abyssal",
+    "r5": "Détroit de la Tempête",
+    "r6": "Profondeurs d'Aurora",
+    "r7": "Lune Carmin",
+    "r8": "Vortex du Chaos",
+    "r9": "Sanctuaire Doré",
+    "r10": "Fin de la Légende"
+  },
+  "levels": {
+    "1": "Sortie Matinale",
+    "2": "Surprise de Vitesse",
+    "3": "Jardin de Varech",
+    "4": "Premier Marché",
+    "5": "Découverte de Bonbons",
+    "6": "Test de Vitesse",
+    "7": "Délice du Coffre",
+    "8": "Chute de Lune",
+    "9": "Pression du Poids",
+    "10": "Niveau Doré",
+    "11": "Piège à Ancre",
+    "12": "Tentation de Lave",
+    "13": "Pause Respiration",
+    "14": "Tempête de Marée",
+    "15": "Enfer de Corail",
+    "16": "Murmure des Feuilles",
+    "17": "Nuit Squelettique",
+    "18": "Le Vortex se Lève",
+    "19": "Dernier Souffle",
+    "20": "BOSS : Reine de la Crique",
+    "21": "Choc de Corail",
+    "22": "Double Corail",
+    "23": "Enfer de Vitesse",
+    "24": "Pause Respiration",
+    "25": "Porte Galactique",
+    "26": "Couloir Squelettique",
+    "27": "Double Vortex",
+    "28": "Épreuve de Canne",
+    "29": "Pause Respiration",
+    "30": "BOSS : Corail Doré",
+    "31": "Ouverture Profonde",
+    "32": "Crise de Capacité",
+    "33": "Piège de Pluie",
+    "34": "Pause Respiration",
+    "35": "Murmure du Roi",
+    "36": "Profondeurs Sombres",
+    "37": "Danse des Champignons",
+    "38": "Chasse Galactique",
+    "39": "Dernier Coup",
+    "40": "BOSS : Bête du Bleu Profond",
+    "41": "Porte de la Tempête",
+    "42": "Double Squelette",
+    "43": "Choc de Capacité",
+    "44": "Pause Respiration",
+    "45": "Saison Royale",
+    "46": "Couloir Sombre",
+    "47": "Forêt de Champignons",
+    "48": "Tempête Galactique",
+    "49": "Épreuve Finale",
+    "50": "BOSS : Seigneur de la Tempête",
+    "51": "Ouverture d'Aurora",
+    "52": "Chasse Sombre",
+    "53": "Pause Respiration",
+    "54": "Vague Royale",
+    "55": "Labyrinthe de Corail",
+    "56": "Guerre Warp",
+    "57": "Danger Silencieux",
+    "58": "Tempête d'Aurora",
+    "59": "Nuit de Chaos",
+    "60": "BOSS : Dragon d'Aurora",
+    "61": "Lune Carmin",
+    "62": "Malédiction : Eaux Lourdes",
+    "63": "Malédiction : Courant Rapide",
+    "64": "Pause Respiration",
+    "65": "Malédiction : Angle Mort",
+    "66": "Malédiction : Courant Inverse",
+    "67": "Malédiction : Double Dégât",
+    "68": "Pause Respiration",
+    "69": "Malédiction : Crise Économique",
+    "70": "BOSS : Bête de la Lune Carmin",
+    "71": "Porte Dimensionnelle",
+    "72": "Malédiction : Réaction en Chaîne",
+    "73": "Malédiction : Poissons Invisibles",
+    "74": "Pause Respiration",
+    "75": "Malédiction : Compte à Rebours",
+    "76": "Malédiction : Marché Inversé",
+    "77": "Malédiction : Armée Squelette",
+    "78": "Pause Respiration",
+    "79": "Tout est Actif",
+    "80": "BOSS : Seigneur du Chaos",
+    "81": "Obscurité Dorée",
+    "82": "Malédiction Combinée I",
+    "83": "Malédiction Combinée II",
+    "84": "Pause Respiration",
+    "85": "Malédiction : Pression du Temps",
+    "86": "Malédiction : Poids Inversé",
+    "87": "Malédiction : Fuite de Poisson",
+    "88": "Pause Respiration",
+    "89": "Toutes les Malédictions",
+    "90": "BOSS : Dragon Doré",
+    "91": "Le Voyage Final Commence",
+    "92": "Malédiction : Bombe à Retardement",
+    "93": "Malédiction : Matière Noire",
+    "94": "Dernier Souffle",
+    "95": "Malédiction Combinée : Finale I",
+    "96": "Malédiction Combinée : Finale II",
+    "97": "Malédiction Combinée : Finale III",
+    "98": "Tempête Silencieuse",
+    "99": "Une Chance",
+    "100": "BOSS FINAL : Seigneur des Légendes"
+  },
+  "tutorial": {
+    "storage": "Surveillez la Cale ! Si le bateau devient trop lourd, il coule.",
+    "tnt": "Faites glisser la TNT pour dégager la zone !",
+    "net": "Appuyez pour déployer le filet !",
+    "harpoon": "Visez avec le harpon pour les poissons rapides !",
+    "anchor": "Appuyez sur la mer pour jeter l'ancre !",
+    "garage_rod": "Une canne plus forte attrape de plus gros poissons !\nAppuyez ici pour l'améliorer.",
+    "garage_storage": "Plus de place ?\nAppuyez ici pour agrandir la cale.",
+    "garage_next_boat": "Assez gagné pour un meilleur navire !\nAppuyez sur la flèche.",
+    "garage_buy_boat": "C'est le {boat} !\nAppuyez pour l'acheter et avoir de meilleures stats."
+  },
+  "region_intros": {
+    "r1": {
+      "title": "Crique de l'Aube",
+      "story": "Ici, chaque marin respire pour la première fois. Sous sa surface calme, des épaves attendent les novices. Quand l'aube éclaire les eaux peu profondes, ceux qui rêvent de devenir des légendes prennent la mer."
+    },
+    "r2": {
+      "title": "Récif du Crépuscule",
+      "story": "Les corails luisants éclairent les eaux sombres. Bienvenue au mystérieux Récif du Crépuscule. Des murmures d'anciens habitants résonnent à travers les marées. Équipez-vous et affrontez les ombres du labyrinthe (Niveaux 11-20)."
+    },
+    "r3": {
+      "title": "Atolls Murmurants",
+      "story": "Magnifique, mais impitoyable. D'immenses labyrinthes de corail cachent des trésors et des créatures affamées. Seuls ceux qui ont des instincts aiguisés avancent."
+    },
+    "r4": {
+      "title": "Bleu Abyssal",
+      "story": "Ici la lumière s'efface. Les vagues laissent place à des vortex silencieux et mortels. Seul celui qui défie l'obscurité trouve les secrets de cet enfer bleu."
+    },
+    "r5": {
+      "title": "Détroit de la Tempête",
+      "story": "Le ciel est éternellement noir, la mer éternellement furieuse. Des vagues géantes écrasent les navires. Survivre ici n'est pas de la chance, mais une victoire contre la nature."
+    },
+    "r6": {
+      "title": "Profondeurs d'Aurora",
+      "story": "Un royaume mystique, éclairé par des lumières comme au ciel du Nord. Les courants suivent d'anciens sortilèges. Surveillez la lueur, elle vous guide."
+    },
+    "r7": {
+      "title": "Lune Carmin",
+      "story": "Un rouge sinistre baigne le paysage. Des esprits et des bêtes rôdent ici. Seul celui qui a survécu à d'innombrables batailles résiste à la corruption (Niveaux 61-70)."
+    },
+    "r8": {
+      "title": "Vortex du Chaos",
+      "story": "Temps et direction sombrent ici. Des courants sans fin tirent les navires dans une spirale. Quand les boussoles deviennent folles, vous devez maîtriser votre propre esprit."
+    },
+    "r9": {
+      "title": "Sanctuaire Doré",
+      "story": "L'épreuve finale pour ceux qui écrivent l'histoire. Chaque mille est un combat. Celui qui réussit n'est plus un marin, mais une légende."
+    },
+    "r10": {
+      "title": "Fin de la Légende",
+      "story": "La terre tremble, le ciel se brise. Vous êtes devant la dernière bataille. Des dieux sont tombés ici. Vos capacités doivent être parfaites pour la fin (Niveaux 91-100)."
+    }
+  },
+  "entities": {
+    "bubble": {
+      "name": "Poisson Bulle",
+      "story": "Flottent comme des lanternes à la surface. Les marins disent qu'ils marquent les eaux sûres. Ils forment des constellations miroitantes.",
+      "effect": "Prise inoffensive de faible valeur et poids."
+    },
+    "sakura": {
+      "name": "Poisson Sakura",
+      "story": "Fleurissent au printemps dans les eaux peu profondes. Leur trace mène à des passages sûrs. Un porte-bonheur pour chaque voyage.",
+      "effect": "Laisse des pétales et est très rapide."
+    },
+    "zap": {
+      "name": "Poisson Zap",
+      "story": "Nés dans les orages, ils portent le tonnerre en eux. Un seul coup peut changer toute la pêche du jour.",
+      "effect": "Choque le bateau pendant 3s ; les autres poissons s'échappent plus facilement."
+    },
+    "candy": {
+      "name": "Poisson Candy",
+      "story": "Se rassemblent dans les courants chauds. Leur goût est censé alléger le cœur et la cale.",
+      "effect": "Réduit le poids du bateau de 1 (jusqu'à 3x)."
+    },
+    "moon": {
+      "name": "Poisson Lune",
+      "story": "Brillent par nuit claire. Ils écoutent des marées que seuls eux entendent. Ils gardent des sentiers secrets.",
+      "effect": "Ralentit tous les autres poissons de 40% pendant 10s."
+    },
+    "lava": {
+      "name": "Poisson Lava",
+      "story": "Nagent près des évents bouillants. Ils sont comme de la braise vivante des fosses les plus profondes.",
+      "effect": "Provoque Brûlure (+1 poids par seconde pendant 5s)."
+    },
+    "tide": {
+      "name": "Poisson Marée",
+      "story": "Foncent comme des torpilles au bord des tempêtes. Un faux mouvement et ils disparaissent dans les embruns.",
+      "effect": "Secoue le bateau ; chance de drop d'item."
+    },
+    "leaf": {
+      "name": "Poisson Feuille",
+      "story": "Légers comme des algues, ils disparaissent au danger. Ils garantissent la prospérité pour tout le voyage.",
+      "effect": "Augmente la valeur marchande de 10% (jusqu'à 30%)."
+    },
+    "crystal": {
+      "name": "Poisson Cristal",
+      "story": "Poussent dans les grottes minérales. Leur corps réfracte la lumière en couleurs étranges. Beauté et risque à la fois.",
+      "effect": "Valeur fluctuante à la prise : +50, 0 ou -30 Doublons."
+    },
+    "galaxy": {
+      "name": "Poisson Galaxie",
+      "story": "Nagent entre courants et étoiles. Ils laissent une brume violette. Celui qui les trouve est récompensé.",
+      "effect": "Bonus aléatoire : +100 Doublons ou +10% carburant."
+    },
+    "mushroom": {
+      "name": "Poisson Champignon",
+      "story": "Flottent parmi les spores scintillantes. Leur magie double la valeur d'un trésor déjà possédé.",
+      "effect": "Double la valeur marchande d'un poisson aléatoire dans l'inventaire."
+    },
+    "king": {
+      "name": "Poisson Roi",
+      "story": "Une légende vivante. La mer se tait quand il passe. L'attraper est comme un couronnement.",
+      "effect": "Affole les petits poissons ; +20% valeur marchande."
+    },
+    "coral": {
+      "name": "Récif de Corail",
+      "story": "Gardiens silencieux du fond. Les hameçons reviennent souvent brisés. Ce sont des frontières sacrées.",
+      "effect": "Brise un hameçon au contact."
+    },
+    "sea_kelp": {
+      "name": "Algues",
+      "story": "Comme des rubans doux, mais elles peuvent retenir une ligne avec force. Laissez-les plutôt passer.",
+      "effect": "Emmêle l'hameçon brièvement sans dégât."
+    },
+    "sea_kelp_horizontal": {
+      "name": "Algues Dérivantes",
+      "story": "Se cachent dans la vase. Elles peuvent tirer la ligne sur le côté sans prévenir.",
+      "effect": "Emmêle l'hameçon brièvement sans dégât."
+    },
+    "sea_rock": {
+      "name": "Rocher Marin",
+      "story": "Vieux os de la côte. Ils font rebondir la ligne immédiatement.",
+      "effect": "Fait rebondir l'hameçon instantanément."
+    },
+    "sea_rock_large": {
+      "name": "Gros Rocher",
+      "story": "Murs sous l'eau. Ils divisent les courants et stoppent tout lancer.",
+      "effect": "Fait rebondir l'hameçon instantanément."
+    },
+    "gold_doubloon": {
+      "name": "Doublon d'Or",
+      "story": "Flottent comme des étoiles tombées des épaves. Ils attirent les cupides dans le danger.",
+      "effect": "Apporte +10kg de poids, mais beaucoup d'or."
+    },
+    "whirlpool": {
+      "name": "Tourbillon",
+      "story": "Blessures dans l'océan. Survivez-y et la mer connaîtra votre nom.",
+      "effect": "Peut couler le bateau si l'hameçon reste coincé trop longtemps."
+    },
+    "sunken_boat": {
+      "name": "Épave",
+      "story": "Tombes d'anciens voyages. Chaque épave est un avertissement de l'histoire.",
+      "effect": "Obstacle solide, extrêmement lourd et bloque le chemin."
+    },
+    "shark_skeleton": {
+      "name": "Squelette de Requin",
+      "story": "Reliques décomposées des profondeurs. Pêcher des os n'apporte que du regret.",
+      "effect": "Apporte un poids inutile et -10 Or."
+    },
+    "env_bubbles": {
+      "name": "Bulles",
+      "story": "Montent des évents. Elles donnent à l'équipement une étrange poussée d'Archimède.",
+      "effect": "Boost de vitesse d'hameçon ; réduit le poids d'inventaire de 1kg."
+    },
+    "anchor": {
+      "name": "Ancre Rouillée",
+      "story": "Reliques de tempêtes surmontées. La soulever teste patience et force.",
+      "effect": "Arrête le bateau immédiatement ; réduit la conso carburant."
+    },
+    "shell": {
+      "name": "Coquillage",
+      "story": "Se cachent dans le sable. Chacun raconte une histoire différente des marées.",
+      "effect": "Donne +20 Doublons d'Or à la prise."
+    }
+  },
+  "curses": {
+    "none": {
+      "title": "Aucune Malédiction",
+      "story": "La mer est calme. Une bonne journée pour pêcher."
+    },
+    "heavy_waters": {
+      "title": "Eaux Lourdes",
+      "story": "L'eau devient épaisse comme de la mélasse. Tout est plus lourd, la cale se remplit plus vite."
+    },
+    "fast_current": {
+      "title": "Courant Rapide",
+      "story": "Les poissons filent. Seules des réactions rapides mènent au succès ici."
+    },
+    "blind_spot": {
+      "title": "Angle Mort",
+      "story": "Le brouillard froid avale la vue. Fiez-vous à vos instincts plus qu'à vos yeux."
+    },
+    "reverse_current": {
+      "title": "Courant Inverse",
+      "story": "Le courant tourne. Les poissons fuient vers le large. Un labyrinthe de portes."
+    },
+    "double_damage": {
+      "title": "Double Dégât",
+      "story": "Chaque erreur fait deux fois plus mal. La précision est votre seule protection."
+    },
+    "economic_crisis": {
+      "title": "Crise Économique",
+      "story": "Les marchés s'assèchent. Seul celui qui fait de la masse gagne encore ici."
+    },
+    "countdown": {
+      "title": "Compte à Rebours",
+      "story": "La cale rétrécit toutes les 10 secondes. Dépêchez-vous avant que tout disparaisse."
+    },
+    "skeleton_army": {
+      "title": "Armée Squelette",
+      "story": "Des os montent et rongent votre pêche. Gardez vos distances !"
+    },
+    "fish_escape": {
+      "title": "Fuite de Poisson",
+      "story": "Les poissons sont timides et glissent au dernier moment. La patience est la clé ici."
+    },
+    "time_bomb": {
+      "title": "Bombe à Retardement",
+      "story": "Votre cargaison disparaît toutes les 8 secondes. Pêchez vite avant qu'il soit trop tard."
+    },
+    "dark_matter": {
+      "title": "Matière Noire",
+      "story": "La mer est dans l'ombre. Chaque lancer comporte le risque d'un arrêt abrupt."
+    },
+    "chain_reaction": {
+      "title": "Réaction en Chaîne",
+      "story": "Un poisson en tire d'autres avec lui. Choisissez votre cible avec sagesse."
+    },
+    "invisible_fish": {
+      "title": "Poissons Invisibles",
+      "story": "Vous entendez les clapotis, mais ne les voyez pas. Un test de rythme et de nerfs."
+    },
+    "reverse_market": {
+      "title": "Marché Inversé",
+      "story": "Les prix montent, les gains baissent. Seuls les courageux font des Doublons ici."
+    },
+    "random_loop": {
+      "title": "Boucle Aléatoire",
+      "story": "L'hameçon vacille de façon imprévisible. La flexibilité bat l'habitude ici."
+    },
+    "reverse_weight": {
+      "title": "Poids Inversé",
+      "story": "La balance ment. Fiez-vous à votre mémoire, pas à la jauge."
+    },
+    "random_curse": {
+      "title": "Malédiction Aléatoire",
+      "story": "Toutes les 15 secondes le danger change. Adaptez-vous plus vite que la marée."
+    },
+    "combo_1": {
+      "title": "Combo I : Lourd & Rapide",
+      "story": "Eaux épaisses et poissons rapides. Force et tempo sont requis."
+    },
+    "combo_2": {
+      "title": "Combo II : Crise & Danger",
+      "story": "Moins de gain, plus de dégât. Seuls les marins prudents réussissent ici."
+    },
+    "combo_3": {
+      "title": "Combo III : Le Trio",
+      "story": "Poissons lourds, rapides et sans valeur. Survivez et devenez une légende."
+    },
+    "final_1": {
+      "title": "Finale I : Fantômes & Os",
+      "story": "Proies invisibles et squelettes. Chaque lancer est un pari."
+    },
+    "final_2": {
+      "title": "Finale II : Course contre le Temps",
+      "story": "Le temps file, la cale rétrécit, les poissons rasent. Fiez-vous à votre instinct."
+    },
+    "final_3": {
+      "title": "Finale III : Dernier Résistant",
+      "story": "Le marché est contre vous, les poissons fuient. Montrez votre persévérance."
+    },
+    "one_chance": {
+      "title": "Une Chance",
+      "story": "Un seul lancer décide de tout. Choisissez votre moment avec sagesse."
+    },
+    "card": {
+      "label": "Niveau Maudit",
+      "start": "Lancer Niveau"
+    }
+  }
+}

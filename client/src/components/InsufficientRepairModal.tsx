@@ -1,6 +1,8 @@
 import React from 'react';
 import { Wrench, Play, ArrowLeft, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
+import { AutoShrinkText } from '@/components/ui/AutoShrinkText';
 
 interface InsufficientRepairModalProps {
     isOpen: boolean;
@@ -30,9 +32,11 @@ export function InsufficientRepairModal({
                     </div>
 
                     <div>
-                        <h2 className="text-2xl font-display font-bold text-slate-800">Repair Needed!</h2>
+                        <h2 className="text-2xl font-display font-bold text-slate-800">
+                            <AutoShrinkText maxFontSize={24}>{t('ui.repair_needed', 'Repair Needed!')}</AutoShrinkText>
+                        </h2>
                         <p className="text-slate-500 text-sm mt-2 font-medium">
-                            You need <span className="text-amber-500 font-bold">{repairCost} 🪙</span> to repair the rod. Please choose an option to continue.
+                            {t('ui.need_repair_msg', 'You need {cost} 🪙 to repair the rod. Please choose an option to continue.', { cost: repairCost })}
                         </p>
                     </div>
                 </div>
@@ -43,7 +47,7 @@ export function InsufficientRepairModal({
                         className="w-full py-7 text-lg font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-purple-200"
                     >
                         <Play className="w-5 h-5 fill-current" />
-                        Watch an Ad (+50)
+                        <AutoShrinkText maxFontSize={18}>{t('ui.watch_ad_amount', 'Watch an Ad (+50 🪙)', { amount: 50 })}</AutoShrinkText>
                     </Button>
 
                     <Button
@@ -51,7 +55,7 @@ export function InsufficientRepairModal({
                         className="w-full py-7 text-lg font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-200"
                     >
                         <Coins className="w-5 h-5" />
-                        Get More Doubloons
+                        <AutoShrinkText maxFontSize={18}>{t('ui.get_more_doubloons', 'Get More Doubloons')}</AutoShrinkText>
                     </Button>
 
                     <Button
@@ -60,7 +64,7 @@ export function InsufficientRepairModal({
                         className="w-full py-4 text-slate-400 font-bold hover:text-slate-600 hover:bg-transparent rounded-2xl flex items-center justify-center gap-2"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Back to Market
+                        <AutoShrinkText maxFontSize={14}>{t('ui.back_to_market', 'Back to Market')}</AutoShrinkText>
                     </Button>
                 </div>
             </div>

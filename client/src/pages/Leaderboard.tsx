@@ -2,6 +2,8 @@ import { useHighScores } from "@/hooks/use-high-scores";
 import { Link } from "wouter";
 import { ArrowLeft, Trophy, Crown, Medal } from "lucide-react";
 
+import { t } from "@/lib/i18n";
+
 export default function Leaderboard() {
   const { data: scores, isLoading } = useHighScores();
 
@@ -21,8 +23,8 @@ export default function Leaderboard() {
                 <ArrowLeft className="w-6 h-6" />
               </button>
             </Link>
-            <h1 className="text-4xl font-display mb-2">Hall of Fame</h1>
-            <p className="text-primary-foreground/80 font-medium">Top legendary fishermen</p>
+            <h1 className="text-4xl font-display mb-2">{t('common.hall_of_fame', 'Hall of Fame')}</h1>
+            <p className="text-primary-foreground/80 font-medium">{t('common.top_fishermen', 'Top legendary fishermen')}</p>
           </div>
         </div>
 
@@ -31,11 +33,11 @@ export default function Leaderboard() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="text-muted-foreground">Loading scores...</p>
+              <p className="text-muted-foreground">{t('leaderboard.loading', 'Loading scores...')}</p>
             </div>
           ) : scores?.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              No scores yet. Be the first!
+              {t('leaderboard.no_scores', 'No scores yet. Be the first!')}
             </div>
           ) : (
             <div className="space-y-3">
@@ -61,7 +63,7 @@ export default function Leaderboard() {
                   <div className="flex-1">
                     <div className="font-bold text-foreground truncate">{score.playerName}</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MapPinIcon className="w-3 h-3" /> Island {score.maxIslandReached}
+                      <MapPinIcon className="w-3 h-3" /> {t('leaderboard.island', 'Island')} {score.maxIslandReached}
                     </div>
                   </div>
 

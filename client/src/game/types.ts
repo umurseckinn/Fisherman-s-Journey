@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n";
+
 export type FishClass = 'bubble' | 'sakura' | 'zap' | 'candy' | 'moon' | 'lava' | 'crystal' | 'leaf' | 'tide' | 'mushroom' | 'king' | 'galaxy' | 'coral' | 'sea_kelp' | 'sea_kelp_horizontal' | 'sea_rock' | 'sea_rock_large' | 'gold_doubloon' | 'whirlpool' | 'sunken_boat' | 'shark_skeleton' | 'env_bubbles' | 'anchor' | 'shell';
 
 // Curse System: Special rules activated every 10 levels
@@ -116,6 +118,14 @@ export interface GameState {
   curseTimerMs: number;     // Periodic counter for countdowns / bombs
   isPaused: boolean;        // Game pause state
   isTimeFrozen: boolean;    // For Harpoon/Tutorial freeze effects
+  boatX: number;            // Central boat X position
+  shakeX: number;           // Screenshake/Hit offset
+  boatBob: number;          // Vertical bobbing animation
+  hookX: number;            // Current hook Tip X
+  hookY: number;            // Current hook Tip Y
+  hookRotation: number;     // Hook sprite rotation
+  entities: Entity[];       // All active swim/float objects
+  coins: number;            // Currency earned in this run
   boosters: {
     speed: boolean;
     lucky: boolean;
@@ -128,6 +138,7 @@ export interface GameState {
   activeBooster: 'harpoon' | 'net' | 'tnt' | 'anchor' | null;
   anchorEffectTimerMs: number;
   startTimerMs: number;
+  currentCombo: number; // consecutive catch tracker
 }
 
 export const OBJECT_MATRIX: Record<FishClass, {
@@ -141,7 +152,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
   isObstacle?: boolean;
 }> = {
   bubble: {
-    names: ['Bubble Fish'],
+    names: [t('entities.bubble.name', 'Bubble Fish')],
     colors: ['#E8F4FD'],
     speedMultiplier: 1.2,
     weightMultiplier: 2,
@@ -150,7 +161,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.4,
   },
   sakura: {
-    names: ['Sakura Fish'],
+    names: [t('entities.sakura.name', 'Sakura Fish')],
     colors: ['#FDF0F5'],
     speedMultiplier: 1.5,
     weightMultiplier: 3,
@@ -159,7 +170,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.6,
   },
   zap: {
-    names: ['Zap Fish'],
+    names: [t('entities.zap.name', 'Zap Fish')],
     colors: ['#FFE066'],
     speedMultiplier: 3.5,
     weightMultiplier: 4,
@@ -168,7 +179,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.5,
   },
   candy: {
-    names: ['Candy Fish'],
+    names: [t('entities.candy.name', 'Candy Fish')],
     colors: ['#FFC0CB'],
     speedMultiplier: 1.8,
     weightMultiplier: 5,
@@ -177,7 +188,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.4,
   },
   moon: {
-    names: ['Moon Fish'],
+    names: [t('entities.moon.name', 'Moon Fish')],
     colors: ['#DDE6FF'],
     speedMultiplier: 0.8,
     weightMultiplier: 8,
@@ -186,7 +197,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.2,
   },
   lava: {
-    names: ['Lava Fish'],
+    names: [t('entities.lava.name', 'Lava Fish')],
     colors: ['#FF6B3D'],
     speedMultiplier: 2.0,
     weightMultiplier: 12,
@@ -195,7 +206,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.5,
   },
   crystal: {
-    names: ['Crystal Fish'],
+    names: [t('entities.crystal.name', 'Crystal Fish')],
     colors: ['#C9B6FF'],
     speedMultiplier: 2.2,
     weightMultiplier: 18,
@@ -204,7 +215,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.3,
   },
   leaf: {
-    names: ['Leaf Fish'],
+    names: [t('entities.leaf.name', 'Leaf Fish')],
     colors: ['#FFA94D'],
     speedMultiplier: 0.6,
     weightMultiplier: 1,
@@ -213,7 +224,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.7,
   },
   tide: {
-    names: ['Tide Fish'],
+    names: [t('entities.tide.name', 'Tide Fish')],
     colors: ['#74C0FC'],
     speedMultiplier: 3.8,
     weightMultiplier: 9,
@@ -222,7 +233,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.6,
   },
   mushroom: {
-    names: ['Mushroom Fish'],
+    names: [t('entities.mushroom.name', 'Mushroom Fish')],
     colors: ['#E85D75'],
     speedMultiplier: 1.5,
     weightMultiplier: 15,
@@ -231,7 +242,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.1,
   },
   king: {
-    names: ['King Fish'],
+    names: [t('entities.king.name', 'King Fish')],
     colors: ['#F3C969'],
     speedMultiplier: 5.5,
     weightMultiplier: 35,
@@ -240,7 +251,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.8,
   },
   galaxy: {
-    names: ['Galaxy Fish'],
+    names: [t('entities.galaxy.name', 'Galaxy Fish')],
     colors: ['#7C5CFA'],
     speedMultiplier: 4.5,
     weightMultiplier: 7,
@@ -249,7 +260,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.5,
   },
   coral: {
-    names: ['Coral Reef'],
+    names: [t('entities.coral.name', 'Coral Reef')],
     colors: ['#FFF3E0'],
     speedMultiplier: 0, // Static
     weightMultiplier: 999, // Unliftable
@@ -259,7 +270,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     isObstacle: true,
   },
   sea_kelp: {
-    names: ['Sea Kelp'],
+    names: [t('entities.sea_kelp.name', 'Sea Kelp')],
     colors: ['#7ED957'],
     speedMultiplier: 0,
     weightMultiplier: 999,
@@ -269,7 +280,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     isObstacle: true,
   },
   sea_kelp_horizontal: {
-    names: ['Floating Kelp'],
+    names: [t('entities.sea_kelp_horizontal.name', 'Floating Kelp')],
     colors: ['#7ED957'],
     speedMultiplier: 0,
     weightMultiplier: 999,
@@ -279,7 +290,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     isObstacle: true,
   },
   sea_rock: {
-    names: ['Sea Rock'],
+    names: [t('entities.sea_rock.name', 'Sea Rock')],
     colors: ['#8A9AA9'],
     speedMultiplier: 0,
     weightMultiplier: 999,
@@ -289,7 +300,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     isObstacle: true,
   },
   sea_rock_large: {
-    names: ['Large Sea Rock'],
+    names: [t('entities.sea_rock_large.name', 'Large Sea Rock')],
     colors: ['#8A9AA9'],
     speedMultiplier: 0,
     weightMultiplier: 999,
@@ -299,7 +310,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     isObstacle: true,
   },
   gold_doubloon: {
-    names: ['Gold Doubloon'],
+    names: [t('entities.gold_doubloon.name', 'Gold Doubloon')],
     colors: ['#FFD700'],
     speedMultiplier: 0.8, // Will float instead of staying static
     weightMultiplier: 10,
@@ -308,7 +319,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.0,
   },
   whirlpool: {
-    names: ['Whirlpool'],
+    names: [t('entities.whirlpool.name', 'Whirlpool')],
     colors: ['#00BFFF'],
     speedMultiplier: 0.8,
     weightMultiplier: 0,
@@ -318,7 +329,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     isObstacle: true,
   },
   sunken_boat: {
-    names: ['Sunken Boat'],
+    names: [t('entities.sunken_boat.name', 'Sunken Boat')],
     colors: ['#8B4513'],
     speedMultiplier: 0,
     weightMultiplier: 15,
@@ -328,7 +339,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     isObstacle: true,
   },
   shark_skeleton: {
-    names: ['Shark Skeleton'],
+    names: [t('entities.shark_skeleton.name', 'Shark Skeleton')],
     colors: ['#E0E0E0'],
     speedMultiplier: 0.3,
     weightMultiplier: 4,
@@ -337,7 +348,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 2.2,
   },
   env_bubbles: {
-    names: ['Bubbles'],
+    names: [t('entities.env_bubbles.name', 'Bubbles')],
     colors: ['#E0FFFF'],
     speedMultiplier: 1.5,
     weightMultiplier: 0,
@@ -346,7 +357,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 1.0,
   },
   anchor: {
-    names: ['Rusty Anchor'],
+    names: [t('entities.anchor.name', 'Rusty Anchor')],
     colors: ['#708090'],
     speedMultiplier: 0,
     weightMultiplier: 10,
@@ -355,7 +366,7 @@ export const OBJECT_MATRIX: Record<FishClass, {
     aspectRatio: 0.8,
   },
   shell: {
-    names: ['Sea Shell'],
+    names: [t('entities.shell.name', 'Sea Shell')],
     colors: ['#FFEFD5'],
     speedMultiplier: 0,
     weightMultiplier: 0,

@@ -7,6 +7,8 @@ import { BACKGROUND_THEMES, type BackgroundTheme } from "@/game/DynamicBackgroun
 import { getAdminMode, getSelectedStartLevel, getUserSelectedStartLevel, getUserUnlockedLevel, setSelectedStartLevel, setUserSelectedStartLevel, isTutorialCompleted, getStartLevelForMode, getMaxLevelReached } from "@/game/storage";
 
 import { RegionIntroCard } from "@/components/RegionIntroCard";
+import { t } from "@/lib/i18n";
+import { AutoShrinkText } from "@/components/ui/AutoShrinkText";
 
 // --- Helper for color interpolation ---
 const parseHex = (hex: string) => {
@@ -76,16 +78,16 @@ const STAGE_BACKGROUNDS = [
 ];
 
 const STAGE_NAMES = [
-  "Dawnbreak Cove",
-  "Twilight Reef",
-  "Whispering Atolls",
-  "Abyssal Blue",
-  "Tempest Strait",
-  "Aurora Depths",
-  "Crimson Moon",
-  "Chaos Vortex",
-  "Golden Sanctum",
-  "Legend's End"
+  t('regions.r1', "Dawnbreak Cove"),
+  t('regions.r2', "Twilight Reef"),
+  t('regions.r3', "Whispering Atolls"),
+  t('regions.r4', "Abyssal Blue"),
+  t('regions.r5', "Tempest Strait"),
+  t('regions.r6', "Aurora Depths"),
+  t('regions.r7', "Crimson Moon"),
+  t('regions.r8', "Chaos Vortex"),
+  t('regions.r9', "Golden Sanctum"),
+  t('regions.r10', "Legend's End")
 ];
 
 const STAGE_INTRO_KEYS = [2, 11, 21, 31, 41, 51, 61, 71, 81, 91];
@@ -116,7 +118,7 @@ const LevelNode = React.memo(({
 
   const handleClick = () => {
     if (!isSelectable) {
-      alert("Bu seviyeye henüz erişiminiz yok! Önceki seviyeleri tamamlamalısınız.");
+      alert(t('ui.level_locked_msg', "You don't have access to this level yet! You must complete previous levels first."));
       return;
     }
     onClick();
@@ -154,7 +156,7 @@ const LevelNode = React.memo(({
           <Lock className="w-6 h-6 text-yellow-400 drop-shadow-md fill-yellow-400/20" />
         ) : (
           <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] text-white flex items-center gap-2">
-            {isBossRow ? "BOSS" : gameLevelNum}
+            {isBossRow ? t('common.boss', "BOSS") : gameLevelNum}
             {isBossRow && <Crown className="w-5 h-5 text-yellow-400 fill-yellow-400" />}
           </span>
         )}
@@ -163,7 +165,7 @@ const LevelNode = React.memo(({
       {isCheckpoint && !isBossRow && (
         <div className={`absolute -top-3 -left-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-full px-2.5 py-1.5 shadow-2xl border-2 border-white z-50 flex items-center gap-1 animate-bounce`}>
           <Anchor className="w-3.5 h-3.5 text-white fill-white drop-shadow-sm" />
-          <span className="text-[10px] font-display font-black text-white leading-none tracking-tight drop-shadow-md">CHECKPOINT</span>
+          <span className="text-[10px] font-display font-black text-white leading-none tracking-tight drop-shadow-md">{t('common.checkpoint', "CHECKPOINT")}</span>
         </div>
       )}
       
@@ -275,9 +277,11 @@ export default function LevelSelect() {
           </Link>
           
           <div className="flex flex-col items-center flex-1 px-2 overflow-hidden">
-            <h2 className="text-2xl font-display font-black text-white text-shadow-lg tracking-tight uppercase whitespace-nowrap">Island Select</h2>
+            <h2 className="text-2xl font-display font-black text-white text-shadow-lg tracking-tight uppercase whitespace-nowrap">
+              <AutoShrinkText maxFontSize={24}>{t('ui.island_select', 'Island Select')}</AutoShrinkText>
+            </h2>
             <div className="text-cyan-100 text-[11px] font-bold tracking-widest uppercase opacity-90 text-center w-full truncate px-1">
-              {isAdminMode ? "🗺️ EXPLORER MODE" : STAGE_NAMES[currentStage]}
+              {isAdminMode ? t('ui.explorer_mode', "🗺️ EXPLORER MODE") : t(`regions.r${currentStage + 1}`, STAGE_NAMES[currentStage])}
             </div>
           </div>
 
@@ -327,12 +331,12 @@ export default function LevelSelect() {
               disabled={currentStage === 0}
               className="px-4 py-2 bg-white/20 hover:bg-white/30 disabled:opacity-20 rounded-xl text-[11px] font-black text-white uppercase tracking-tight transition-all border-2 border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)] active:scale-90"
             >
-              Prev Stage
+              <AutoShrinkText maxFontSize={11}>{t('ui.prev_stage', 'Prev Stage')}</AutoShrinkText>
             </button>
             
             <div className="flex flex-col items-center text-center">
               <div className="text-white font-display font-black text-sm tracking-tight leading-none mb-0.5 uppercase">
-                Level {selectedLevel - 1}
+                {t('common.level', 'Level')} {selectedLevel - 1}
               </div>
               <div className="text-cyan-200 text-xs font-bold opacity-90 italic truncate max-w-[150px]">
                 "{LEVEL_NAMES[selectedLevel] || "Unknown Waters"}"
@@ -344,7 +348,7 @@ export default function LevelSelect() {
               disabled={currentStage === 9}
               className="px-4 py-2 bg-white/20 hover:bg-white/30 disabled:opacity-20 rounded-xl text-[11px] font-black text-white uppercase tracking-tight transition-all border-2 border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)] active:scale-90"
             >
-              Next Stage
+              <AutoShrinkText maxFontSize={11}>{t('ui.next_stage', 'Next Stage')}</AutoShrinkText>
             </button>
           </div>
 
@@ -371,7 +375,7 @@ export default function LevelSelect() {
               
               <Play className="w-7 h-7 text-white fill-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]" />
               <span className="text-2xl font-display font-black text-white tracking-wide uppercase drop-shadow-[0_3px_1px_rgba(0,0,0,0.4)]">
-                Set Sail!
+                <AutoShrinkText maxFontSize={24}>{t('ui.set_sail', 'Set Sail!')}</AutoShrinkText>
               </span>
             </div>
           </button>

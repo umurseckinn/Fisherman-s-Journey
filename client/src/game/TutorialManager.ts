@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { GameEngine, CANVAS_WIDTH, CANVAS_HEIGHT, FISH_ZONE_TOP } from './GameEngine';
 import { FishClass } from './types';
 
@@ -58,7 +59,7 @@ export class TutorialLevelManager {
         this.setStep('l2_storage');
         this.freezeGame();
         this.state.spotlightTarget = 'storage_panel';
-        this.state.overlayText = "Watch your Storage limit! If your boat gets too heavy, it will sink.";
+        this.state.overlayText = t('tutorial.storage', "Watch your Storage limit! If your boat gets too heavy, it will sink.");
         this.state.overlayOpacity = 0.85;
         this.state.allowedAction = 'tap_anywhere';
       } else {
@@ -103,7 +104,7 @@ export class TutorialLevelManager {
           this.schedule(() => {
             this.freezeGame();
             this.state.spotlightTarget = 'tnt_btn';
-            this.state.overlayText = "Tap the TNT to clear clusters!";
+            this.state.overlayText = t('tutorial.tnt', "Tap the TNT to clear clusters!");
             this.state.overlayOpacity = 0.75;
             this.state.allowedAction = 'tap_tnt';
           }, 900);
@@ -135,7 +136,7 @@ export class TutorialLevelManager {
         if (!this.state.isFrozen && this.getVisibleFishCount() >= 4 && this.timer > 1000) {
           this.freezeGame();
           this.state.spotlightTarget = 'net_btn';
-          this.state.overlayText = "Too many fish? Tap The Net!";
+          this.state.overlayText = t('tutorial.net', "Too many fish? Tap The Net!");
           this.state.overlayOpacity = 0.75;
           this.state.allowedAction = 'tap_net';
         }
@@ -171,7 +172,7 @@ export class TutorialLevelManager {
           if (fish && fish.x - fish.radius >= 0 && fish.x + fish.radius <= CANVAS_WIDTH) {
             this.freezeGame();
             this.state.spotlightTarget = 'harpoon_btn';
-            this.state.overlayText = "Fast targets need a Harpoon! Tap it!";
+            this.state.overlayText = t('tutorial.harpoon', "Fast targets need a Harpoon! Tap it!");
             this.state.overlayOpacity = 0.75;
             this.state.allowedAction = 'tap_harpoon';
           }
@@ -202,7 +203,7 @@ export class TutorialLevelManager {
         if (!this.state.isFrozen && this.getVisibleFishCount() >= 4 && this.timer > 1000) {
           this.freezeGame();
           this.state.spotlightTarget = 'anchor_btn';
-          this.state.overlayText = "Overwhelmed? Tap the Anchor to slow down time!";
+          this.state.overlayText = t('tutorial.anchor_intro', "Overwhelmed? Tap the Anchor to slow down time!");
           this.state.overlayOpacity = 0.75;
           this.state.allowedAction = 'tap_anchor';
         }
@@ -212,10 +213,10 @@ export class TutorialLevelManager {
         const anchorTimer = this.engine.getState().anchorEffectTimerMs;
         if (anchorTimer > 0) {
           const seconds = Math.ceil(anchorTimer / 1000);
-          this.state.overlayText = `TIME SLOWED! ${seconds}s`;
+          this.state.overlayText = `${t('tutorial.time_slowed', 'TIME SLOWED!')} ${seconds}s`;
           this.state.overlayOpacity = 0.45;
         } else {
-          this.state.overlayText = "TIME RESTORED!";
+          this.state.overlayText = t('tutorial.time_restored', "TIME RESTORED!");
           if (this.timer > 1500) { // 1.5s delay after RESTORED
             this.setStep('completed');
             this.engine.scheduleTutorialArrival(500); // Trigger boat arrival
@@ -241,19 +242,19 @@ export class TutorialLevelManager {
         if (action === 'next_step' || action === 'tap_anywhere') {
           this.state.step = 'l2_hook';
           this.state.spotlightTarget = 'hook_panel';
-          this.state.overlayText = "This is your Hook health. Hit too many hard obstacles, and it will snap!";
+          this.state.overlayText = t('tutorial.l2_hook', "This is your Hook health. Hit too many hard obstacles, and it will snap!");
           this.state.overlayOpacity = 0.85;
         }
       } else if (this.state.step === 'l2_hook') {
         if (action === 'next_step' || action === 'tap_anywhere') {
           this.state.step = 'l2_final';
           this.state.spotlightTarget = 'character';
-          this.state.overlayText = "You're all set Captain! Tap anywhere to cast your line and catch some fish!";
+          this.state.overlayText = t('tutorial.l2_final', "You're all set Captain! Tap anywhere to cast your line and catch some fish!");
           this.state.overlayOpacity = 0.85;
         } else if (action === 'prev_step') {
           this.state.step = 'l2_storage';
           this.state.spotlightTarget = 'storage_panel';
-          this.state.overlayText = "Watch your Storage limit! If your boat gets too heavy, it will sink.";
+          this.state.overlayText = t('tutorial.storage', "Watch your Storage limit! If your boat gets too heavy, it will sink.");
           this.state.overlayOpacity = 0.85;
         }
       } else if (this.state.step === 'l2_final') {
@@ -263,7 +264,7 @@ export class TutorialLevelManager {
         } else if (action === 'prev_step') {
           this.state.step = 'l2_hook';
           this.state.spotlightTarget = 'hook_panel';
-          this.state.overlayText = "This is your Hook health. Hit too many hard obstacles, and it will snap!";
+          this.state.overlayText = t('tutorial.l2_hook', "This is your Hook health. Hit too many hard obstacles, and it will snap!");
           this.state.overlayOpacity = 0.85;
         }
       }
@@ -273,7 +274,7 @@ export class TutorialLevelManager {
     if (this.state.step === 'tnt_intro' && action === 'tap_tnt') {
       this.state.step = 'tnt_action';
       this.state.spotlightTarget = 'target_fish';
-      this.state.overlayText = "Hold and drag over the shells to catch them both!";
+      this.state.overlayText = t('tutorial.tnt_drag', "Hold and drag over the shells to catch them both!");
       this.state.overlayOpacity = 0.75;
       this.state.allowedAction = 'drag_tnt';
     }
@@ -284,7 +285,7 @@ export class TutorialLevelManager {
     else if (this.state.step === 'net_intro' && action === 'tap_net') {
       this.state.step = 'net_action';
       this.state.spotlightTarget = 'sea_area';
-      this.state.overlayText = "Tap anywhere on the sea to catch them all at once!";
+      this.state.overlayText = t('tutorial.net_tap', "Tap anywhere on the sea to catch them all at once!");
       this.state.overlayOpacity = 0.45;
       this.state.allowedAction = 'tap_sea';
     }
@@ -295,7 +296,7 @@ export class TutorialLevelManager {
     else if (this.state.step === 'harpoon_intro' && action === 'tap_harpoon') {
       this.state.step = 'harpoon_action';
       this.state.spotlightTarget = 'target_fish';
-      this.state.overlayText = "Hold, aim the trajectory, and release to strike!";
+      this.state.overlayText = t('tutorial.harpoon_aim', "Hold, aim the trajectory, and release to strike!");
       this.state.overlayOpacity = 0.75;
       this.state.allowedAction = 'aim_harpoon';
     }
@@ -306,7 +307,7 @@ export class TutorialLevelManager {
     else if (this.state.step === 'anchor_intro' && action === 'tap_anchor') {
       this.state.step = 'anchor_action';
       this.state.spotlightTarget = 'sea_area';
-      this.state.overlayText = "Tap anywhere on the sea to slow time!";
+      this.state.overlayText = t('tutorial.anchor_tap', "Tap the sea to drop anchor!");
       this.state.overlayOpacity = 0.45;
       this.state.allowedAction = 'tap_sea';
     }

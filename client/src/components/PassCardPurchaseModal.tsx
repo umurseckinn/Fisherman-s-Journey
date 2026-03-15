@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { t } from "@/lib/i18n";
 
 interface PassCardPurchaseModalProps {
   onClose: () => void;
@@ -16,9 +17,9 @@ interface PassCardPackage {
 }
 
 const PASS_PACKAGES: PassCardPackage[] = [
-  { id: 'basic', name: "Basic Pass Pouch", amount: 1, price: '$0.99' },
-  { id: 'popular', name: "Popular Pass Sack", amount: 5, price: '$3.99', badge: 'MOST POPULAR', highlight: 'popular' },
-  { id: 'pro', name: "Captain's Pass Chest", amount: 15, price: '$8.99', badge: 'BEST VALUE', highlight: 'best' },
+  { id: 'basic', name: t('ui.shop.pass_pouch', "Basic Pass Pouch"), amount: 1, price: '$0.99' },
+  { id: 'popular', name: t('ui.shop.pass_sack', "Popular Pass Sack"), amount: 5, price: '$3.99', badge: t('common.most_popular', 'MOST POPULAR'), highlight: 'popular' },
+  { id: 'pro', name: t('ui.shop.pass_chest', "Captain's Pass Chest"), amount: 15, price: '$8.99', badge: t('common.best_value', 'BEST VALUE'), highlight: 'best' },
 ];
 
 export const PassCardPurchaseModal: React.FC<PassCardPurchaseModalProps> = ({ onClose, onPurchase }) => {

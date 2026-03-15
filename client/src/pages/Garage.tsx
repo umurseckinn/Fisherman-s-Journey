@@ -25,6 +25,7 @@ import {
 import { GoldDoubloonShopModal } from "@/components/GoldDoubloonShopModal";
 import { PassCardPurchaseModal } from "@/components/PassCardPurchaseModal";
 import { GarageTutorialManager } from "@/game/GarageTutorialManager";
+import { t } from "@/lib/i18n";
 
 interface GarageProps {
   onStartFishing: (vehicleId: string) => void;
@@ -314,12 +315,12 @@ export default function Garage({ onStartFishing }: GarageProps) {
 
         {/* ── Stats panel ── */}
         <div className="mx-4 mt-3 bg-[#081c30]/60 rounded-2xl p-3 border border-white/5">
-          <div className="text-cyan-200 font-bold text-xs mb-2 uppercase tracking-wide">Current Effective Stats</div>
-          <StatBar label="Storage" value={`${stats.storage} kg`} pct={stats.storage / MAX_STORAGE} flash={upgradeFlash?.startsWith('sto')} />
-          <StatBar label="Swing" value={stats.swingSpeed.toFixed(3)} pct={stats.swingSpeed / MAX_SWING} flash={upgradeFlash?.startsWith('rod')} />
-          <StatBar label="Depth" value={`${stats.hookDepth.toFixed(0)}%`} pct={stats.hookDepth / MAX_DEPTH} flash={upgradeFlash?.startsWith('rod')} />
-          <StatBar label="Casts" value={`${stats.castAttempts}`} pct={stats.castAttempts / MAX_ATTEMPTS} flash={upgradeFlash?.startsWith('rod')} />
-          <StatBar label="Coral" value={`${stats.coralProtection.toFixed(0)}%`} pct={stats.coralProtection / 100} flash={upgradeFlash?.startsWith('rod')} />
+          <div className="text-cyan-200 font-bold text-xs mb-2 uppercase tracking-wide">{t('garage.current_stats', 'Current Effective Stats')}</div>
+          <StatBar label={t('garage.storage', 'Storage')} value={`${stats.storage} kg`} pct={stats.storage / MAX_STORAGE} flash={upgradeFlash?.startsWith('sto')} />
+          <StatBar label={t('garage.swing', 'Swing')} value={stats.swingSpeed.toFixed(3)} pct={stats.swingSpeed / MAX_SWING} flash={upgradeFlash?.startsWith('rod')} />
+          <StatBar label={t('garage.depth', 'Depth')} value={`${stats.hookDepth.toFixed(0)}%`} pct={stats.hookDepth / MAX_DEPTH} flash={upgradeFlash?.startsWith('rod')} />
+          <StatBar label={t('garage.casts', 'Casts')} value={`${stats.castAttempts}`} pct={stats.castAttempts / MAX_ATTEMPTS} flash={upgradeFlash?.startsWith('rod')} />
+          <StatBar label={t('garage.coral', 'Coral')} value={`${stats.coralProtection.toFixed(0)}%`} pct={stats.coralProtection / 100} flash={upgradeFlash?.startsWith('rod')} />
         </div>
 
         {/* ── Upgrade buttons ── */}
@@ -327,7 +328,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
           <button
             onClick={() => {
               if (nextStoIndex < 0 || !nextStoUpgrade) return;
-              attemptPurchase(nextStoUpgrade.cost, () => handleBuySto(nextStoIndex), `Storage Lv${nextStoLevel}`);
+              attemptPurchase(nextStoUpgrade.cost, () => handleBuySto(nextStoIndex), `${t('common.storage')} Lv${nextStoLevel}`);
             }}
             disabled={nextStoIndex < 0}
             className={`rounded-xl px-3 py-3 text-left border transition-all ${nextStoIndex >= 0
@@ -336,13 +337,13 @@ export default function Garage({ onStartFishing }: GarageProps) {
               }`}
             id="storage-upgrade-btn"
           >
-            <div className="text-white text-sm font-bold">{nextStoLevel ? `Storage Lv${nextStoLevel}` : 'Storage MAX'}</div>
-            <div className="text-xs text-cyan-200 mt-1 flex items-center gap-1">{nextStoLevel && nextStoUpgrade ? <><img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain inline" />{formatCoins(nextStoUpgrade.cost)}</> : 'Owned'}</div>
+            <div className="text-white text-sm font-bold">{nextStoLevel ? `${t('common.storage')} Lv${nextStoLevel}` : t('common.storage_max', 'Storage MAX')}</div>
+            <div className="text-xs text-cyan-200 mt-1 flex items-center gap-1">{nextStoLevel && nextStoUpgrade ? <><img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain inline" />{formatCoins(nextStoUpgrade.cost)}</> : t('garage.owned', 'Owned')}</div>
           </button>
           <button
             onClick={() => {
               if (nextRodIndex < 0 || !nextRodUpgrade) return;
-              attemptPurchase(nextRodUpgrade.cost, () => handleBuyRod(nextRodIndex), `Rod Lv${nextRodLevel}`);
+              attemptPurchase(nextRodUpgrade.cost, () => handleBuyRod(nextRodIndex), `${t('common.rod_lv', 'Rod Lv{level}', { level: nextRodLevel || '' })}`);
             }}
             disabled={nextRodIndex < 0}
             className={`rounded-xl px-3 py-3 text-left border transition-all ${nextRodIndex >= 0
@@ -351,8 +352,8 @@ export default function Garage({ onStartFishing }: GarageProps) {
               }`}
             id="rod-upgrade-btn"
           >
-            <div className="text-white text-sm font-bold">{nextRodLevel ? `Rod Lv${nextRodLevel}` : 'Rod MAX'}</div>
-            <div className="text-xs text-cyan-200 mt-1 flex items-center gap-1">{nextRodLevel && nextRodUpgrade ? <><img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain inline" />{formatCoins(nextRodUpgrade.cost)}</> : 'Owned'}</div>
+            <div className="text-white text-sm font-bold">{nextRodLevel ? `${t('common.rod_lv', 'Rod Lv{level}', { level: nextRodLevel })}` : t('common.rod_max', 'Rod MAX')}</div>
+            <div className="text-xs text-cyan-200 mt-1 flex items-center gap-1">{nextRodLevel && nextRodUpgrade ? <><img src="/assets/environment/gold_doubloon.png" alt="" className="w-3.5 h-3.5 object-contain inline" />{formatCoins(nextRodUpgrade.cost)}</> : t('garage.owned', 'Owned')}</div>
           </button>
         </div>
 
@@ -383,7 +384,7 @@ export default function Garage({ onStartFishing }: GarageProps) {
               : 'bg-slate-600 text-slate-400 cursor-not-allowed opacity-60'
               }`}
           >
-            START FISHING →
+            {t('garage.start_fishing', 'START FISHING →')}
           </button>
         </div>
 
@@ -502,7 +503,7 @@ function VehicleStatusButton({
   if (owned) {
     return (
       <div className={`w-full rounded-xl py-3 flex items-center justify-center gap-2 font-bold text-sm ${flash ? 'bg-green-500 text-white' : 'bg-green-800/30 border border-green-500/40 text-green-400'}`}>
-        <Check className="w-5 h-5" /> ACTIVE
+        <Check className="w-5 h-5" /> {t('common.active', 'ACTIVE')}
       </div>
     );
   }
@@ -513,10 +514,11 @@ function VehicleStatusButton({
       className={`w-full rounded-xl py-3 flex items-center justify-center gap-2 font-bold text-sm transition-all ${'bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:scale-[1.02] active:scale-[0.98] shadow-md'
         }`}
     >
+      <span className="hidden boat-name">{vehicle.name}</span>
       {showDoubloonIcon && (
         <img src="/assets/environment/gold_doubloon.png" alt="" className="w-4 h-4 object-contain" style={{ filter: 'drop-shadow(0 0 3px rgba(255,215,0,0.8))' }} />
       )}
-      {costLabel} — BUY
+      {costLabel} — {t('common.buy', 'BUY')}
     </button>
   );
 }

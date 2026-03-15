@@ -1,0 +1,690 @@
+{
+  "common": {
+    "buy": "COMPRAR",
+    "active": "ACTIVO",
+    "repair_rod": "Reparar Caña",
+    "game_over": "JUEGO TERMINADO",
+    "score": "Puntuación",
+    "coins": "Monedas",
+    "fuel": "Combustible",
+    "weight": "Peso",
+    "storage": "Depósito",
+    "level": "Nivel",
+    "region": "Región",
+    "capacity": "Capacidad",
+    "speed": "Velocidad",
+    "depth": "Profundidad",
+    "attempts": "Intentos",
+    "protection": "Protección",
+    "reduction": "Reducción",
+    "info": "INFO",
+    "tap_anywhere": "Toca en cualquier lugar para continuar",
+    "kg": "kg",
+    "story": "Historia",
+    "ability_effect": "Habilidad / Efecto",
+    "type": "Tipo",
+    "radius": "Radio",
+    "aspect": "Aspecto",
+    "obstacle": "Obstáculo",
+    "catchable": "Capturable",
+    "close": "Cerrar",
+    "visibility": "Visibilidad",
+    "direction": "Dirección",
+    "coral": "Coral",
+    "curse": "MALDICIÓN",
+    "value": "Valor",
+    "spawn": "Aparición",
+    "escape": "Escape",
+    "inventory": "Inventario",
+    "obstacles": "Obstáculos",
+    "chain": "Cadena",
+    "prices": "Precios",
+    "swing": "Oscilación",
+    "gauge": "Indicador",
+    "cycle": "Ciclo",
+    "owned": "En propiedad",
+    "unlocked": "Desbloqueado",
+    "locked": "Bloqueado",
+    "buy_now": "COMPRAR AHORA",
+    "select": "SELECCIONAR",
+    "selected": "SELECCIONADO",
+    "min_level": "Nivel mín. {level}",
+    "storage_lv": "Depósito Nv{level}",
+    "rod_lv": "Caña Nv{level}",
+    "storage_max": "Depósito MÁX",
+    "rod_max": "Caña MÁX",
+    "effective_stats": "Estadísticas actuales",
+    "start_fishing": "EMPEZAR A PESCAR →",
+    "loading": "Cargando...",
+    "hall_of_fame": "Salón de la Fama",
+    "top_fishermen": "Mejores pescadores legendarios",
+    "no_scores": "Aún no hay puntuaciones. ¡Sé el primero!",
+    "island": "Isla",
+    "island_level": "Nivel de Isla {level}",
+    "training_bay": "Bahía de Entrenamiento",
+    "tutorial_harbor": "Puerto del Tutorial",
+    "unknown_waters": "Aguas Desconocidas",
+    "deep_sea_market": "Mercado del Mar Profundo",
+    "deep_voyage": "Viaje Profundo",
+    "sell_haul": "Vende tu Captura",
+    "fish_count": "{count} Peces",
+    "empty_nets": "Redes vacías...",
+    "sell_all": "Vender Todo",
+    "boat_services": "Servicios del Barco",
+    "refill_fuel": "Recargar Combustible",
+    "repair_rod_btn": "Reparar Caña",
+    "needs_fuel": "Necesita Combustible",
+    "set_sail_btn": "¡Zarpar!",
+    "end_journey_confirm": "¿Terminar el viaje actual? ¡Se perderá todo el progreso!",
+    "end_journey_reason": "¡Sin combustible! El viaje terminó en el mercado.",
+    "end_journey_btn": "Terminar Viaje (Rendirse)",
+    "you_won": "¡Has Ganado!",
+    "you_won_msg": "Has llegado a todas las islas. ¡Fue un viaje legendario!",
+    "restart_btn": "REINICIAR",
+    "boss": "JEFE",
+    "checkpoint": "PUNTO DE CONTROL",
+    "language": "Idioma",
+    "free": "GRATIS",
+    "most_popular": "MÁS POPULAR",
+    "best_value": "MEJOR VALOR",
+    "snaps_hook": "¡Rompe el anzuelo!",
+    "danger": "¡Peligro!",
+    "boost": "Impulso 💨",
+    "harpoon": "Arpón",
+    "net": "Red",
+    "tnt": "TNT",
+    "anchor_booster": "Ancla"
+  },
+  "game": {
+    "over": {
+      "boat_sank": "¡El barco se hundió! Fue aplastado por la carga pesada.",
+      "no_hooks": "¡Caña de pescar inutilizable! Todos los anzuelos están rotos."
+    },
+    "hud": {
+      "weight": "{current} / {max} kg",
+      "score": "{score} 🪙",
+      "storage": "Depósito",
+      "hook": "Anzuelo",
+      "storage_almost_full": "¡DEPÓSITO CASI LLENO! ⚠️",
+      "boat_sinking": "¡EL BARCO SE HUNDE! ¡DEPÓSITO LLENO! 🚨"
+    },
+    "feedback": {
+      "legendary": "¡LEGENDARIO!",
+      "rod_broken": "¡CAÑA ROTA!",
+      "combo_2": "¡2 SEGUIDOS!",
+      "combo_3": "¡COMBO x3!",
+      "combo_5": "¡EN LLAMAS x5!",
+      "combo_7": "¡IMPARABLE x7!",
+      "combo_poseidon": "¡POSEIDÓN! x{combo}",
+      "weight_reduced": "-1 kg"
+    }
+  },
+  "ui": {
+    "storage_full": "¡Depósito Lleno!",
+    "out_of_fuel": "¡Sin Combustible!",
+    "rod_broken": "¡Caña Rota!",
+    "level_complete": "¡Nivel Completado!",
+    "next_level": "Siguiente Nivel",
+    "try_again": "Intentar de Nuevo",
+    "back_to_home": "Inicio",
+    "garage": "Garaje",
+    "leaderboard": "Clasificación",
+    "settings": "Ajustes",
+    "repair_cost": "Coste de Reparación",
+    "unlock_cost": "Coste de Desbloqueo",
+    "insufficient_balance": "¡Saldo Insuficiente!",
+    "need_fuel_msg": "Necesitas {cost} 🪙 para comprar combustible. Por favor, usa una Tarjeta de Pase o elige una opción.",
+    "use_pass_card": "Usar Tarjeta de Pase",
+    "get_pass_cards": "Conseguir más Tarjetas",
+    "watch_ad": "Ver un Anuncio (+50 🪙)",
+    "back_to_market": "Volver al Mercado",
+    "give_up": "Rendirse (Terminar Viaje)",
+    "repair_needed": "¡Necesita Reparación!",
+    "need_repair_msg": "Necesitas {cost} 🪙 para reparar la caña. Por favor, elige una opción para continuar.",
+    "get_more_doubloons": "Conseguir más Doblones",
+    "watch_ad_amount": "Ver un Anuncio (+{amount} 🪙)",
+    "island_select": "Selección de Isla",
+    "explorer_mode": "🗺️ MODO EXPLORADOR",
+    "prev_stage": "Etapa Anterior",
+    "next_stage": "Siguiente Etapa",
+    "set_sail": "¡Zarpar!",
+    "level_locked_msg": "¡Aún no tienes acceso a este nivel! Debes completar los niveles anteriores primero.",
+    "tutorial": "Tutorial",
+    "new_region": "Nueva Región",
+    "back_to_level_select": "VOLVER A LA SELECCIÓN DE NIVEL",
+    "island_clear": "¡Isla Completada!",
+    "refueling_msg": "Repostando para el próximo viaje...",
+    "current_gold": "Doblones de Oro Actuales",
+    "fuel_cost": "Coste de Combustible",
+    "remaining": "Restante",
+    "travel_to_island": "Viajar a la Isla {island}",
+    "rod_broken_title": "¡Oh no! ¡Caña Rota!",
+    "boat_sunk_title": "¡Exceso de peso! ¡Barco Hundido!",
+    "out_of_fuel_title": "¡Varado! ¡Sin Combustible!",
+    "island_reached": "Llegada a la Isla {island}",
+    "new_record": "¡NUEVO RÉCORD!",
+    "total_score": "PUNTUACIÓN TOTAL",
+    "base_score": "Puntuación Base",
+    "depth_bonus": "Bono de Profundidad",
+    "king_bounty": "Recompensa del Rey",
+    "vault_earnings": "Ganancias de la Bóveda",
+    "menu": "MENÚ",
+    "retry": "REINTENTAR",
+    "play_tutorial": "JUGAR TUTORIAL",
+    "play_game": "JUGAR EL JUEGO",
+    "levels_title": "NIVELES",
+    "admin_mode_msg": "Selección de modo administrador",
+    "unlocked_up_to": "Desbloqueado hasta L{level}",
+    "admin_mode": "Modo Admin",
+    "select_level": "Seleccionar Nivel",
+    "reset_confirm": "¿Estás seguro? ¡Esto reiniciará todo tu progreso!",
+    "reset_progress": "Reiniciar Progreso",
+    "logo_text": "Remo y Marea",
+    "shop": {
+      "pass_pouch": "Bolsa de Pase Básica",
+      "pass_sack": "Saco de Pase Popular",
+      "pass_chest": "Cofre de Pase del Capitán",
+      "doubloon_pouch": "Bolsa de Doblones del Pescador",
+      "doubloon_sack": "Saco de Doblones del Experto",
+      "doubloon_chest": "Cofre de Doblones del Capitán",
+      "doubloon_hoard": "Tesoro de Doblones de Poseidón",
+      "welcome_gift": "¡Regalo de Bienvenida!",
+      "level_2_reached": "¡Has llegado al Nivel 2!",
+      "claim_gift": "RECLAMAR REGALO",
+      "claim_now": "RECLAMAR AHORA"
+    },
+    "boosters": {
+      "out_of": "¿Te quedaste sin {booster}?",
+      "mega_pack": "Mega Pack",
+      "epic_pack": "Epic Pack",
+      "all_boosters": "{amount}x TODOS los Boosters",
+      "single_booster": "{amount}x {booster}",
+      "how_it_works": "Cómo funciona",
+      "tips": "Consejos",
+      "harpoon": {
+        "phrase": "¡Arponea esas capturas difíciles sin esfuerzo!",
+        "summary": "Lanza un arpón recto para atrapar un solo objetivo al instante.",
+        "usage": [
+          "Toca para lanzar; atraviesa hacia adelante y atrapa el primer objetivo válido.",
+          "Ideal para peces de alto valor o pasillos estrechos donde la precisión importa.",
+          "Las capturas con arpón no añaden peso al depósito mientras las lleva el booster."
+        ],
+        "tips": [
+          "Úsalo cuando el objetivo esté alineado con la línea del barco.",
+          "Genial para escapar de momentos críticos cuando el tiempo es escaso."
+        ]
+      },
+      "net": {
+        "phrase": "¡Recoge todo a tu paso!",
+        "summary": "Lanza una red amplia que recoge varios peces en su radio.",
+        "usage": [
+          "Toca para desplegar; se recoge todo lo que esté dentro del círculo.",
+          "Perfecto para bancos de peces densos y apariciones acumuladas.",
+          "Las capturas con red no añaden peso al depósito mientras las lleva el booster."
+        ],
+        "tips": [
+          "Espera a un grupo antes de activarlo para maximizar el valor.",
+          "Combínalo con momentos de lentitud para barrer grandes grupos."
+        ]
+      },
+      "tnt": {
+        "phrase": "¡Limpia el lecho marino con una explosión!",
+        "summary": "Detona un área de 3x3 para limpiar obstáculos y recoger botín.",
+        "usage": [
+          "Toca para colocar; la explosión limpia el área al instante.",
+          "Ideal para zonas con muchos obstáculos y caminos bloqueados.",
+          "Los objetos recogidos con TNT no añaden peso al depósito mientras los lleva el booster."
+        ],
+        "tips": [
+          "Suéltalo donde los obstáculos sean más densos para un impacto máximo.",
+          "Úsalo para abrir rutas cuando estés atrapado."
+        ]
+      },
+      "anchor": {
+        "phrase": "¡Congela el tiempo y atrapa lo que quieras!",
+        "summary": "Congela el tiempo brevemente para que puedas apuntar y recoger con seguridad.",
+        "usage": [
+          "Toca para activar; el tiempo se ralentiza y el movimiento se vuelve manejable.",
+          "Lo mejor para capturas precisas y evitar peligros.",
+          "Los objetos recogidos con ancla no añaden peso al depósito mientras los lleva el booster."
+        ],
+        "tips": [
+          "Actívalo justo antes de un lanzamiento arriesgado.",
+          "Úsalo para estabilizarte cuando queden pocos anzuelos."
+        ]
+      }
+    }
+  },
+  "garage": {
+    "current_stats": "Estadísticas actuales",
+    "storage": "Depósito",
+    "swing": "Oscilación",
+    "depth": "Profundidad",
+    "casts": "Lanzamientos",
+    "coral": "Coral",
+    "owned": "En propiedad",
+    "start_fishing": "EMPEZAR A PESCAR →"
+  },
+  "leaderboard": {
+    "loading": "Cargando puntuaciones...",
+    "no_scores": "Aún no hay puntuaciones. ¡Sé el primero!",
+    "island": "Isla"
+  },
+  "upgrades": {
+    "storage_capacity": "Capacidad de Depósito",
+    "swing_speed": "Velocidad de Oscilación",
+    "cast_speed": "Velocidad de Lanzamiento",
+    "return_speed": "Velocidad de Retorno",
+    "hook_depth": "Profundidad del Anzuelo",
+    "cast_attempts": "Intentos de Lanzamiento",
+    "coral_protection": "Protección contra Coral",
+    "kelp_duration": "Duración de Algas"
+  },
+  "vehicles": {
+    "t1": { "name": "El Bote", "captain": "Bobber Bill" },
+    "t2": { "name": "El Esquife Pintado", "captain": "Daring Danny" },
+    "t3": { "name": "El Fibra de Vidrio", "captain": "Expert Eddie" },
+    "t4": { "name": "El Crucero a Motor", "captain": "Captain Ken" },
+    "t5": { "name": "El Bólido", "captain": "Turbo Trev" },
+    "t6": { "name": "El Arrastrero", "captain": "Seafarer Sam" },
+    "t7": { "name": "El Barco del Capitán", "captain": "Captain Theo" },
+    "t8": { "name": "El Buque de Investigación", "captain": "Professor Pippa" },
+    "t9": { "name": "El Corsario", "captain": "Black Cam" },
+    "t10": { "name": "La Leyenda", "captain": "El Pescador Legendario" }
+  },
+  "regions": {
+    "r1": "Cala del Amanecer",
+    "r2": "Arrecife del Crepúsculo",
+    "r3": "Atolones Susurrantes",
+    "r4": "Azul Abisal",
+    "r5": "Estrecho de la Tempestad",
+    "r6": "Profundidades Aurora",
+    "r7": "Luna Carmesí",
+    "r8": "Vórtice del Caos",
+    "r9": "Santuario Dorado",
+    "r10": "Fin de la Leyenda"
+  },
+  "levels": {
+    "1": "Carrera Matutina",
+    "2": "Sorpresa de Velocidad",
+    "3": "Jardín de Algas",
+    "4": "Primer Mercado",
+    "5": "Descubrimiento Dulce",
+    "6": "Prueba de Velocidad",
+    "7": "Delicia de Cofre",
+    "8": "Ocaso Lunar",
+    "9": "Presión de Peso",
+    "10": "Nivel Dorado",
+    "11": "Trampa de Ancla",
+    "12": "Tentación de Lava",
+    "13": "Respiro",
+    "14": "Tormenta de Marea",
+    "15": "Infierno de Coral",
+    "16": "Susurro de Hoja",
+    "17": "Noche de Esqueletos",
+    "18": "Surge el Remolino",
+    "19": "Último Aliento",
+    "20": "JEFE: Reina de la Cala",
+    "21": "Choque de Coral",
+    "22": "Doble Coral",
+    "23": "Infierno de Velocidad",
+    "24": "Respiro",
+    "25": "Puerta Galáctica",
+    "26": "Pasillo de Esqueletos",
+    "27": "Doble Remolino",
+    "28": "Prueba de Caña",
+    "29": "Respiro",
+    "30": "JEFE: Coral Dorado",
+    "31": "Apertura Profunda",
+    "32": "Crisis de Capacidad",
+    "33": "Trampa de Lluvia",
+    "34": "Respiro",
+    "35": "Susurro del Rey",
+    "36": "Profundidades Oscuras",
+    "37": "Danza de Setas",
+    "38": "Caza Galáctica",
+    "39": "Movimiento Final",
+    "40": "JEFE: Bestia del Azul Profundo",
+    "41": "Puerta de la Tempestad",
+    "42": "Doble Esqueleto",
+    "43": "Choque de Capacidad",
+    "44": "Respiro",
+    "45": "Temporada del Rey",
+    "46": "Pasillo Oscuro",
+    "47": "Bosque de Setas",
+    "48": "Tormenta Galáctica",
+    "49": "Prueba Final",
+    "50": "JEFE: Señor de la Tormenta",
+    "51": "Apertura Aurora",
+    "52": "Caza Oscura",
+    "53": "Respiro",
+    "54": "Oleada del Rey",
+    "55": "Laberinto de Coral",
+    "56": "Guerra de Salto",
+    "57": "Peligro Silencioso",
+    "58": "Tormenta Aurora",
+    "59": "Noche de Caos",
+    "60": "JEFE: Dragón Aurora",
+    "61": "Luna Carmesí",
+    "62": "Maldición: Aguas Pesadas",
+    "63": "Maldición: Corriente Rápida",
+    "64": "Respiro",
+    "65": "Maldición: Punto Ciego",
+    "66": "Maldición: Corriente Inversa",
+    "67": "Maldición: Daño Doble",
+    "68": "Respiro",
+    "69": "Maldición: Crisis Económica",
+    "70": "JEFE: Bestia de la Luna Carmesí",
+    "71": "Puerta Dimensional",
+    "72": "Maldición: Reacción en Cadena",
+    "73": "Maldición: Peces Invisibles",
+    "74": "Respiro",
+    "75": "Maldición: Cuenta Atrás",
+    "76": "Maldición: Mercado Inverso",
+    "77": "Maldición: Ejército de Esqueletos",
+    "78": "Respiro",
+    "79": "Todo Activo",
+    "80": "JEFE: Señor del Caos",
+    "81": "Oscuridad Dorada",
+    "82": "Maldición Combinada I",
+    "83": "Maldición Combinada II",
+    "84": "Respiro",
+    "85": "Maldición: Presión de Tiempo",
+    "86": "Maldición: Peso Inverso",
+    "87": "Maldición: Escape de Peces",
+    "88": "Respiro",
+    "89": "Todas las Maldiciones",
+    "90": "JEFE: Dragón Dorado",
+    "91": "Comienza el Viaje Final",
+    "92": "Maldición: Bomba de Tiempo",
+    "93": "Maldición: Materia Oscura",
+    "94": "Último Aliento",
+    "95": "Maldición Combinada: Final I",
+    "96": "Maldición Combinada: Final II",
+    "97": "Maldición Combinada: Final III",
+    "98": "Tormenta Silenciosa",
+    "99": "Una Oportunidad",
+    "100": "JEFE FINAL: Señor de la Leyenda"
+  },
+  "tutorial": {
+    "storage": "¡Vigila tu límite de depósito! Si el barco pesa demasiado, se hundirá.",
+    "tnt": "¡Arrastra el TNT para limpiar el área!",
+    "net": "¡Toca para desplegar la red!",
+    "harpoon": "¡Apunta el arpón para atrapar peces rápidos!",
+    "anchor": "¡Toca el mar para echar el ancla!",
+    "garage_rod": "¡Una caña más fuerte atrapa peces más grandes!\nToca aquí para mejorar tu caña.",
+    "garage_storage": "¿Te quedas sin espacio?\nToca aquí para ampliar el depósito del barco.",
+    "garage_next_boat": "¡Has ganado suficiente para un barco mejor!\nToca la flecha para ver el siguiente barco.",
+    "garage_buy_boat": "¡Conoce a {boat}!\nToca para comprarlo y zarpar con mejores estadísticas."
+  },
+  "region_intros": {
+    "r1": {
+      "title": "Cala del Amanecer",
+      "story": "Aquí es donde cada marinero da su primer paso. Bajo su apariencia tranquila yacen antiguos naufragios esperando a los novatos. Cuando la primera luz del alba golpea las aguas poco profundas, aquellos que sueñan con ser leyendas izan sus velas aquí por primera vez."
+    },
+    "r2": {
+      "title": "Arrecife del Crepúsculo",
+      "story": "Los corales brillantes iluminan las aguas oscurecidas, marcando tu llegada al misterioso Arrecife del Crepúsculo. Susurros de habitantes marinos olvidados resuenan en las mareas mientras te sumerges más profundamente en el hermoso pero traicionero abismo. Ahora que dominas las aguas poco profundas, las criaturas encantadas de aquí pondrán a prueba tus crecientes habilidades de combate. Equipa tu equipo de respiración acuática y prepárate para enfrentar las sombras que acechan en los vibrantes laberintos de coral. ¡Haz clic aquí para sumergirte en la aventura y conquistar los secretos sumergidos que te esperan entre los niveles 11 y 20!"
+    },
+    "r3": {
+      "title": "Atolones Susurrantes",
+      "story": "Hipnotizantes con sus colores deslumbrantes, estas aguas son en realidad uno de los campos de batalla más despiadados de la naturaleza. Los enormes laberintos de coral bajo la superficie esconden tanto tesoros inigualables como criaturas marinas sedientas de sangre. Solo aquellos con instintos agudos pueden seguir adelante."
+    },
+    "r4": {
+      "title": "Azul Abisal",
+      "story": "Este es el límite donde la luz se desvanece lentamente, descendiendo al oscuro corazón del océano. Las olas familiares de la superficie dan paso a remolinos silenciosos y mortales. Solo aquellos lo suficientemente valientes para enfrentar la oscuridad pueden desenterrar los secretos de este infierno azul."
+    },
+    "r5": {
+      "title": "Estrecho de la Tempestad",
+      "story": "Es un pasaje donde el cielo es siempre negro y el mar eternamente iracundo. Olas colosales esperan para aplastar incluso a los barcos más resistentes. Sobrevivir a este estrecho no es cuestión de suerte, sino una victoria absoluta ganada contra la furia de la naturaleza."
+    },
+    "r6": {
+      "title": "Profundidades Aurora",
+      "story": "Un reino místico iluminado por luces submarinas parpadeantes que imitan el cielo del norte. Las corrientes aquí se mueven en patrones extraños y rítmicos, y el silencio está cargado de magia antigua. Observa el brillo, pues guía a los dignos."
+    },
+    "r7": {
+      "title": "Luna Carmesí",
+      "story": "Un siniestro resplandor rojo baña el paisaje estéril, advirtiendo a todos los que se atreven a entrar bajo la Luna Carmesí. Espíritus vengativos y bestias de pesadilla vagan por estas tierras encantadas, atraídos por el aroma de un guerrero experimentado como tú. Solo aquellos que han sobrevivido a innumerables batallas pueden esperar resistir la enloquecedora corrupción de este reino oscuro. Afila tus mejores armas y prepara tu mente para las terroríficas pruebas que te esperan en las sombras. ¡Entra hoy en la luz de la luna sangrienta y demuestra tu valía en los desafíos mortales de los niveles 61 al 70!"
+    },
+    "r8": {
+      "title": "Vórtice del Caos",
+      "story": "Este es un reino místico donde el tiempo y la dirección se hunden en el fondo del océano. Enormes corrientes interminables arrastran a los barcos a una espiral sin fin. En estas aguas donde las brújulas se vuelven locas, no debes conquistar el mar, sino tu propia mente."
+    },
+    "r9": {
+      "title": "Santuario Dorado",
+      "story": "La prueba final accesible solo para aquellos que escribirán sus nombres en la historia con letras de oro. Cada milla es una batalla épica por la supervivencia. Quienes completan este recorrido ya no son simples marineros, sino leyendas vivas."
+    },
+    "r10": {
+      "title": "Fin de la Leyenda",
+      "story": "La tierra tiembla y los cielos se rompen mientras te encuentras finalmente ante el campo de batalla definitivo, el Fin de la Leyenda. Esta es la arena apocalíptica donde los dioses han caído y los más grandes héroes han encontrado su destino. Cada enemigo monstruoso aquí posee un poder que puede acabar con el mundo, exigiendo una perfección absoluta y maestría táctica de tus habilidades. Reúne tus artefactos más legendarios y forma tus alianzas más fuertes, pues esta expedición final decidirá el destino de todo. ¡Acepta tu destino final ahora y reclama tu gloria eterna conquistando los desafíos supremos de los niveles 91 al 100!"
+    }
+  },
+  "entities": {
+    "bubble": {
+      "name": "Pez Burbuja",
+      "story": "Los Peces Burbuja flotan cerca de la superficie como linternas vivientes. Sus escamas atrapan la luz y brillan con un resplandor vítreo. Los marineros dicen que se reúnen cuando el mar está en calma para marcar aguas seguras.",
+      "effect": "Captura inofensiva con poco valor y peso ligero."
+    },
+    "sakura": {
+      "name": "Pez Sakura",
+      "story": "Los Peces Sakura florecen en las aguas poco profundas en cada marea de primavera. Se mueven en suaves remolinos similares a pétalos que calman incluso las aguas agitadas. Los viejos capitanes los llaman el amuleto de la suerte del océano.",
+      "effect": "Deja un rastro de pétalos y se mueve rápido en aguas poco profundas."
+    },
+    "zap": {
+      "name": "Pez Zap",
+      "story": "Los Peces Zap nacen dentro de bandas de tormenta y llevan el trueno con ellos. Sus cuerpos chisporrotean cuando giran, iluminando el agua con destellos repentinos.",
+      "effect": "Da una descarga al barco durante 3s, dando un 50% de probabilidad de escape a otros peces."
+    },
+    "candy": {
+      "name": "Pez Caramelo",
+      "story": "Los Peces Caramelo se reúnen alrededor de corrientes cálidas donde crecen algas dulces. Sus colores brillantes son una advertencia para los rivales y un faro para los buceadores.",
+      "effect": "Reduce el peso del barco en 1 al capturarlo, hasta 3 veces."
+    },
+    "moon": {
+      "name": "Pez Luna",
+      "story": "Los Peces Luna brillan siempre que el cielo nocturno está despejado. Se deslizan con un ritmo lento, como si escucharan mareas que solo ellos pueden oír.",
+      "effect": "Ralentiza a todos los demás peces un 40% durante 10s."
+    },
+    "lava": {
+      "name": "Pez Lava",
+      "story": "Los Peces Lava nadan a través de respiraderos donde el agua hierve. Su calor deja un rastro de aire trémulo y su presencia hace crujir el metal.",
+      "effect": "Aplica quemadura, añadiendo +1 de peso por segundo durante 5s."
+    },
+    "tide": {
+      "name": "Pez Marea",
+      "story": "Los Peces Marea corren como torpedos al borde de las tormentas. Sus aletas trazan líneas afiladas a través de la corriente y su velocidad sorprende incluso a los depredadores.",
+      "effect": "Sacude el barco y tiene un 20% de probabilidad de soltar un objeto aleatorio."
+    },
+    "leaf": {
+      "name": "Pez Hoja",
+      "story": "De los Peces Hoja se susurra más de lo que se ven. Viajan en suaves remolinos, ligeros como algas a la deriva, y desaparecen ante la primera señal de peligro.",
+      "effect": "Aumenta permanentemente el valor de mercado un 10% por captura, hasta el 30%."
+    },
+    "crystal": {
+      "name": "Pez Cristal",
+      "story": "Los Peces Cristal crecen en cuevas lentas donde los minerales florecen como flores. Sus cuerpos refractan la luz en colores extraños que cambian con cada giro.",
+      "effect": "El valor cambia al capturarlo: +50, 0, o -30 Doblones de Oro."
+    },
+    "galaxy": {
+      "name": "Pez Galaxia",
+      "story": "Se dice que los Peces Galaxia nadan entre corrientes y estrellas. Desaparecen de la vista y reaparecen en un abrir y cerrar de ojos, dejando solo un rastro de neblina violeta.",
+      "effect": "Otorga un bono aleatorio: +100 Doblones de Oro o +10% de combustible."
+    },
+    "mushroom": {
+      "name": "Pez Seta",
+      "story": "Los Peces Seta flotan a través de esporas profundas que brillan como la nieve. Sus aletas dejan una tenue niebla que se adhiere al casco.",
+      "effect": "Duplica el valor de mercado de un pez aleatorio del inventario."
+    },
+    "king": {
+      "name": "Pez Rey",
+      "story": "El Pez Rey es una leyenda viva y el mar se queda en silencio cuando pasa. Sus escamas tienen tintes dorados y son pesadas como una armadura forjada.",
+      "effect": "Asusta a los peces pequeños y aumenta los valores de mercado un 20%."
+    },
+    "coral": {
+      "name": "Arrecife de Coral",
+      "story": "Los cúmulos de arrecifes de coral son guardianes silenciosos del lecho marino. Brillan como hueso y cristal en la penumbra. Los anzuelos que los tocan suelen volver rotos.",
+      "effect": "Rompe un intento de anzuelo al contacto."
+    },
+    "sea_kelp": {
+      "name": "Alga Marina",
+      "story": "El alga marina se balancea como cintas lentas por el fondo del océano. Parece suave, pero puede agarrar una línea con una fuerza sorprendente.",
+      "effect": "Engancha el anzuelo brevemente sin dañarlo."
+    },
+    "sea_kelp_horizontal": {
+      "name": "Alga Flotante",
+      "story": "El alga horizontal crece en capas planas que se esconden en el limo. Puede enganchar una línea y tirar de ella lateralmente sin previo aviso.",
+      "effect": "Engancha el anzuelo brevemente sin dañarlo."
+    },
+    "sea_rock": {
+      "name": "Roca Marina",
+      "story": "Las rocas marinas son los viejos huesos de la costa. Se sientan tranquilamente hasta que una línea las golpea y rompe la tensión de la caña.",
+      "effect": "Rebota el anzuelo instantáneamente al impactar."
+    },
+    "sea_rock_large": {
+      "name": "Roca Marina Grande",
+      "story": "Las rocas marinas grandes son arrecifes ocultos que se elevan como muros. Su masa puede detener incluso un lanzamiento fuerte en seco.",
+      "effect": "Rebota el anzuelo instantáneamente al impactar."
+    },
+    "gold_doubloon": {
+      "name": "Doblón de Oro",
+      "story": "Los doblones de oro caen de los naufragios como estrellas caídas. Brillan en la oscuridad y atraen a los codiciosos al peligro.",
+      "effect": "Añade +10 kg de peso pero otorga mucho oro escalado al nivel."
+    },
+    "whirlpool": {
+      "name": "Remolino",
+      "story": "Los remolinos son heridas en el océano, girando más rápido de lo que alcanza la vista. Zumban con un rugido bajo que sacude la cubierta.",
+      "effect": "Puede hundir el barco si el anzuelo queda atrapado demasiado tiempo."
+    },
+    "sunken_boat": {
+      "name": "Barco Hundido",
+      "story": "Los barcos hundidos son tumbas de viejos viajes. Sus cascos crujen con la corriente y sus sombras se alargan en las profundidades.",
+      "effect": "Obstáculo sólido, extremadamente pesado, y bloquea el movimiento seguro."
+    },
+    "shark_skeleton": {
+      "name": "Esqueleto de Tiburón",
+      "story": "Los esqueletos de tiburón flotan como reliquias embrujadas por las profundidades. Cuentan una historia de batallas libradas y perdidas bajo las olas.",
+      "effect": "Añade peso no deseado y reduce el oro en 10."
+    },
+    "env_bubbles": {
+      "name": "Burbujas",
+      "story": "Las burbujas suben en grupos desde respiraderos ocultos. Parecen inofensivas, pero cambian la flotabilidad de todo lo que tocan.",
+      "effect": "Aumenta la velocidad del anzuelo y reduce permanentemente el peso actual en 1 kg."
+    },
+    "anchor": {
+      "name": "Ancla Oxidada",
+      "story": "Las anclas oxidadas yacen donde los barcos una vez rezaron por mares en calma. Son reliquias de tormentas sobrevividas y perdidas.",
+      "effect": "Detiene el barco al instante y reduce el consumo de combustible."
+    },
+    "shell": {
+      "name": "Concha Marina",
+      "story": "Las conchas marinas se esconden en la arena suave, esperando el toque gentil de una línea. Algunas brillan tenuemente.",
+      "effect": "Otorga +20 Doblones de Oro al capturarla."
+    }
+  },
+  "curses": {
+    "none": {
+      "title": "Sin Maldición",
+      "story": "El mar está en calma y los peces abundan. Un día perfecto para un viaje."
+    },
+    "heavy_waters": {
+      "title": "Aguas Pesadas",
+      "story": "El océano se espesa como si fuera melaza. Cada captura tira con más fuerza del casco y tu depósito se llena más rápido de lo habitual."
+    },
+    "fast_current": {
+      "title": "Corriente Rápida",
+      "story": "Una corriente afilada corta el mar y todo se mueve con ella. Los peces pasan veloces por el anzuelo casi sin sombra."
+    },
+    "blind_spot": {
+      "title": "Punto Ciego",
+      "story": "Una niebla fría flota sobre la superficie y se traga la parte superior del mar. Lo que antes estaba claro ahora es una silueta."
+    },
+    "reverse_current": {
+      "title": "Corriente Inversa",
+      "story": "La corriente se vuelve sobre sí misma, confundiendo a cada banco de peces. Algunos peces ahora huyen del anzuelo hacia mar abierto."
+    },
+    "double_damage": {
+      "title": "Daño Doble",
+      "story": "El arrecife se vuelve hostil y cada error corta el doble de profundo. Los anzuelos se agrietan y las líneas se tensan bajo la presión."
+    },
+    "economic_crisis": {
+      "title": "Crisis Económica",
+      "story": "Los mercados se secan en toda la costa y los precios se desploman. Incluso las capturas raras parecen ordinarias en el libro de cuentas."
+    },
+    "countdown": {
+      "title": "Cuenta Atrás",
+      "story": "Tu bodega empieza a tener fugas como si el tiempo mismo la estuviera corroyendo. Cada diez segundos el espacio se reduce."
+    },
+    "skeleton_army": {
+      "title": "Ejército de Esqueletos",
+      "story": "Los huesos surgen de las profundidades como una marea en marcha. El agua se llena de formas pálidas que agotan tu carga."
+    },
+    "fish_escape": {
+      "title": "Escape de Peces",
+      "story": "Los peces están asustadizos esta noche, escapándose en el último segundo. Las líneas se aflojan y los anzuelos vacíos vuelven en silencio."
+    },
+    "time_bomb": {
+      "title": "Bomba de Tiempo",
+      "story": "Tu carga se vuelve inestable, desapareciendo como si fuera arrebatada por manos invisibles. Cada ocho segundos algo se pierde."
+    },
+    "dark_matter": {
+      "title": "Materia Oscura",
+      "story": "El lecho marino está envuelto en sombras y el mundo parece incompleto. Puedes sentir los arrecifes pero no verlos."
+    },
+    "chain_reaction": {
+      "title": "Reacción en Cadena",
+      "story": "Cuando un pez sube, otros lo siguen como si estuvieran unidos por el destino. El agua se agita con un movimiento repentino y vinculado."
+    },
+    "invisible_fish": {
+      "title": "Peces Invisibles",
+      "story": "El mar está lleno de fantasmas. Puedes oír los chapoteos pero los peces no se ven. Los anzuelos deben seguir el instinto."
+    },
+    "reverse_market": {
+      "title": "Mercado Inverso",
+      "story": "Los comerciantes dan la vuelta a sus libros y tus ganancias se reducen. Los bienes cuestan más y las ventas apenas cubren el viaje."
+    },
+    "random_loop": {
+      "title": "Bucle Aleatorio",
+      "story": "La línea se tambalea como si estuviera atrapada en vientos inquietos. El ritmo del anzuelo nunca permanece igual por mucho tiempo."
+    },
+    "reverse_weight": {
+      "title": "Peso Inverso",
+      "story": "Las básculas mienten y la bodega parece más ligera de lo que es. Lo que parece seguro aún puede hundirte."
+    },
+    "random_curse": {
+      "title": "Maldición Aleatoria",
+      "story": "El océano se niega a mantener una sola regla. Cada quince segundos surge un nuevo peligro y el anterior se desvanece."
+    },
+    "combo_1": {
+      "title": "Combo I: Aguas Pesadas + Corriente Rápida",
+      "story": "Dos maldiciones se fusionan en una marea abrumadora. El agua es espesa y los peces son rápidos, exigiendo fuerza y velocidad."
+    },
+    "combo_2": {
+      "title": "Combo II: Crisis Económica + Daño Doble",
+      "story": "Las ganancias caen mientras el arrecife se vuelve más afilado. Cada error ahora cuesta el doble en tiempo y valor."
+    },
+    "combo_3": {
+      "title": "Combo III: Pesadas + Rápida + Económica",
+      "story": "Esta es una tormenta de todas las penalidades a la vez. Los peces son más pesados, rápidos y valen menos que antes."
+    },
+    "final_1": {
+      "title": "Final I: Peces Invisibles + Ejército de Esqueletos + Daño Doble",
+      "story": "El abismo esconde a su presa y llena el agua de huesos. Debes enganchar lo que no ves mientras evitas lo que no puedes golpear."
+    },
+    "final_2": {
+      "title": "Final II: Cuenta Atrás + Reacción en Cadena + Corriente Rápida",
+      "story": "El tiempo se comprime y el mar corre hacia adelante. Tu bodega se reduce mientras los peces surgen más rápido que nunca."
+    },
+    "final_3": {
+      "title": "Final III: Mercado Inverso + Escape de Peces",
+      "story": "El mercado se vuelve contra ti y los peces se niegan a quedarse. Cada captura parece desvanecerse en tus manos."
+    },
+    "one_chance": {
+      "title": "Una Oportunidad",
+      "story": "Un solo lanzamiento decide el resultado del viaje. No hay segunda oportunidad, ni línea de repuesto. El mar observa y espera."
+    },
+    "card": {
+      "label": "Nivel Maldito",
+      "start": "Empezar Nivel"
+    }
+  }
+}

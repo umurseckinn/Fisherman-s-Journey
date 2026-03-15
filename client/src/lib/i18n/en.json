@@ -1,0 +1,690 @@
+{
+  "common": {
+    "buy": "BUY",
+    "active": "ACTIVE",
+    "repair_rod": "Repair Rod",
+    "game_over": "GAME OVER",
+    "score": "Score",
+    "coins": "Coins",
+    "fuel": "Fuel",
+    "weight": "Weight",
+    "storage": "Storage",
+    "level": "Level",
+    "region": "Region",
+    "capacity": "Capacity",
+    "speed": "Speed",
+    "depth": "Depth",
+    "attempts": "Attempts",
+    "protection": "Protection",
+    "reduction": "Reduction",
+    "info": "INFO",
+    "tap_anywhere": "Tap anywhere to continue",
+    "kg": "kg",
+    "story": "Story",
+    "ability_effect": "Ability / Effect",
+    "type": "Type",
+    "radius": "Radius",
+    "aspect": "Aspect",
+    "obstacle": "Obstacle",
+    "catchable": "Catchable",
+    "close": "Close",
+    "visibility": "Visibility",
+    "direction": "Direction",
+    "coral": "Coral",
+    "curse": "CURSE",
+    "value": "Value",
+    "spawn": "Spawn",
+    "escape": "Escape",
+    "inventory": "Inventory",
+    "obstacles": "Obstacles",
+    "chain": "Chain",
+    "prices": "Prices",
+    "swing": "Swing",
+    "gauge": "Gauge",
+    "cycle": "Cycle",
+    "owned": "Owned",
+    "unlocked": "Unlocked",
+    "locked": "Locked",
+    "buy_now": "BUY NOW",
+    "select": "SELECT",
+    "selected": "SELECTED",
+    "min_level": "Min Level {level}",
+    "storage_lv": "Storage Lv{level}",
+    "rod_lv": "Rod Lv{level}",
+    "storage_max": "Storage MAX",
+    "rod_max": "Rod MAX",
+    "effective_stats": "Current Effective Stats",
+    "start_fishing": "START FISHING →",
+    "loading": "Loading...",
+    "hall_of_fame": "Hall of Fame",
+    "top_fishermen": "Top legendary fishermen",
+    "no_scores": "No scores yet. Be the first!",
+    "island": "Island",
+    "island_level": "Island Level {level}",
+    "training_bay": "Training Bay",
+    "tutorial_harbor": "Tutorial Harbor",
+    "unknown_waters": "Unknown Waters",
+    "deep_sea_market": "Deep Sea Market",
+    "deep_voyage": "Deep Voyage",
+    "sell_haul": "Sell Your Haul",
+    "fish_count": "{count} Fish",
+    "empty_nets": "Empty nets...",
+    "sell_all": "Sell All",
+    "boat_services": "Boat Services",
+    "refill_fuel": "Refill Fuel",
+    "repair_rod_btn": "Repair Rod",
+    "needs_fuel": "Needs Fuel",
+    "set_sail_btn": "Set Sail!",
+    "end_journey_confirm": "End current journey? All progress will be lost!",
+    "end_journey_reason": "Out of Fuel! Journey ended at the market.",
+    "end_journey_btn": "End Journey (Surrender)",
+    "you_won": "You Won",
+    "you_won_msg": "You reached all islands. It was a legendary journey!",
+    "restart_btn": "RESTART",
+    "boss": "BOSS",
+    "checkpoint": "CHECKPOINT",
+    "language": "Language",
+    "free": "FREE",
+    "most_popular": "MOST POPULAR",
+    "best_value": "BEST VALUE",
+    "snaps_hook": "Snaps hook!",
+    "danger": "Danger!",
+    "boost": "Boost 💨",
+    "harpoon": "Harpoon",
+    "net": "Net",
+    "tnt": "TNT",
+    "anchor_booster": "Anchor"
+  },
+  "game": {
+    "over": {
+      "boat_sank": "The boat sank! It was crushed under heavy load.",
+      "no_hooks": "Fishing rod unusable! All hooks are broken."
+    },
+    "hud": {
+      "weight": "{current} / {max} kg",
+      "score": "{score} 🪙",
+      "storage": "Storage",
+      "hook": "Hook",
+      "storage_almost_full": "STORAGE ALMOST FULL! ⚠️",
+      "boat_sinking": "BOAT SINKING! STORAGE FULL! 🚨"
+    },
+    "feedback": {
+      "legendary": "LEGENDARY!",
+      "rod_broken": "ROD BROKEN!",
+      "combo_2": "2 IN A ROW!",
+      "combo_3": "COMBO x3!",
+      "combo_5": "ON FIRE x5!",
+      "combo_7": "UNSTOPPABLE x7!",
+      "combo_poseidon": "POSEIDON! x{combo}",
+      "weight_reduced": "-1 kg"
+    }
+  },
+  "ui": {
+    "storage_full": "Storage Full!",
+    "out_of_fuel": "Out of Fuel!",
+    "rod_broken": "Rod Broken!",
+    "level_complete": "Level Complete!",
+    "next_level": "Next Level",
+    "try_again": "Try Again",
+    "back_to_home": "Home",
+    "garage": "Garage",
+    "leaderboard": "Leaderboard",
+    "settings": "Settings",
+    "repair_cost": "Repair Cost",
+    "unlock_cost": "Unlock Cost",
+    "insufficient_balance": "Insufficient Balance!",
+    "need_fuel_msg": "You need {cost} 🪙 to buy fuel. Please use a Pass Card or choose an option.",
+    "use_pass_card": "Use Pass Card",
+    "get_pass_cards": "Get More Pass Cards",
+    "watch_ad": "Watch an Ad (+50 🪙)",
+    "back_to_market": "Back to Market",
+    "give_up": "Give Up (End Journey)",
+    "repair_needed": "Repair Needed!",
+    "need_repair_msg": "You need {cost} 🪙 to repair the rod. Please choose an option to continue.",
+    "get_more_doubloons": "Get More Doubloons",
+    "watch_ad_amount": "Watch an Ad (+{amount} 🪙)",
+    "island_select": "Island Select",
+    "explorer_mode": "🗺️ EXPLORER MODE",
+    "prev_stage": "Prev Stage",
+    "next_stage": "Next Stage",
+    "set_sail": "Set Sail!",
+    "level_locked_msg": "You don't have access to this level yet! You must complete previous levels first.",
+    "tutorial": "Tutorial",
+    "new_region": "New Region",
+    "back_to_level_select": "BACK TO THE LEVEL SELECTION",
+    "island_clear": "Island Clear!",
+    "refueling_msg": "Refueling for the next trip...",
+    "current_gold": "Current Gold Doubloons",
+    "fuel_cost": "Fuel Cost",
+    "remaining": "Remaining",
+    "travel_to_island": "Travel to Island {island}",
+    "rod_broken_title": "Oh snap! Rod Broken!",
+    "boat_sunk_title": "Overweight! Boat Sunk!",
+    "out_of_fuel_title": "Stranded! Out of Fuel!",
+    "island_reached": "Island {island} Reached",
+    "new_record": "NEW RECORD!",
+    "total_score": "TOTAL SCORE",
+    "base_score": "Base Score",
+    "depth_bonus": "Depth Bonus",
+    "king_bounty": "King Bounty",
+    "vault_earnings": "Vault Earnings",
+    "menu": "MENU",
+    "retry": "RETRY",
+    "play_tutorial": "PLAY TUTORIAL",
+    "play_game": "PLAY THE GAME",
+    "levels_title": "LEVELS",
+    "admin_mode_msg": "Admin mode selection",
+    "unlocked_up_to": "Unlocked up to L{level}",
+    "admin_mode": "Admin Mode",
+    "select_level": "Select Level",
+    "reset_confirm": "Are you sure? This will reset all your progress!",
+    "reset_progress": "Reset Progress",
+    "logo_text": "The Boatman's Tale",
+    "shop": {
+      "pass_pouch": "Basic Pass Pouch",
+      "pass_sack": "Popular Pass Sack",
+      "pass_chest": "Captain's Pass Chest",
+      "doubloon_pouch": "Fisherman's Doubloon Pouch",
+      "doubloon_sack": "Expert's Doubloon Sack",
+      "doubloon_chest": "Captain's Doubloon Chest",
+      "doubloon_hoard": "Poseidon's Doubloon Hoard",
+      "welcome_gift": "Welcome Gift!",
+      "level_2_reached": "You've reached Level 2!",
+      "claim_gift": "CLAIM GIFT",
+      "claim_now": "CLAIM NOW"
+    },
+    "boosters": {
+      "out_of": "Out of {booster}?",
+      "mega_pack": "Mega Pack",
+      "epic_pack": "Epic Pack",
+      "all_boosters": "{amount}x ALL Boosters",
+      "single_booster": "{amount}x {booster}",
+      "how_it_works": "How it works",
+      "tips": "Tips",
+      "harpoon": {
+        "phrase": "Spear those stubborn catches effortlessly!",
+        "summary": "Fires a straight spear to grab a single target instantly.",
+        "usage": [
+          "Tap to launch; it pierces forward and grabs the first valid target.",
+          "Best for high-value fish or tight corridors where precision matters.",
+          "Harpoon catches do not add to storage weight while carried by the booster."
+        ],
+        "tips": [
+          "Use while the target is aligned with the boat's line.",
+          "Great for escaping clutch moments when time is low."
+        ]
+      },
+      "net": {
+        "phrase": "Scoop up everything in your path!",
+        "summary": "Casts a wide net that gathers multiple fish in its radius.",
+        "usage": [
+          "Tap to deploy; everything inside the circle is collected.",
+          "Perfect for dense schools and stacked spawns.",
+          "Net catches do not add to storage weight while carried by the booster."
+        ],
+        "tips": [
+          "Wait for a cluster before triggering to maximize value.",
+          "Combine with slow moments to sweep large groups."
+        ]
+      },
+      "tnt": {
+        "phrase": "Clear the seabed with an explosive blast!",
+        "summary": "Detonates a 3x3 area to clear obstacles and grab loot.",
+        "usage": [
+          "Tap to place; the blast clears the grid instantly.",
+          "Ideal for heavy obstacle zones and blocked paths.",
+          "TNT pickups do not add to storage weight while carried by the booster."
+        ],
+        "tips": [
+          "Drop it where obstacles are densest for maximum impact.",
+          "Use to open routes when you are trapped."
+        ]
+      },
+      "anchor": {
+        "phrase": "Freeze time and grab what you want!",
+        "summary": "Freezes time briefly so you can aim and collect safely.",
+        "usage": [
+          "Tap to activate; time slows and movement becomes manageable.",
+          "Best for precise grabs and avoiding hazards.",
+          "Anchor pickups do not add to storage weight while carried by the booster."
+        ],
+        "tips": [
+          "Trigger it right before a risky cast.",
+          "Use it to stabilize when hooks are low."
+        ]
+      }
+    }
+  },
+  "garage": {
+    "current_stats": "Current Effective Stats",
+    "storage": "Storage",
+    "swing": "Swing",
+    "depth": "Depth",
+    "casts": "Casts",
+    "coral": "Coral",
+    "owned": "Owned",
+    "start_fishing": "START FISHING →"
+  },
+  "leaderboard": {
+    "loading": "Loading scores...",
+    "no_scores": "No scores yet. Be the first!",
+    "island": "Island"
+  },
+  "upgrades": {
+    "storage_capacity": "Storage Capacity",
+    "swing_speed": "Swing Speed",
+    "cast_speed": "Cast Speed",
+    "return_speed": "Return Speed",
+    "hook_depth": "Hook Depth",
+    "cast_attempts": "Cast Attempts",
+    "coral_protection": "Coral Protection",
+    "kelp_duration": "Kelp Duration"
+  },
+  "vehicles": {
+    "t1": { "name": "The Dinghy", "captain": "Bobber Bill" },
+    "t2": { "name": "The Painted Skiff", "captain": "Daring Danny" },
+    "t3": { "name": "The Fiberglass", "captain": "Expert Eddie" },
+    "t4": { "name": "The Motor Cruiser", "captain": "Captain Ken" },
+    "t5": { "name": "The Speedster", "captain": "Turbo Trev" },
+    "t6": { "name": "The Trawler", "captain": "Seafarer Sam" },
+    "t7": { "name": "The Captain's Vessel", "captain": "Captain Theo" },
+    "t8": { "name": "The Research Vessel", "captain": "Professor Pippa" },
+    "t9": { "name": "The Corsair", "captain": "Black Cam" },
+    "t10": { "name": "The Legend", "captain": "The Legendary Fisher" }
+  },
+  "regions": {
+    "r1": "Dawnbreak Cove",
+    "r2": "Twilight Reef",
+    "r3": "Whispering Atolls",
+    "r4": "Abyssal Blue",
+    "r5": "Tempest Strait",
+    "r6": "Aurora Depths",
+    "r7": "Crimson Moon",
+    "r8": "Chaos Vortex",
+    "r9": "Golden Sanctum",
+    "r10": "Legend's End"
+  },
+  "levels": {
+    "1": "Morning Run",
+    "2": "Speed Surprise",
+    "3": "Kelp Garden",
+    "4": "First Market",
+    "5": "Candy Discovery",
+    "6": "Speed Test",
+    "7": "Chest Delight",
+    "8": "Moonfall",
+    "9": "Weight Pressure",
+    "10": "Golden Level",
+    "11": "Anchor Trap",
+    "12": "Lava Temptation",
+    "13": "Breather",
+    "14": "Tide Storm",
+    "15": "Coral Hell",
+    "16": "Leaf Whisper",
+    "17": "Skeleton Night",
+    "18": "Whirlpool Rises",
+    "19": "Last Breath",
+    "20": "BOSS: Cove Queen",
+    "21": "Coral Shock",
+    "22": "Double Coral",
+    "23": "Speed Hell",
+    "24": "Breather",
+    "25": "Galaxy Gate",
+    "26": "Skeleton Corridor",
+    "27": "Double Whirlpool",
+    "28": "Rod Trial",
+    "29": "Breather",
+    "30": "BOSS: Golden Coral",
+    "31": "Deep Opening",
+    "32": "Capacity Crisis",
+    "33": "Rain Trap",
+    "34": "Breather",
+    "35": "King Whisper",
+    "36": "Dark Depths",
+    "37": "Mushroom Dance",
+    "38": "Galaxy Hunt",
+    "39": "Final Move",
+    "40": "BOSS: Deep Blue Beast",
+    "41": "Storm Gate",
+    "42": "Double Skeleton",
+    "43": "Capacity Shock",
+    "44": "Breather",
+    "45": "King Season",
+    "46": "Dark Corridor",
+    "47": "Mushroom Forest",
+    "48": "Galaxy Storm",
+    "49": "Final Trial",
+    "50": "BOSS: Storm Lord",
+    "51": "Aurora Opening",
+    "52": "Dark Hunt",
+    "53": "Breather",
+    "54": "King Surge",
+    "55": "Coral Labyrinth",
+    "56": "Warp War",
+    "57": "Silent Danger",
+    "58": "Aurora Storm",
+    "59": "Chaos Night",
+    "60": "BOSS: Aurora Dragon",
+    "61": "Crimson Moon",
+    "62": "Curse: Heavy Waters",
+    "63": "Curse: Fast Current",
+    "64": "Breather",
+    "65": "Curse: Blind Spot",
+    "66": "Curse: Reverse Current",
+    "67": "Curse: Double Damage",
+    "68": "Breather",
+    "69": "Curse: Economic Crisis",
+    "70": "BOSS: Crimson Moon Beast",
+    "71": "Dimension Gate",
+    "72": "Curse: Chain Reaction",
+    "73": "Curse: Invisible Fish",
+    "74": "Breather",
+    "75": "Curse: Countdown",
+    "76": "Curse: Reverse Market",
+    "77": "Curse: Skeleton Army",
+    "78": "Breather",
+    "79": "Everything Active",
+    "80": "BOSS: Chaos Lord",
+    "81": "Golden Darkness",
+    "82": "Combined Curse I",
+    "83": "Combined Curse II",
+    "84": "Breather",
+    "85": "Curse: Time Pressure",
+    "86": "Curse: Reverse Weight",
+    "87": "Curse: Fish Escape",
+    "88": "Breather",
+    "89": "All Curses",
+    "90": "BOSS: Golden Dragon",
+    "91": "The Final Voyage Begins",
+    "92": "Curse: Time Bomb",
+    "93": "Curse: Dark Matter",
+    "94": "Last Breath",
+    "95": "Combined Curse: Final I",
+    "96": "Combined Curse: Final II",
+    "97": "Combined Curse: Final III",
+    "98": "Silent Storm",
+    "99": "One Chance",
+    "100": "FINAL BOSS: Legend Lord"
+  },
+  "tutorial": {
+    "storage": "Watch your Storage limit! If your boat gets too heavy, it will sink.",
+    "tnt": "Drag the TNT to clear the area!",
+    "net": "Tap to deploy the net!",
+    "harpoon": "Aim the harpoon to catch fast fish!",
+    "anchor": "Tap the sea to drop anchor!",
+    "garage_rod": "A stronger rod catches bigger fish!\nTap here to upgrade your Rod.",
+    "garage_storage": "Running out of space?\nTap here to expand your boat's storage.",
+    "garage_next_boat": "Earned enough for a better vessel!\nTap the arrow to see the next boat.",
+    "garage_buy_boat": "Meet {boat}!\nTap to purchase and set sail with better stats."
+  },
+  "region_intros": {
+    "r1": {
+      "title": "Dawnbreak Cove",
+      "story": "This is where every sailor takes their first breath. Beneath its calm exterior lie ancient shipwrecks waiting for novices. As the first light of dawn hits the shallow waters, those who dream of becoming legends set their sails here for the very first time."
+    },
+    "r2": {
+      "title": "Twilight Reef",
+      "story": "The glowing corals illuminate the darkened waters, marking your arrival at the mysterious Twilight Reef. Whispers of forgotten sea-dwellers echo through the tides as you dive deeper into the beautiful but treacherous abyss. Now that you have mastered the shallows, the enchanted creatures here will test your growing combat skills. Equip your water-breathing gear and prepare to face the lurking shadows of the vibrant coral mazes. Click here to dive into the adventure and conquer the submerged secrets waiting between levels 11 and 20!"
+    },
+    "r3": {
+      "title": "The Whispering Atolls",
+      "story": "Mesmerizing with their dazzling colors, these waters are actually one of nature's most ruthless battlegrounds. The massive coral labyrinths beneath the surface hide both unparalleled treasures and bloodthirsty sea creatures. Only those with sharp instincts can press on."
+    },
+    "r4": {
+      "title": "The Abyssal Blue",
+      "story": "This is the boundary where light slowly fades, descending into the dark heart of the ocean. The familiar waves of the surface give way to silent, deadly whirlpools. Only those brave enough to face the darkness can unearth the secrets of this blue hell."
+    },
+    "r5": {
+      "title": "Tempest Strait",
+      "story": "It is a passage where the sky is forever black and the sea is eternally wrathful. Colossal waves wait to crush even the sturdiest ships. Surviving this strait is not a matter of luck, but an absolute victory won against the fury of nature."
+    },
+    "r6": {
+      "title": "Aurora Depths",
+      "story": "A mystical realm illuminated by shimmering underwater lights that mimic the northern sky. The currents here move in strange, rhythmic patterns, and the silence is heavy with ancient magic. Watch the glow, for it guides the worthy."
+    },
+    "r7": {
+      "title": "Crimson Moon",
+      "story": "A sinister red glow bathes the barren landscape, warning all who dare to step beneath the Crimson Moon. Vengeful spirits and nightmarish beasts roam these haunted lands, drawn by the scent of a seasoned warrior like you. Only those who have survived countless battles can hope to withstand the maddening corruption of this dark realm. Sharpen your finest weapons and brace your mind for the terrifying trials that lie ahead in the shadows. Step into the bloody moonlight today and prove your worth in the deadly challenges of levels 61 to 70!"
+    },
+    "r8": {
+      "title": "Chaos Vortex",
+      "story": "This is a mystical realm where time and direction sink to the bottom of the ocean. Massive, never-ending currents drag ships into an endless spiral. In these waters where compasses go mad, you must conquer not the sea, but your own mind."
+    },
+    "r9": {
+      "title": "Golden Sanctum",
+      "story": "The final trial accessible only to those who will write their names in history with letters of gold. Every single mile is an epic battle for survival. Those who complete this run are no longer mere sailors, but living legends."
+    },
+    "r10": {
+      "title": "Legend's End",
+      "story": "The earth trembles and the skies shatter as you finally stand before the ultimate battleground, Legend's End. This is the apocalyptic arena where gods have fallen and the greatest heroes of history have met their doom. Every monstrous foe here possesses world-ending power, demanding absolute perfection and tactical mastery from your skills. Gather your most legendary artifacts and form your strongest alliances, for this final expedition will decide the fate of everything. Accept your ultimate destiny now and claim your eternal glory by conquering the supreme challenges of levels 91 to 100!"
+    }
+  },
+  "entities": {
+    "bubble": {
+      "name": "Bubble Fish",
+      "story": "Bubble Fish drift near the surface like living lanterns. Their scales catch the light and shimmer with a glassy glow. Sailors say they gather when the sea is calm to mark safe water. They rarely travel alone, turning the surface into a floating constellation.",
+      "effect": "Harmless catch with low value and light weight."
+    },
+    "sakura": {
+      "name": "Sakura Fish",
+      "story": "Sakura Fish bloom in the shallows every spring tide. They move in soft, petal-like swirls that calm even rough waters. Old captains call them the ocean’s lucky charm because their trail points toward safe passages. Catching one is said to make the next journey kinder.",
+      "effect": "Leaves a trail of petals and moves quickly in shallow water."
+    },
+    "zap": {
+      "name": "Zap Fish",
+      "story": "Zap Fish are born inside storm bands and carry the thunder with them. Their bodies spark when they turn, lighting the water in sudden flashes. Fisherfolk respect them because a single jolt can change a day’s haul. They never slow down unless the sea itself does.",
+      "effect": "Shocks the boat for 3s, giving a 50% escape chance to other fish."
+    },
+    "candy": {
+      "name": "Candy Fish",
+      "story": "Candy Fish gather around warm currents where sweet kelp grows. Their bright colors are a warning to rivals and a beacon to divers. Some say their flavor can lighten the heart and the hull alike. A quiet shoal of Candy Fish often signals a rich mid-depth lane.",
+      "effect": "Reduces boat weight by 1 on catch, up to 3 times."
+    },
+    "moon": {
+      "name": "Moon Fish",
+      "story": "Moon Fish glow whenever the night sky is clear. They glide with a slow rhythm, as if listening to tides only they can hear. Deep sailors believe they guard hidden paths between regions. When a Moon Fish rises, the whole sea seems to breathe slower.",
+      "effect": "Slows all other fish by 40% for 10s."
+    },
+    "lava": {
+      "name": "Lava Fish",
+      "story": "Lava Fish swim through vents where the water boils. Their heat leaves a wake of shimmering air, and their presence makes metal creak. Legends claim they are forged in volcanic storms beneath the trench. Catching one feels like holding a living ember.",
+      "effect": "Applies burning, adding +1 weight per second for 5s."
+    },
+    "tide": {
+      "name": "Tide Fish",
+      "story": "Tide Fish race like torpedoes at the edge of storms. Their fins carve sharp lines through the current, and their speed startles even predators. Mariners track them to predict sudden shifts in water pressure. One wrong move and they vanish in the spray.",
+      "effect": "Shakes the boat and has a 20% chance to drop a random item."
+    },
+    "leaf": {
+      "name": "Leaf Fish",
+      "story": "Leaf Fish are whispered about more than they are seen. They ride gentle eddies, light as drifting kelp, and vanish at the first sign of danger. Ancient crews believed a Leaf Fish ensures prosperity for the entire voyage. Its presence turns markets in your favor.",
+      "effect": "Permanently increases market value by 10% per catch, up to 30%."
+    },
+    "crystal": {
+      "name": "Crystal Fish",
+      "story": "Crystal Fish grow in slow caves where minerals bloom like flowers. Their bodies refract light into strange colors that shift with every turn. Merchants argue over their value because no two catches are the same. They are beauty and risk wrapped together.",
+      "effect": "Value shifts on catch: +50, 0, or -30 Gold Doubloons."
+    },
+    "galaxy": {
+      "name": "Galaxy Fish",
+      "story": "Galaxy Fish are said to swim between currents and stars. They blink out of sight and reappear in a blink, leaving only a trail of violet haze. Explorers chase them for luck, not just profit. If one finds you, the sea often rewards your courage.",
+      "effect": "Grants a random bonus: +100 Gold Doubloons or +10% fuel."
+    },
+    "mushroom": {
+      "name": "Mushroom Fish",
+      "story": "Mushroom Fish drift through deep spores that glitter like snow. Their fins leave a faint fog that clings to the hull. Old journals describe them as “the harvest of the abyss.” When caught, their strange magic doubles a treasure already held.",
+      "effect": "Doubles the market value of a random inventory fish."
+    },
+    "king": {
+      "name": "King Fish",
+      "story": "The King Fish is a living legend, and the sea goes quiet when it passes. Its scales are gold-tinted and heavy like forged armor. Small fish scatter at its wake, as if it commands the current. To haul one up is to claim a crown for the voyage.",
+      "effect": "Panics small fish and boosts market values by 20%."
+    },
+    "coral": {
+      "name": "Coral Reef",
+      "story": "Coral Reef clusters are silent guardians of the seabed. They gleam like bone and glass in the dim light. Hooks that touch them often return broken or tangled. Sailors treat them as sacred borders, not trophies.",
+      "effect": "Breaks one fishing hook attempt on contact."
+    },
+    "sea_kelp": {
+      "name": "Sea Kelp",
+      "story": "Sea Kelp sways like slow ribbons across the ocean floor. It looks gentle, but it can grip a line with surprising strength. Many hooks have been lost to its quiet drag. The wise let it pass and watch the current instead.",
+      "effect": "Snags the hook briefly without damage."
+    },
+    "sea_kelp_horizontal": {
+      "name": "Floating Kelp",
+      "story": "Horizontal Kelp grows in flat sheets that hide in the silt. It can snag a line and pull it sideways without warning. Divers say it marks ancient flood paths across the seabed. A careful cast slips past; a rushed one gets caught.",
+      "effect": "Snags the hook briefly without damage."
+    },
+    "sea_rock": {
+      "name": "Sea Rock",
+      "story": "Sea Rocks are the old bones of the coastline. They sit quietly until a line strikes them and snaps tension through the rod. Crews avoid them because they waste time and attempts. The sea keeps them as silent obstacles.",
+      "effect": "Bounces the hook back instantly on impact."
+    },
+    "sea_rock_large": {
+      "name": "Large Sea Rock",
+      "story": "Large Sea Rocks are hidden reefs that rise like walls. Their mass can stop even a strong cast in its tracks. Captains chart them because they split currents in unpredictable ways. They never move, but they shape the whole hunt.",
+      "effect": "Bounces the hook back instantly on impact."
+    },
+    "gold_doubloon": {
+      "name": "Gold Doubloon",
+      "story": "Gold Doubloons drift from shipwrecks like fallen stars. They shimmer in the dark and lure the greedy close to danger. Each one carries a story from a lost voyage. When you take one, the sea demands a heavier price.",
+      "effect": "Adds +10 kg weight but grants high level-scaled gold."
+    },
+    "whirlpool": {
+      "name": "Whirlpool",
+      "story": "Whirlpools are wounds in the ocean, spinning faster than sight. They hum with a low roar that rattles the deck. Many crews have chased treasure into their spiral and never returned. Survive a whirlpool and the sea will remember your name.",
+      "effect": "Can sink the boat if the hook is trapped too long."
+    },
+    "sunken_boat": {
+      "name": "Sunken Boat",
+      "story": "Sunken Boats are tombs of old voyages. Their hulls creak in the current, and their shadows stretch far in the deep. They block clean lines and tempt reckless dives. Every wreck is a warning carved from history.",
+      "effect": "Solid obstacle, extremely heavy, and blocks safe movement."
+    },
+    "shark_skeleton": {
+      "name": "Shark Skeleton",
+      "story": "Shark Skeletons drift like haunted relics through the deep. They tell a tale of battles fought and lost beneath the waves. Their jagged bones catch hooks and snag lines. A catch of bones brings only regret and a small penalty.",
+      "effect": "Adds unwanted weight and reduces gold by 10."
+    },
+    "env_bubbles": {
+      "name": "Bubbles",
+      "story": "Bubbles rise in clusters from hidden vents. They look harmless, but they change the buoyancy of everything they touch. Divers chase them for the strange lift they give to gear. Catching one feels like the sea pushing you upward.",
+      "effect": "Boosts hook speed and permanently reduces current inventory weight by 1 kg."
+    },
+    "anchor": {
+      "name": "Rusty Anchor",
+      "story": "Rusty Anchors lie where ships once prayed for calm seas. They are relics of storms survived and storms lost. Pulling one free feels like lifting a piece of the sea itself. Heavy and valuable, they test both patience and strength.",
+      "effect": "Stops the boat instantly and reduces fuel consumption."
+    },
+    "shell": {
+      "name": "Sea Shell",
+      "story": "Sea Shells hide in soft sand, waiting for the gentle touch of a line. Some glow faintly, as if holding a secret light. Collectors prize them because each one holds a different story of the tide. They are small, but the sea often rewards the curious.",
+      "effect": "Grants +20 Gold Doubloons on catch."
+    }
+  },
+  "curses": {
+    "none": {
+      "title": "No Curse",
+      "story": "The sea is calm and the fish are plenty. A perfect day for a voyage."
+    },
+    "heavy_waters": {
+      "title": "Heavy Waters",
+      "story": "The ocean thickens as if it were molasses. Every catch drags harder against the hull and your storage fills faster than usual. Old sailors say these waters are weighted by forgotten treasure. Steady hands and light hauls are the only way through."
+    },
+    "fast_current": {
+      "title": "Fast Current",
+      "story": "A sharp current slices through the sea and everything moves with it. Fish streak past the hook with barely a shadow. Nets feel lighter, but the hunt is far more frantic. It is a level that rewards quick reactions and clean casts."
+    },
+    "blind_spot": {
+      "title": "Blind Spot",
+      "story": "A cold fog drifts across the surface and swallows the upper sea. What was once clear is now a silhouette. You can feel the fish above, but you cannot see them. The ocean tests your instincts more than your eyes."
+    },
+    "reverse_current": {
+      "title": "Reverse Current",
+      "story": "The current curls back on itself, confusing every shoal. Some fish now flee the hook by rushing toward open water. The sea feels like a maze of shifting doors. Trust only what you track with patience."
+    },
+    "double_damage": {
+      "title": "Double Damage",
+      "story": "The reef turns hostile and every mistake cuts twice as deep. Hooks crack and lines strain under the pressure. Veterans treat this curse like a duel with the seabed. Precision becomes your greatest shield."
+    },
+    "economic_crisis": {
+      "title": "Economic Crisis",
+      "story": "Markets dry up across the coast and prices plunge. Even rare catches feel ordinary in the ledger. The voyage becomes a test of volume, not prestige. Only the clever turn scarcity into profit."
+    },
+    "countdown": {
+      "title": "Countdown",
+      "story": "Your hold begins to leak as if time itself is corroding it. Every ten seconds the space shrinks and choices become sharper. The ocean whispers to hurry, yet panic only speeds the loss. Fish smart, sell fast, and move on."
+    },
+    "skeleton_army": {
+      "title": "Skeleton Army",
+      "story": "Bones rise from the deep like a marching tide. The water fills with pale shapes that sap your haul. Each skeleton is a reminder of what the sea took before. The smart keep their distance and their balance."
+    },
+    "fish_escape": {
+      "title": "Fish Escape",
+      "story": "The fish are skittish tonight, slipping free at the last second. Lines go slack and empty hooks return in silence. Legends say the sea is warning you to slow down. Patience is the only cure for a fleeing school."
+    },
+    "time_bomb": {
+      "title": "Time Bomb",
+      "story": "Your cargo becomes unstable, vanishing as if snatched by unseen hands. Every eight seconds something is lost to the deep. It feels like sailing through a storm of thieves. Catch with urgency and keep your hold lean."
+    },
+    "dark_matter": {
+      "title": "Dark Matter",
+      "story": "The seabed is cloaked in shadow and the world feels incomplete. You can sense the reefs but cannot see them. Every cast risks a sudden stop. The ocean demands memory and caution in equal measure."
+    },
+    "chain_reaction": {
+      "title": "Chain Reaction",
+      "story": "When one fish rises, others follow as if bound by fate. The water stirs with sudden, linked motion. It can be a blessing or a burden depending on what you pull. Choose your target wisely and the sea will answer."
+    },
+    "invisible_fish": {
+      "title": "Invisible Fish",
+      "story": "The sea is full of ghosts. You can hear splashes and feel the current shift, but the fish themselves are unseen. Hooks must follow instinct and timing instead of sight. It is a silent test of rhythm and nerve."
+    },
+    "reverse_market": {
+      "title": "Reverse Market",
+      "story": "Merchants flip their ledgers and your profits shrink. Goods cost more, and sales barely cover the trip. The sea feels harsher when every coin is worth less. Only the bold profit in a flipped economy."
+    },
+    "random_loop": {
+      "title": "Random Loop",
+      "story": "The line wobbles as if caught in restless winds. The hook’s rhythm never stays the same for long. Every cast is a new puzzle to solve. Flexibility wins over habit in these shifting currents."
+    },
+    "reverse_weight": {
+      "title": "Reverse Weight",
+      "story": "The scales lie and the hold feels lighter than it is. What looks safe can still sink you. Captains whisper of cursed compasses and reversed tides. Trust your memory, not the gauge."
+    },
+    "random_curse": {
+      "title": "Random Curse",
+      "story": "The ocean refuses to keep a single rule. Every fifteen seconds a new danger rises and the old one fades. You must adapt faster than the tide itself. Survive by reading the sea’s sudden moods."
+    },
+    "combo_1": {
+      "title": "Combo I: Heavy Waters + Fast Current",
+      "story": "Two curses merge into a single, overwhelming tide. The water is thick and the fish are fast, demanding both strength and speed. Only a true master of the currents can haul these treasures."
+    },
+    "combo_2": {
+      "title": "Combo II: Economic Crisis + Double Damage",
+      "story": "Profits fall while the reef grows sharper. Every mistake now costs twice as much in time and value. The sea dares you to keep fishing anyway. Careful navigation is the only way to earn back what is lost."
+    },
+    "combo_3": {
+      "title": "Combo III: Heavy + Fast + Economic",
+      "story": "This is a storm of every hardship at once. Fish are heavier, faster, and worth less than before. The sea demands courage more than profit. Survive the level and you earn a story worth telling."
+    },
+    "final_1": {
+      "title": "Final I: Invisible Fish + Skeleton Army + Double Damage",
+      "story": "The abyss hides its prey and fills the water with bones. You must hook what you cannot see while avoiding what you cannot afford to hit. Every cast feels like a gamble against the deep. This is the ocean at its most unforgiving."
+    },
+    "final_2": {
+      "title": "Final II: Countdown + Chain Reaction + Fast Current",
+      "story": "Time compresses and the sea races forward. Your hold shrinks while the fish surge faster than ever. The chain effect can save you or bury you under weight. Choose fast, sell faster, and trust your instincts."
+    },
+    "final_3": {
+      "title": "Final III: Reverse Market + Fish Escape",
+      "story": "The market turns against you and the fish refuse to stay. Every haul feels like it vanishes in your hands. It is a test of persistence more than luck. Push forward and claim your place among the legends."
+    },
+    "one_chance": {
+      "title": "One Chance",
+      "story": "A single cast decides the outcome of the voyage. There is no second chance, no backup line. The sea watches and waits for your move. Choose your moment and let it define the run."
+    },
+    "card": {
+      "label": "Cursed Level",
+      "start": "Start Level"
+    }
+  }
+}

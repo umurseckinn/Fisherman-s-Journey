@@ -39,6 +39,9 @@ import { InfoCard } from "@/components/InfoCard";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 
+import { t } from "@/lib/i18n";
+import { vibrateLong } from "@/lib/haptics";
+
 export default function Game() {
   const [, setLocation] = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,6 +49,7 @@ export default function Game() {
   const whirlpoolImgRef = useRef<HTMLImageElement>(null);
   const playAreaRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
+  const lastStorageWarningStatusRef = useRef<'normal' | 'almost_full' | 'sinking'>('normal');
   const [gameState, setGameState] = useState<"playing" | "gameover" | "shop" | "win">("playing");
   const initialLevel = getStartLevelForMode();
 
@@ -267,7 +271,16 @@ export default function Game() {
       anchorEffectTimerMs: 0,
       startTimerMs: 750,
       isPaused: shouldShowCurse,
-      isTimeFrozen: false
+      isTimeFrozen: false,
+      boatX: CANVAS_WIDTH / 2 - 50,
+      shakeX: 0,
+      boatBob: 0,
+      hookX: CANVAS_WIDTH / 2,
+      hookY: SEA_LEVEL_Y,
+      hookRotation: 0,
+      entities: [],
+      coins: score,
+      currentCombo: 0
     };
 
     const engine = new GameEngine(ctx, bgCtx, whirlpoolImgRef.current, initialState, {
@@ -790,6 +803,23 @@ export default function Game() {
     rawStorageRatio >= 0.81 ? 'bg-orange-500' :
       rawStorageRatio >= 0.61 ? 'bg-yellow-400' : 'bg-green-500';
 
+  // Storage Warning Logic
+  const fillPercentage = rawStorageRatio * 100;
+  let storageWarningStatus: 'normal' | 'almost_full' | 'sinking' = 'normal';
+  if (fillPercentage >= 100) {
+    storageWarningStatus = 'sinking';
+  } else if (fillPercentage >= 90) {
+    storageWarningStatus = 'almost_full';
+  }
+
+  useEffect(() => {
+    const prev = lastStorageWarningStatusRef.current;
+    if (storageWarningStatus === 'sinking' && prev !== 'sinking') {
+      vibrateLong();
+    }
+    lastStorageWarningStatusRef.current = storageWarningStatus;
+  }, [storageWarningStatus]);
+
   const resolveInventoryImage = (type: FishClass) => {
     const envMap: Record<string, string> = {
       coral: 'coral.png',
@@ -850,6 +880,23 @@ export default function Game() {
         {/* Playable Area */}
         {gameState === "playing" && (
           <>
+            {/* Storage Warning Overlay */}
+      {storageWarningStatus !== 'normal' && (
+        <div className="storage-warning-container">
+          {storageWarningStatus === 'almost_full' ? (
+            <div className="storage-warning-almost-full">
+              {t('game.hud.storage_almost_full', 'STORAGE ALMOST FULL! ⚠️')}
+            </div>
+          ) : (
+            <div className="storage-warning-sinking font-display">
+              {t('game.hud.boat_sinking', 'BOAT SINKING! STORAGE FULL! 🚨')}
+            </div>
+          )}
+        </div>
+      )}
+
+            {storageWarningStatus === 'almost_full' && <div className="storage-edge-alert" />}
+
             <div className={`absolute top-0 left-0 right-0 p-4 pt-safe flex justify-between items-start pointer-events-none px-safe transition-all ${isLevel2Tutorial && (tutorialState?.spotlightTarget === 'storage_panel' || tutorialState?.spotlightTarget === 'hook_panel') ? 'z-50' : 'z-10'}`}>
               <div className="flex items-center gap-2 pointer-events-auto">
                 {currentLevel !== 1 && (
@@ -875,7 +922,7 @@ export default function Game() {
                   {/* Storage Bar */}
                   <div className={`bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex flex-col gap-1 transition-all ${tutorialState?.spotlightTarget === 'storage_panel' ? 'z-[60] relative animate-pulse ring-4 ring-yellow-400' : ''}`}>
                     <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-                      <span className="flex items-center gap-1"><Anchor className="w-3 h-3" /> Storage</span>
+                      <span className="flex items-center gap-1"><Anchor className="w-3 h-3" /> {t('game.hud.storage', 'Storage')}</span>
                       <span className={storageRatio >= 0.96 ? 'text-red-500 animate-pulse' : storageRatio >= 0.81 ? 'text-orange-500' : storageRatio >= 0.61 ? 'text-yellow-600' : 'text-slate-500'}>
                         {displayWeight.toFixed(1)} / {upgrades.storageCapacity} kg
                       </span>
@@ -888,14 +935,14 @@ export default function Game() {
                     </div>
                   </div>
                   <div className={`bg-white/90 backdrop-blur-sm border-2 border-white rounded-xl p-2 shadow-md w-32 flex items-center justify-between text-xs font-bold text-slate-700 ${tutorialState?.spotlightTarget === 'hook_panel' ? 'z-[60] relative animate-pulse ring-4 ring-yellow-400' : ''}`}>
-                    <span>Hook</span>
+                    <span>{t('game.hud.hook', 'Hook')}</span>
                     <span className={hookAttempts === 0 ? 'text-red-500 animate-pulse' : 'text-slate-600'}>
                       {hookAttempts} / {maxHookAttempts}
                     </span>
                   </div>
                   {activeCurse !== 'none' && (
                     <div className="bg-red-500 text-white text-[10px] px-2 py-1 rounded-full font-bold animate-bounce shadow-lg">
-                      CURSE: {activeCurse.toUpperCase()}
+                      {t('common.curse', 'CURSE')}: {activeCurse.toUpperCase()}
                     </div>
                   )}
                 </div>
@@ -1318,10 +1365,10 @@ export default function Game() {
               </Link>
               <div className="flex flex-col items-center">
                 <span className="text-slate-400 text-[9px] uppercase font-black tracking-widest leading-none mb-1 opacity-80">
-                  {currentLevel === 1 ? "Training Bay" : `Island Level ${currentLevel - 1}`}
+                  {currentLevel === 1 ? t('common.training_bay', "Training Bay") : t('common.island_level', `Island Level ${currentLevel - 1}`, { level: currentLevel - 1 })}
                 </span>
                 <h2 className="text-xl font-display font-black text-slate-800 leading-tight">
-                  {currentLevel === 1 ? "Tutorial Harbor" : (LEVEL_NAMES[currentLevel] ?? "Deep Sea Market")}
+                  {currentLevel === 1 ? t('common.tutorial_harbor', "Tutorial Harbor") : (LEVEL_NAMES[currentLevel] ?? t('common.deep_sea_market', "Deep Sea Market"))}
                 </h2>
               </div>
               <div className="mt-1.5 text-xl font-black text-green-600 flex items-center justify-center gap-1.5 grayscale-[0.2]">
@@ -1333,14 +1380,14 @@ export default function Game() {
             {/* Sell Section */}
             <div className="ocean-card">
               <div className="flex justify-between items-center mb-2 px-1">
-                <div className="section-header !mb-0">Sell Your Haul</div>
-                <div className="text-[10px] font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">{inventory.length} Fish</div>
+                <div className="section-header !mb-0">{t('common.sell_haul', "Sell Your Haul")}</div>
+                <div className="text-[10px] font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">{t('common.fish_count', '{count} Fish', { count: inventory.length })}</div>
               </div>
               
               <div className="flex gap-2 overflow-x-auto py-1 hide-scrollbar mb-2">
                 {groupedInventory.length === 0 ? (
                   <div className="w-full text-center py-4 text-[11px] font-bold text-slate-400 italic bg-white/20 rounded-xl border border-dashed border-white/60">
-                    Empty nets...
+                    {t('common.empty_nets', "Empty nets...")}
                   </div>
                 ) : (
                   groupedInventory.map(item => (
@@ -1376,13 +1423,13 @@ export default function Game() {
                 className={`w-full h-11 btn-3d ${inventory.length === 0 ? 'btn-disabled' : 'btn-green'}`}
                 style={{ zIndex: marketTutorialStep === 'sell' ? 9999 : undefined }}
               >
-                Sell All
+                {t('common.sell_all', "Sell All")}
               </button>
             </div>
 
             {/* Services */}
             <div className="ocean-card">
-              <div className="section-header">Boat Services</div>
+              <div className="section-header">{t('common.boat_services', "Boat Services")}</div>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   id="market-buy-fuel"
@@ -1393,9 +1440,9 @@ export default function Game() {
                 >
                   <div className="flex items-center gap-1.5">
                     <Fuel className="w-4 h-4" />
-                    <span className="text-[11px]">Refill Fuel</span>
+                    <span className="text-[11px]">{t('common.refill_fuel', "Refill Fuel")}</span>
                   </div>
-                  <span className="text-[9px] opacity-80">{currentLevel === 1 ? "FREE" : `${fuelCost} 🪙`}</span>
+                  <span className="text-[9px] opacity-80">{currentLevel === 1 ? t('common.free', 'FREE') : `${fuelCost} 🪙`}</span>
                 </button>
 
                 <button
@@ -1405,7 +1452,7 @@ export default function Game() {
                 >
                   <div className="flex items-center gap-1.5">
                     <Anchor className="w-4 h-4" />
-                    <span className="text-[11px]">Repair Rod</span>
+                    <span className="text-[11px]">{t('common.repair_rod_btn', "Repair Rod")}</span>
                   </div>
                   <span className="text-[9px] opacity-80">{repairCost} 🪙</span>
                 </button>
@@ -1472,18 +1519,18 @@ export default function Game() {
                 disabled={!upgrades.hasFuel && (!showMarketTutorial || marketTutorialStep !== 'continue')}
                 className={`w-full h-14 btn-3d !text-lg ${upgrades.hasFuel ? 'btn-green ring-4 ring-green-400/20' : 'btn-disabled opacity-60'}`}
               >
-                {upgrades.hasFuel ? "Set Sail!" : "Needs Fuel"}
+                {upgrades.hasFuel ? t('common.set_sail_btn', "Set Sail!") : t('common.needs_fuel', "Needs Fuel")}
               </button>
 
               <button
                 onClick={() => {
-                  if (confirm("End current journey? All progress will be lost!")) {
-                    handleTriggerGameOver("Out of Fuel! Journey ended at the market.");
+                  if (confirm(t('common.end_journey_confirm', "End current journey? All progress will be lost!"))) {
+                    handleTriggerGameOver(t('common.end_journey_reason', "Out of Fuel! Journey ended at the market."));
                   }
                 }}
                 className="w-full h-11 btn-3d btn-red opacity-60 hover:opacity-100 !text-[11px]"
               >
-                End Journey (Surrender)
+                {t('common.end_journey_btn', "End Journey (Surrender)")}
               </button>
             </div>
           </div>
@@ -1506,9 +1553,9 @@ export default function Game() {
         )}
         {gameState === "win" && (
           <div className="absolute inset-0 bg-green-700/90 z-30 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700">
-            <h2 className="text-5xl font-display font-bold text-white mb-4 uppercase tracking-tighter">You Won</h2>
-            <p className="text-white text-lg mb-8 opacity-90 font-medium">You reached all islands. It was a legendary journey!</p>
-            <Button onClick={() => window.location.reload()} className="w-full py-8 text-2xl bg-white text-green-700 hover:bg-slate-100 font-display font-bold shadow-xl rounded-2xl">RESTART</Button>
+            <h2 className="text-5xl font-display font-bold text-white mb-4 uppercase tracking-tighter">{t('common.you_won', "You Won")}</h2>
+            <p className="text-white text-lg mb-8 opacity-90 font-medium">{t('common.you_won_msg', "You reached all islands. It was a legendary journey!")}</p>
+            <Button onClick={() => window.location.reload()} className="w-full py-8 text-2xl bg-white text-green-700 hover:bg-slate-100 font-display font-bold shadow-xl rounded-2xl">{t('common.restart_btn', "RESTART")}</Button>
           </div>
         )}
 

@@ -1,3 +1,6 @@
+import { t, getFontFamily } from "@/lib/i18n";
+import { vibrateShort, vibrateTiny } from "@/lib/haptics";
+
 /**
  * GameEffects.ts — All animation and feedback systems
  * Written according to mechanical.md instructions.
@@ -124,6 +127,25 @@ export class GameEffects {
     private canvasW = 450;
     private canvasH = 800;
 
+    // Combo system visual state
+    private comboText = '';
+    private comboColor = '#FFFFFF';
+    private comboShadow = '#9E9E9E';
+    private comboMs = 0;
+    private comboScale = 0;
+    private comboOpacity = 0;
+    private comboLevel = 0; // State to handle special effects like gradients
+
+    // Bubbles feedback (Float up)
+    private bubbleFeedbacks: Array<{
+        x: number;
+        y: number;
+        opacity: number;
+        text: string;
+        elapsed: number;
+        duration: number;
+    }> = [];
+
     // Aktif tween'ler
     private tweens: Tween[] = [];
 
@@ -176,7 +198,7 @@ export class GameEffects {
     }
 
     /** 4-noktalı yıldız */
-    private spawnStars(x: number, y: number, count: number, color: string, size = 6, speed = 3.5, duration = 400): void {
+    public spawnStars(x: number, y: number, count: number, color: string, size = 6, speed = 3.5, duration = 400): void {
         for (let i = 0; i < count; i++) {
             const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
             const s = 0.7 + Math.random() * 0.6;
@@ -189,7 +211,7 @@ export class GameEffects {
     }
 
     /** Daire partikülleri */
-    private spawnCircles(x: number, y: number, count: number, color: string, size = 8, speed = 2.5, duration = 500): void {
+    public spawnCircles(x: number, y: number, count: number, color: string, size = 8, speed = 2.5, duration = 500): void {
         for (let i = 0; i < count; i++) {
             const angle = Math.random() * Math.PI * 2;
             const s = 0.5 + Math.random() * 1;
@@ -268,6 +290,7 @@ export class GameEffects {
             });
         }
         if (isKing) {
+            vibrateShort();
             this.flashOverlay('#FFD700', 1.0, 80);
             this.legendaryMs = 600;
             this.legendaryOpacity = 1;
@@ -282,6 +305,79 @@ export class GameEffects {
         this.spawnCircles(tx, ty, 12, '#FF4500', 15, 6, 800);
         this.spawnCircles(tx, ty, 8, '#FFA500', 10, 4, 600);
         this.spawnRing(tx, ty, 120, 500, 'rgba(255,165,0,0.4)');
+    }
+
+    /** 
+     * Combo System Feedback 
+     * Milestone visuals as requested
+     */
+    spawnComboEffect(combo: number): void {
+        let text = '';
+        let color = '#FFFFFF';
+        let shadow = '#FFFFFF'; // Neon glow color
+        let intensity = 0;
+
+        if (combo === 2) {
+            text = t('game.feedback.combo_2', '2 IN A ROW!');
+            color = '#FFFFFF';
+            shadow = '#FFFFFF';
+        } else if (combo === 3) {
+            text = t('game.feedback.combo_3', 'COMBO x3!');
+            color = '#90EE90'; // Light Green
+            shadow = '#90EE90';
+        } else if (combo === 5) {
+            text = t('game.feedback.combo_5', 'ON FIRE x5!');
+            color = '#FFDB58'; // Mustard Yellow
+            shadow = '#FFDB58';
+        } else if (combo === 7) {
+            text = t('game.feedback.combo_7', 'UNSTOPPABLE x7!');
+            color = '#40E0D0'; // Turquoise
+            shadow = '#40E0D0';
+            intensity = 1;
+        } else if (combo >= 10) {
+            text = t('game.feedback.combo_poseidon', 'POSEIDON! x{combo}', { combo });
+            color = '#ADD8E6'; // Light Blue (start of gradient)
+            shadow = '#FFD700'; // Gold glow
+            intensity = 2;
+            this.shakeScreen(10, 8);
+        }
+
+        if (text) {
+            vibrateShort();
+            this.comboText = text;
+            this.comboColor = color;
+            this.comboShadow = shadow;
+            this.comboMs = 600;
+            this.comboOpacity = 1;
+            this.comboScale = 0;
+            this.comboLevel = combo;
+
+            if (combo >= 5) this.flashOverlay('#FFD700', 0.15, 80);
+            
+            const pCount = 5 + (intensity * 10);
+            this.spawnStars(this.canvasW / 2, this.canvasH * 0.35, pCount, color, 10, 4, 600);
+        }
+    }
+
+    /** 
+     * Specialized feedback for "The Bubbles" collection 
+     * Floating text and bubble particles
+     */
+    spawnBubblesFeedback(x: number, y: number): void {
+        this.bubbleFeedbacks.push({
+            x,
+            y,
+            text: t('game.feedback.weight_reduced', '-1 kg'), // Matches GameEngine core logic of -1kg
+            opacity: 1,
+            elapsed: 0,
+            duration: 1500
+        });
+
+        // Bubble particles
+        this.spawnCircles(x, y, 8, '#00FFFF', 12, 4, 1000);
+        vibrateTiny();
+        
+        // TODO: Play bubbles_sound here
     }
 
     /** Kelp çarpması */
@@ -304,6 +400,7 @@ export class GameEffects {
 
     /** Olta kırılması animasyonu */
     spawnHookBreak(x: number, y: number): void {
+        vibrateShort();
         this.shakeScreen(6, 6);
         this.flashOverlay('rgba(255,120,80,0.8)', 0.18, 180);
         this.spawnStars(x, y, 10, '#FFB36B', 7, 4.5, 550);
@@ -505,6 +602,26 @@ export class GameEffects {
             this.legendaryScale = Easing.easeOutBack(t) * 1.2;
             this.legendaryOpacity = Math.min(1, this.legendaryMs / 200);
         }
+
+        // Combo text logic
+        if (this.comboMs > 0) {
+            this.comboMs -= deltaTime;
+            const t = Math.min(1, (600 - Math.max(0, this.comboMs)) / 200);
+            this.comboScale = Easing.easeOutBack(t) * 1.2;
+            this.comboOpacity = Math.min(1, this.comboMs / 200);
+        }
+
+        // Bubbles floating feedback
+        for (let i = 0; i < this.bubbleFeedbacks.length; i++) {
+            const b = this.bubbleFeedbacks[i];
+            b.elapsed += deltaTime;
+            b.y -= 0.5 * (deltaTime / 16); // Float up
+            b.opacity = 1 - (b.elapsed / b.duration);
+            if (b.elapsed >= b.duration) {
+                this.bubbleFeedbacks.splice(i, 1);
+                i--;
+            }
+        }
         if (this.hookBreakMs > 0) {
             this.hookBreakMs -= deltaTime;
             const t = Math.min(1, (650 - Math.max(0, this.hookBreakMs)) / 220);
@@ -609,11 +726,17 @@ export class GameEffects {
             ctx.translate(W / 2, H * 0.35);
             ctx.scale(this.legendaryScale, this.legendaryScale);
             ctx.textAlign = 'center';
-            ctx.font = 'bold 52px Fredoka';
+            ctx.font = `bold 26px ${getFontFamily()}`; // 50% reduction
             ctx.fillStyle = '#FFD700';
-            ctx.shadowColor = '#FF8C00';
+            ctx.shadowColor = '#FFD700'; // Neon glow
             ctx.shadowBlur = 20;
-            ctx.fillText('LEGENDARY!', 0, 0);
+            
+            // Black thick outline
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 4;
+            const legText = t('game.feedback.legendary', 'LEGENDARY!');
+            ctx.strokeText(legText, 0, 0);
+            ctx.fillText(legText, 0, 0);
             ctx.restore();
         }
         if (this.hookBreakMs > 0 && this.hookBreakOpacity > 0) {
@@ -622,11 +745,65 @@ export class GameEffects {
             ctx.translate(W / 2, H * 0.35);
             ctx.scale(this.hookBreakScale, this.hookBreakScale);
             ctx.textAlign = 'center';
-            ctx.font = 'bold 48px Fredoka';
+            ctx.font = `bold 24px ${getFontFamily()}`; // 50% reduction
             ctx.fillStyle = '#FF4D4D';
-            ctx.shadowColor = '#FF0000';
+            ctx.shadowColor = '#FF4D4D'; // Neon glow
             ctx.shadowBlur = 18;
-            ctx.fillText('ROD BROKEN!', 0, 0);
+            
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 4;
+            const rbText = t('game.feedback.rod_broken', 'ROD BROKEN!');
+            ctx.strokeText(rbText, 0, 0);
+            ctx.fillText(rbText, 0, 0);
+            ctx.restore();
+        }
+
+        // Combo Text rendering
+        if (this.comboMs > 0 && this.comboOpacity > 0) {
+            ctx.save();
+            ctx.globalAlpha = this.comboOpacity;
+            ctx.translate(W / 2, H * 0.35);
+            ctx.scale(this.comboScale, this.comboScale);
+            ctx.textAlign = 'center';
+            ctx.font = `bold 22px ${getFontFamily()}`; // 50% reduction (44 -> 22)
+            
+            // Neon Glow
+            ctx.shadowColor = this.comboShadow;
+            ctx.shadowBlur = 15;
+
+            // Handle Gradient for 10x+
+            if (this.comboLevel >= 10) {
+                const textWidth = ctx.measureText(this.comboText).width;
+                const grad = ctx.createLinearGradient(-textWidth / 2, 0, textWidth / 2, 0);
+                grad.addColorStop(0, '#ADD8E6'); // Light Blue
+                grad.addColorStop(1, '#FFD700'); // Gold
+                ctx.fillStyle = grad;
+            } else {
+                ctx.fillStyle = this.comboColor;
+            }
+
+            // Black thick outline
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 4;
+            ctx.strokeText(this.comboText, 0, 0);
+            ctx.fillText(this.comboText, 0, 0);
+            ctx.restore();
+        }
+
+        // Bubbles Feedback rendering
+        for (const b of this.bubbleFeedbacks) {
+            ctx.save();
+            ctx.globalAlpha = b.opacity;
+            ctx.textAlign = 'center';
+            ctx.font = `bold 18px ${getFontFamily()}`; // 50% reduction (36 -> 18)
+            ctx.fillStyle = '#00FFFF';
+            ctx.shadowColor = '#00FFFF'; // Neon glow
+            ctx.shadowBlur = 10;
+            
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.strokeText(b.text, b.x, b.y);
+            ctx.fillText(b.text, b.x, b.y);
             ctx.restore();
         }
 

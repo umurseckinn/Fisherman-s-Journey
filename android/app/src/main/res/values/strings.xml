@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Fishermans Journey</string>
-    <string name="title_activity_main">Fishermans Journey</string>
+    <string name="app_name">The Boatman's Tale</string>
+    <string name="title_activity_main">The Boatman's Tale</string>
     <string name="package_name">com.umurseckin.fishermansjourney</string>
     <string name="custom_url_scheme">com.umurseckin.fishermansjourney</string>
 </resources>
